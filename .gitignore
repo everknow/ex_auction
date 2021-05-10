@@ -13,3 +13,6 @@ ex_auction-*.tar
 
 shell.nix
 .vscode
+
+/app/priv/plts/*.plt
+/app/priv/plts/*.plt.hash
