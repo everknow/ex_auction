@@ -25,6 +25,7 @@ defmodule ExAuction.MixProject do
 
   def application do
     [
+      mod: {ExAuction.Application, []},
       extra_applications: [:logger]
     ]
   end
@@ -36,6 +37,9 @@ defmodule ExAuction.MixProject do
     [
       {:ecto_sql, "~> 3.4"},
       {:postgrex, ">= 0.0.0"},
+      {:cowboy, "~> 2.8"},
+      {:plug, "~> 1.11"},
+      {:plug_cowboy, "~> 2.5"},
 
       # Code quality
       {:dialyxir, "~> 1.1", only: [:dev], runtime: false},
