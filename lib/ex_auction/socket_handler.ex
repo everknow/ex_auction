@@ -27,7 +27,7 @@ defmodule ExAuction.SocketHandler do
       case payload do
         %{"message" => message} ->
           Logger.debug("Message parsed")
-          {:reply, {:text, message}, state}
+          {:reply, {:text, "Received: " <> message}, state}
 
         otherwise ->
           Logger.error("invalid payload: #{inspect(otherwise)}")

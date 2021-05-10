@@ -5,7 +5,7 @@ defmodule GunServer do
 
   require Logger
 
-  @backoff_time 400
+  @backoff_time 1000
 
   def init(_) do
     Process.send_after(self(), :start, @backoff_time)
@@ -24,51 +24,52 @@ defmodule GunServer do
 
   @impl true
   def handle_info({:gun_down, _conn, _ws, _closed, _, _}, state) do
-    Logger.warn("[#{__MODULE__}] Socket is Down Message")
+    Logger.warn("#{__MODULE__} received message: :gun_down")
     closeConnection(state.conn, state.mon)
     {:noreply, establishConnection(state)}
   end
 
   @impl true
   def handle_info({:gun_ws, _conn, _ws, {:close, _close_code, _string}}, state) do
-    Logger.warn("[#{__MODULE__}] Closing socket")
+    Logger.warn("#{__MODULE__} Closing socket")
     closeConnection(state.conn, state.mon)
     {:noreply, establishConnection(state)}
   end
 
+  # Coming from the socket server
+  def handle_info({:gun_ws, _conn, _stream, {:text, message}}, state) do
+    Process.send(TestProcess, {:websocket_replied, message}, [])
+    {:noreply, state}
+  end
+
   def handle_info({:gun_ws, _conn, _ws, :close}, state) do
-    Logger.warn("[#{__MODULE__}] Closing socket")
+    Logger.warn("#{__MODULE__} Closing socket")
     closeConnection(state.conn, state.mon)
     {:noreply, establishConnection(state)}
-
   end
 
   def handle_info({:gun_upgrade, _conn, _mon, _type, _info}, state) do
     Logger.warn(
-      "[#{__MODULE__}] websocket connection updateded and ready to be used upgrade complete and ready to be used"
+      "#{__MODULE__} websocket connection updateded and ready to be used upgrade complete and ready to be used"
     )
 
-    {:noreply, Map.put(state, :ready, true)}
+    {:noreply, markConnectionAsReady(state)}
   end
 
   @impl true
-  def handle_info(:ping_server, %{ready: false} = state) do
-    Logger.warn("Received :ping_server with server not ready")
-    _ = Process.send_after(self(), :ping_server, @backoff_time)
+  def handle_info({:send_message, msg}, %{conn: conn,  ready: true} = state) do
+    Logger.warn("#{__MODULE__} received payload to send to the server #{inspect(msg)}")
+    :gun.ws_send(conn, {:text, msg |> Jason.encode!()})
     {:noreply, state}
   end
 
   @impl true
-  def handle_info(:ping_server, %{conn: conn, ready: true} = state) do
-    Logger.warn("Received :ping_server while the server is **READY**")
-    Process.send_after(self(), :ping_server, @backoff_time)
-    :gun.ws_send(conn, :ping)
-    {:noreply, state}
-  end
+  def handle_info({:send_message, msg}, %{ready: false} = state) do
+    Logger.warn(
+      "#{__MODULE__} received payload to send to the server #{inspect(msg)} with server not ready. Retrying..."
+    )
 
-  @impl true
-  def handle_info(msg, state) do
-    Logger.warn("[#{__MODULE__}] unknown info received #{inspect(msg)}")
+    Process.send_after(self(), {:send_message, msg}, 200)
     {:noreply, state}
   end
 
@@ -81,7 +82,7 @@ defmodule GunServer do
   end
 
   defp closeConnection(conn, mref) do
-    Logger.warn("[#{__MODULE__}] Closing connection and cleanup")
+    Logger.warn("#{__MODULE__} closing connection")
     _ = :erlang.demonitor(mref)
     _ = :gun.close(conn)
     _ = :gun.flush(conn)
@@ -100,6 +101,10 @@ defmodule GunServer do
         port,
         opts
       )
+  end
+
+  def markConnectionAsReady(state) do
+    Map.update(state, :ready, true, fn _ -> true end)
   end
 
   defp establishConnection(state) do
@@ -132,18 +137,9 @@ defmodule GunServer do
     end
   end
 
-  @impl true
-  def handle_info(msg, state) do
-    Logger.error(
-      "[#{__MODULE__}] unknown info received #{inspect(msg)}, state: #{inspect(state)}"
-    )
-
-    {:noreply, state}
-  end
-
   # Public test api
-  def ping_server() do
+  def send_message(msg) when is_map(msg) do
     Logger.debug("Pinging server")
-    :ok = Process.send(GunServer, :ping_server, [])
+    :ok = Process.send(GunServer, {:send_message, msg}, [])
   end
 end

@@ -10,8 +10,10 @@ defmodule ExAuction.SocketTests do
     end
 
     test "valid message" do
-      GunServer.ping_server()
-      assert_receive(:pong_received, 5000)
+      original_message = "this is the message"
+      GunServer.send_message(%{"message" => original_message, "token" => "some token"})
+      expected_message = "Received: " <> original_message
+      assert_receive({:websocket_replied, ^expected_message}, 5000)
     end
   end
 end
