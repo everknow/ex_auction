@@ -4,7 +4,7 @@ ex_auction
 
 an off-chain and on-chain auction service
 
-Requirements [here](../REQUIREMENTS)
+Requirements [here](REQUIREMENTS.md)
 
 ## Local development
 
