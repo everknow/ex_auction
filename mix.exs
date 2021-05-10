@@ -34,6 +34,9 @@ defmodule ExAuction.MixProject do
 
   defp deps do
     [
+      {:ecto_sql, "~> 3.4"},
+      {:postgrex, ">= 0.0.0"},
+
       # Code quality
       {:dialyxir, "~> 1.1", only: [:dev], runtime: false},
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
@@ -45,6 +48,10 @@ defmodule ExAuction.MixProject do
 
   defp aliases do
     [
+      setup: ["deps.get", "ecto.setup", "cmd npm install --prefix assets"],
+      "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
+      "ecto.reset": ["ecto.drop", "ecto.setup"],
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test --trace"],
       validate: ["credo", "dialyzer"]
     ]
   end
