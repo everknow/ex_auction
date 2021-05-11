@@ -91,7 +91,8 @@ defmodule GunServer do
   def handle_info({:DOWN, _ref, :process, _pid, reason}, state) do
     Logger.debug("#{__MODULE__} nicely exited with reason: #{inspect(reason)}")
     Process.send(TestProcess, :gunserver_killed, [])
-    {:noreply, state}
+    closeConnection(state.conn, state.mon)
+    {:noreply, establishConnection(state)}
   end
 
   defp closeConnection(conn, mref) do
