@@ -9,7 +9,6 @@ defmodule ExAuction.Login.Handler do
   def init(), do: :ok
 
   def ping(), do: "pong"
-
   def ping(_context), do: "pong"
 
   def login(id_token) do
@@ -19,8 +18,8 @@ defmodule ExAuction.Login.Handler do
       {:ok, response} ->
         google_client_id = Application.get_env(:ex_auction, :google_client_id)
 
-        case Jason.decode!(response.body) do
-          %{"aud" => ^google_client_id} ->
+        case Jason.decode(response.body) do
+          {:ok, %{"aud" => ^google_client_id}} ->
             # create user here? [username | _] = String.split(email, "@")
             user_id = UUID.uuid4()
 
@@ -31,12 +30,13 @@ defmodule ExAuction.Login.Handler do
               _opts = [ttl: {3600, :seconds}]
             )
 
-          what ->
-            Logger.error("---------#{inspect(what)}")
+          {:error, %Jason.DecodeError{}} ->
+            Logger.error("unable to decode google response body: #{response.body}")
             {:error, 401, "could not login"}
         end
 
-      _what ->
+      {:error, reason} ->
+        Logger.error("unable to verify the google token: #{inspect(reason)}")
         {:error, 500, "could not reach google service"}
     end
   end

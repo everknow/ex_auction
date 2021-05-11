@@ -1,46 +1,27 @@
-defmodule ExAuction.Login.Handler.Tests do
+defmodule ExAuction.Login.Receiver.Tests do
   use ExUnit.Case, async: true
   use Plug.Test
 
+  alias ExAuction.Login.Handler
   alias ExAuction.Login.V1.Receiver
   alias ExAuction.GoogleClient
 
   import Mock
+  import ExUnit.CaptureLog
 
   @opts Receiver.init([])
 
   describe "Receiver tests" do
-    setup do
-      Tesla.Mock.mock(fn
-        %{method: :get, url: "https://oauth2.googleapis.com/tokeninfo"} ->
-          %Tesla.Env{status: 200, body: {:ok, "something"}}
-      end)
-
-      :ok
-    end
-
     test "/ping" do
-      conn = conn(:get, "/ping")
-
-      conn = Receiver.call(conn, @opts)
-      assert %{status: 200, state: :sent, resp_body: "pong"} = conn
+      assert %{status: 200, state: :sent} = conn("get", "/ping") |> Receiver.call(@opts)
     end
 
     test "/login success" do
       conn = conn("post", "/login", %{google_token: "some_token"})
 
-      with_mock(GoogleClient,
-        verify: fn id_token ->
-          {:ok,
-           %{
-             body:
-               %{
-                 "email" => "bruno.ripa@gmail.com",
-                 "sub" => "some_id",
-                 "aud" => Application.fetch_env!(:ex_auction, :google_client_id)
-               }
-               |> Jason.encode!()
-           }}
+      with_mock(Handler,
+        login: fn id_token ->
+          {:ok, "some_token", :stuff}
         end
       ) do
         conn = Receiver.call(conn, @opts)
@@ -58,24 +39,26 @@ defmodule ExAuction.Login.Handler.Tests do
       end
     end
 
-    test "/login failure - google service not reachable" do
+    test "/login failure" do
       conn = conn("post", "/login", %{google_token: "some_token"})
 
-      with_mock(GoogleClient,
-        verify: fn id_token ->
+      with_mock(Handler,
+        login: fn id_token ->
           {:error, 500, "something went wrong"}
         end
       ) do
-        conn = Receiver.call(conn, @opts)
+        assert capture_log(fn ->
+                 conn = Receiver.call(conn, @opts)
 
-        assert %{
-                 resp_body: response_body,
-                 status: 500
-               } = conn
+                 assert %{
+                          resp_body: response_body,
+                          status: 500
+                        } = conn
 
-        assert %{
-                 "error" => "could not reach google service"
-               } = response_body |> Jason.decode!()
+                 assert %{
+                          "error" => "something went wrong"
+                        } = response_body |> Jason.decode!()
+               end) =~ "unable to login: code: 500 description: \"something went wrong\""
       end
     end
   end
