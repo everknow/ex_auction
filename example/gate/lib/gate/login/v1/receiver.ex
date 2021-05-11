@@ -47,6 +47,13 @@ defmodule Gate.Login.V1.Receiver do
     end
   end
 
+  post "/dummy" do
+    case Gate.Schema.validate(:example1, conn.params) do
+      true -> json_resp(conn, %{ok: :ok})
+      false -> json_resp(conn, 500, %{error: "??"})
+    end
+  end
+
   defp json_resp(conn, status \\ 200, obj) do
     conn
     |> put_resp_content_type("application/json")
