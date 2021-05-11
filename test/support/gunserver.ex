@@ -87,6 +87,13 @@ defmodule GunServer do
     {:noreply, state}
   end
 
+  @impl true
+  def handle_info({:DOWN, _ref, :process, _pid, reason}, state) do
+    Logger.debug("#{__MODULE__} nicely exited with reason: #{inspect(reason)}")
+    Process.send(TestProcess, :gunserver_killed, [])
+    {:noreply, state}
+  end
+
   defp closeConnection(conn, mref) do
     Logger.warn("#{__MODULE__} closing connection")
     _ = :erlang.demonitor(mref)
@@ -121,10 +128,11 @@ defmodule GunServer do
     tls_flag = Application.get_env(:ex_auction, :tls, false)
 
     with {:ok, conn_pid} <- create_gun_client(server, port, tls_flag) do
+      true = Process.register(conn_pid, GunClientProcess)
       Logger.warn("Client created: #{inspect(conn_pid)}")
       {:ok, protocol} = :gun.await_up(conn_pid)
       Logger.warn("Client returned #{inspect(protocol)}")
-      mon = :erlang.monitor(:process, conn_pid)
+      mon = Process.monitor(conn_pid)
       # TODO: maybe this could come from conf ?
       path = "/ws" |> to_charlist()
 
@@ -146,5 +154,17 @@ defmodule GunServer do
   # Public test api
   def send_message(msg) do
     :ok = Process.send(GunServer, {:send_message, msg}, [])
+  end
+
+  def kill_client_process do
+    case GunClientProcess |> Process.whereis() do
+      nil ->
+        :timer.sleep(@backoff_time)
+        kill_client_process()
+
+      pid ->
+        pid
+        |> Process.exit(:kill)
+    end
   end
 end

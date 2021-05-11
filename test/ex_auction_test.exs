@@ -3,7 +3,7 @@ defmodule ExAuction.SocketTests do
 
   import ExUnit.CaptureLog
 
-  describe "" do
+  describe "Socket handler tests" do
     setup do
       Process.register(self(), TestProcess)
       {:ok, _} = Application.ensure_all_started(:ex_auction)
@@ -31,6 +31,19 @@ defmodule ExAuction.SocketTests do
     test "payload with missing message" do
       GunServer.send_message(%{"token" => "some token"})
       assert_receive({:websocket_replied, "invalid payload"}, 5000)
+    end
+  end
+
+  describe "GunServer tests" do
+    setup do
+      Process.register(self(), TestProcess)
+      _pid = start_supervised!({GunServer, []})
+      :ok
+    end
+
+    test "graceful exit" do
+      GunServer.kill_client_process()
+      assert_receive(:gunserver_killed, 5000)
     end
   end
 end
