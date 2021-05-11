@@ -11,6 +11,9 @@ defmodule ExAuction.Router do
 
   plug(:dispatch)
 
+  forward("/v1", to: ExAuction.Login.V1.Receiver)
+  # forward("/api/v1/protected", to: ExAuction.Protected.V1.Receiver)
+
   # Two endpoints for K8s probes: liveness and readyness
   get "/live" do
     send_resp(conn, 200, "OK")

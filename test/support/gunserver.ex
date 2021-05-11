@@ -1,4 +1,7 @@
 defmodule GunServer do
+  @moduledoc """
+  Genserver that wraps the :gun client lifecycle
+  """
   use GenServer
 
   require Logger
@@ -17,21 +20,21 @@ defmodule GunServer do
   @impl true
   def handle_info(:start, state) do
     Logger.warn("#{__MODULE__} Starting up")
-    {:noreply, establishConnection(state)}
+    {:noreply, establish_connection(state)}
   end
 
   @impl true
   def handle_info({:gun_down, _conn, _ws, _closed, _, _}, state) do
     Logger.warn("#{__MODULE__} received message: :gun_down")
-    closeConnection(state.conn, state.mon)
-    {:noreply, establishConnection(state)}
+    close_connection(state.conn, state.mon)
+    {:noreply, establish_connection(state)}
   end
 
   @impl true
   def handle_info({:gun_ws, _conn, _ws, {:close, _close_code, _string}}, state) do
     Logger.warn("#{__MODULE__} Closing socket")
-    closeConnection(state.conn, state.mon)
-    {:noreply, establishConnection(state)}
+    close_connection(state.conn, state.mon)
+    {:noreply, establish_connection(state)}
   end
 
   # Coming from the socket server
@@ -42,8 +45,8 @@ defmodule GunServer do
 
   def handle_info({:gun_ws, _conn, _ws, :close}, state) do
     Logger.warn("#{__MODULE__} Closing socket")
-    closeConnection(state.conn, state.mon)
-    {:noreply, establishConnection(state)}
+    close_connection(state.conn, state.mon)
+    {:noreply, establish_connection(state)}
   end
 
   def handle_info({:gun_upgrade, _conn, _mon, _type, _info}, state) do
@@ -51,7 +54,7 @@ defmodule GunServer do
       "#{__MODULE__} websocket connection updateded and ready to be used upgrade complete and ready to be used"
     )
 
-    {:noreply, markConnectionAsReady(state)}
+    {:noreply, mark_connection_as_ready(state)}
   end
 
   @impl true
@@ -91,11 +94,11 @@ defmodule GunServer do
   def handle_info({:DOWN, _ref, :process, _pid, reason}, state) do
     Logger.debug("#{__MODULE__} nicely exited with reason: #{inspect(reason)}")
     Process.send(TestProcess, :gunserver_killed, [])
-    closeConnection(state.conn, state.mon)
-    {:noreply, establishConnection(state)}
+    close_connection(state.conn, state.mon)
+    {:noreply, establish_connection(state)}
   end
 
-  defp closeConnection(conn, mref) do
+  defp close_connection(conn, mref) do
     Logger.warn("#{__MODULE__} closing connection")
     _ = :erlang.demonitor(mref)
     _ = :gun.close(conn)
@@ -117,35 +120,36 @@ defmodule GunServer do
       )
   end
 
-  def markConnectionAsReady(state) do
+  def mark_connection_as_ready(state) do
     Map.update(state, :ready, true, fn _ -> true end)
   end
 
-  defp establishConnection(state) do
+  defp establish_connection(state) do
     token = Application.get_env(:app, :token)
     server = "localhost" |> to_char_list()
 
     port = Application.get_env(:ex_auction, :port, 8080)
     tls_flag = Application.get_env(:ex_auction, :tls, false)
 
-    with {:ok, conn_pid} <- create_gun_client(server, port, tls_flag) do
-      true = Process.register(conn_pid, GunClientProcess)
-      Logger.warn("Client created: #{inspect(conn_pid)}")
-      {:ok, protocol} = :gun.await_up(conn_pid)
-      Logger.warn("Client returned #{inspect(protocol)}")
-      mon = Process.monitor(conn_pid)
-      # TODO: maybe this could come from conf ?
-      path = "/ws" |> to_charlist()
+    case create_gun_client(server, port, tls_flag) do
+      {:ok, conn_pid} ->
+        true = Process.register(conn_pid, GunClientProcess)
+        Logger.warn("Client created: #{inspect(conn_pid)}")
+        {:ok, protocol} = :gun.await_up(conn_pid)
+        Logger.warn("Client returned #{inspect(protocol)}")
+        mon = Process.monitor(conn_pid)
+        # TODO: maybe this could come from conf ?
+        path = "/ws" |> to_charlist()
 
-      Logger.warn("Client monitored")
+        Logger.warn("Client monitored")
 
-      stream =
-        :gun.ws_upgrade(conn_pid, path, [
-          {"Authorization", "Bearer #{token}"}
-        ])
+        stream =
+          :gun.ws_upgrade(conn_pid, path, [
+            {"Authorization", "Bearer #{token}"}
+          ])
 
-      %{state | conn: conn_pid, mon: mon, stream: stream, ready: false}
-    else
+        %{state | conn: conn_pid, mon: mon, stream: stream, ready: false}
+
       e ->
         Logger.warn("[#{__MODULE__}] Invalid info #{inspect(e)}")
         %{state | conn: nil, mon: nil, stream: nil, ready: false}
