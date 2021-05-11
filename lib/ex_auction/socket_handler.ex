@@ -40,20 +40,8 @@ defmodule ExAuction.SocketHandler do
 
       otherwise ->
         Logger.error("unable to decode the payload")
-        {:reply, {:text, "missing authorization token"}, state}
+        {:reply, {:text, "unable to decode the payload"}, state}
     end
-  end
-
-  def websocket_info(:ping, state) do
-    # Generic catch all - maybe not needed, since the parser will only return
-    # a json payload ?
-    {:reply, :pong, state}
-  end
-
-  def websocket_info(info, state) do
-    # Generic catch all - maybe not needed, since the parser will only return
-    # a json payload ?
-    {:reply, {:text, "error"}, state}
   end
 
   defp decode_payload(payload) do
