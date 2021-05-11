@@ -26,7 +26,7 @@ defmodule ExAuction.Login.Handler.Tests do
       assert %{status: 200, state: :sent, resp_body: "pong"} = conn
     end
 
-    test "/login" do
+    test "/login success" do
       conn = conn("post", "/login", %{google_token: "some_token"})
 
       with_mock(GoogleClient,
@@ -54,6 +54,27 @@ defmodule ExAuction.Login.Handler.Tests do
                  "access_token" => _,
                  "expires_in" => 3600,
                  "token_type" => "Bearer"
+               } = response_body |> Jason.decode!()
+      end
+    end
+
+    test "/login failure - google service not reachable" do
+      conn = conn("post", "/login", %{google_token: "some_token"})
+
+      with_mock(GoogleClient,
+        verify: fn id_token ->
+          {:error, 500, "something went wrong"}
+        end
+      ) do
+        conn = Receiver.call(conn, @opts)
+
+        assert %{
+                 resp_body: response_body,
+                 status: 500
+               } = conn
+
+        assert %{
+                 "error" => "could not reach google service"
                } = response_body |> Jason.decode!()
       end
     end
