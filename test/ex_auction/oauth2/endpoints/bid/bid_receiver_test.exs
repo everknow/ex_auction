@@ -40,5 +40,9 @@ defmodule ExAuction.Bid.Receiver.Tests do
 
       assert %{status: 401} = Receiver.call(conn, @opts)
     end
+
+    test "/v1/bid failure - invalid payload" do
+      # TBD
+    end
   end
 end
