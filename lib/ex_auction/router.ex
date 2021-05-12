@@ -12,6 +12,7 @@ defmodule ExAuction.Router do
   plug(:dispatch)
 
   forward("/v1/login", to: ExAuction.Login.V1.Receiver)
+  forward("/v1/bid", to: ExAuction.Bid.V1.Receiver)
 
   # Two endpoints for K8s probes: liveness and readyness
   get "/live" do

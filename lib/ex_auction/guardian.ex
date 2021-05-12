@@ -4,12 +4,15 @@ defmodule ExAuction.Guardian do
   """
   use Guardian, otp_app: :ex_auction
 
+  require Logger
+
   def subject_for_token(resource, _claims) do
     # You can use any value for the subject of your token but
     # it should be useful in retrieving the resource later, see
     # how it being used on `resource_from_claims/1` function.
     # A unique `id` is a good subject, a non-unique email address
     # is a poor subject.
+    Logger.debug("Subject for token")
     sub = to_string(resource.user_id)
     {:ok, sub}
   end
@@ -25,6 +28,7 @@ defmodule ExAuction.Guardian do
     #    id = claims["sub"]
     #    resource = Gateway.get_resource_by_id(id)
     # was {:ok, resource}
+    Logger.debug("Resource from claims")
     {:ok, nil}
   end
 
@@ -33,6 +37,7 @@ defmodule ExAuction.Guardian do
   #  end
 
   def id do
+    Logger.debug("Guardian :: id")
     "this is the id"
   end
 end

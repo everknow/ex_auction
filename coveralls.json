@@ -1,4 +1,7 @@
 {
+    "terminal_options": {
+        "file_column_width": 120
+    },
     "skip_files": [
         "lib/auction.ex",
         "lib/ex_auction/repo.ex",

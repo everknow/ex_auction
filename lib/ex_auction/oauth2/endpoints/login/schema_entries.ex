@@ -1,5 +1,8 @@
 defmodule ExAuction.Login.SchemaEntries do
-  def get() do
+  @moduledoc """
+  Schema definitions
+  """
+  def get do
     %{
       bid: %{
         "type" => "object",

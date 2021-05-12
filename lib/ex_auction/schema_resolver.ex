@@ -1,4 +1,5 @@
 defmodule ExAuction.SchemaResolver do
+  @moduledoc false
   def resolve(modules) do
     modules
     |> Enum.reduce(%{}, fn m, acc -> Map.merge(acc, m.get()) end)
