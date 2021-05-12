@@ -42,7 +42,7 @@ defmodule ExAuction.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:corsica, "~> 1.1"},
       {:guardian, "~> 2.1"},
-      {:tesla, "~> 0.3"},
+      {:tesla, "~> 1.4"},
       {:poison, "~> 4.0"},
       {:uuid, "~> 1.1"},
 

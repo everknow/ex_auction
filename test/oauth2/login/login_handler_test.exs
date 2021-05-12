@@ -2,11 +2,11 @@ defmodule ExAuction.Login.Handler.Tests do
   use ExUnit.Case, async: true
   use Plug.Test
 
-  alias ExAuction.Login.Handler
   alias ExAuction.GoogleClient
+  alias ExAuction.Login.Handler
 
-  import Mock
   import ExUnit.CaptureLog
+  import Mock
 
   describe "Handler tests" do
     setup do
@@ -62,7 +62,7 @@ defmodule ExAuction.Login.Handler.Tests do
                    401,
                    "could not login"
                  } = Handler.login("token")
-               end) =~ "unable to decode google response body: cant_decode_me"
+               end) =~ "unable to decode google response body: \"cant_decode_me\""
       end
     end
 

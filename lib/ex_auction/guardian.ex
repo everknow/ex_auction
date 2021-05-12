@@ -32,7 +32,7 @@ defmodule ExAuction.Guardian do
   #    {:error, :reason_for_error}
   #  end
 
-  def id() do
+  def id do
     "this is the id"
   end
 end

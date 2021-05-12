@@ -21,6 +21,11 @@ defmodule ExAuction.SocketHandler do
     {:ok, state}
   end
 
+  def websocket_info(_info, state) do
+    Logger.debug("#{__MODULE__} websocket_info invoked")
+    {:ok, state}
+  end
+
   def websocket_handle({:text, message}, state) do
     with {:ok, payload} <- decode_payload(message),
          true <- is_authenticated?(payload) do

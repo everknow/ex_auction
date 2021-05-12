@@ -2,12 +2,12 @@ defmodule ExAuction.Login.Receiver.Tests do
   use ExUnit.Case, async: true
   use Plug.Test
 
+  alias ExAuction.GoogleClient
   alias ExAuction.Login.Handler
   alias ExAuction.Login.V1.Receiver
-  alias ExAuction.GoogleClient
 
-  import Mock
   import ExUnit.CaptureLog
+  import Mock
 
   @opts Receiver.init([])
 

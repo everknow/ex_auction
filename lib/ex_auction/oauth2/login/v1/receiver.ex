@@ -37,6 +37,13 @@ defmodule ExAuction.Login.V1.Receiver do
     %{"google_token" => id_token} = conn.params
 
     case Handler.login(id_token) do
+      {:error, code, description} ->
+        Logger.error(
+          "unable to login: code: #{inspect(code)} description: #{inspect(description)}"
+        )
+
+        json_resp(conn, code, %{error: description})
+
       {:ok, tok, _} ->
         conn
         |> put_resp_header("cache-control", "no-store")
@@ -47,13 +54,6 @@ defmodule ExAuction.Login.V1.Receiver do
           "expires_in" => 3600
           # "refresh_token": ??
         })
-
-      {:error, code, description} ->
-        Logger.error(
-          "unable to login: code: #{inspect(code)} description: #{inspect(description)}"
-        )
-
-        json_resp(conn, code, %{error: description})
     end
   end
 
