@@ -8,6 +8,10 @@ Requirements [here](REQUIREMENTS.md)
 
 ## Local development
 
+Env vars needed:
+
+    GOOGLE_CLIENT_ID: the OAuth2 google client id
+    
 Just run:
 
     docker-compose up --build -d

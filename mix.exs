@@ -40,6 +40,11 @@ defmodule ExAuction.MixProject do
       {:cowboy, "~> 2.6", override: true},
       {:plug, "~> 1.11"},
       {:plug_cowboy, "~> 2.5"},
+      {:corsica, "~> 1.1"},
+      {:guardian, "~> 2.1"},
+      {:tesla, "~> 1.4"},
+      {:poison, "~> 4.0"},
+      {:uuid, "~> 1.1"},
 
       # Code quality
       {:dialyxir, "~> 1.1", only: [:dev], runtime: false},
@@ -47,7 +52,8 @@ defmodule ExAuction.MixProject do
 
       # Testing
       {:excoveralls, "~> 0.14", only: [:dev, :test]},
-      {:gun, "~> 1.3", only: [:dev, :test]}
+      {:gun, "~> 1.3", only: [:test]},
+      {:mock, "~> 0.3", only: :test}
     ]
   end
 
@@ -57,7 +63,7 @@ defmodule ExAuction.MixProject do
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test --trace"],
-      validate: ["credo", "dialyzer"]
+      validate: ["credo --strict", "dialyzer"]
     ]
   end
 end

@@ -1,0 +1,8 @@
+{
+    "skip_files": [
+        "lib/auction.ex",
+        "lib/ex_auction/repo.ex",
+        "lib/ex_auction/router.ex",
+        "test/support/gunserver.ex"
+    ]
+}
