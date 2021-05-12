@@ -1,9 +1,5 @@
 defmodule ExAuction.Login.SchemaEntries do
-  require Logger
-
   def get() do
-    Logger.error("-----------------")
-
     %{
       bid: %{
         "type" => "object",
