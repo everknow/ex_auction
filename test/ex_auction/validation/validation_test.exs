@@ -69,8 +69,26 @@ defmodule ExAuction.Validation.Tests do
           refute SchemaValidator.validate(:dummy, p)
         end)
 
-      assert result =~ "Required property name was not present."
+      assert result =~ "Required properties name, nested were not present."
       assert result =~ "Expected to be a valid uuid. Path: #/code"
+    end
+
+    test "failure by multiple fields mismatch - name missing, code in the wrong format and nested structure not complete" do
+      p = %{
+        "email" => "bruno.ripa@gmail.com",
+        "code" => "1",
+        "nested" => %{}
+      }
+
+      result =
+        capture_log(fn ->
+          refute SchemaValidator.validate(:dummy, p)
+        end)
+
+      assert result =~ "Required property name was not present. Path: #"
+      assert result =~ "Expected to be a valid uuid. Path: #/code"
+      assert result =~ "Required property active was not present. Path: #/nested"
+      assert result =~ "Required property active was not present. Path: #/nested"
     end
   end
 end

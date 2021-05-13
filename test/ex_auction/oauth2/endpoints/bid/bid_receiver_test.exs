@@ -2,9 +2,9 @@ defmodule ExAuction.Bid.Receiver.Tests do
   use ExUnit.Case, async: true
   use Plug.Test
 
-  alias ExAuction.GoogleClient
   alias ExAuction.Bid.Handler
   alias ExAuction.Bid.V1.Receiver
+  alias ExAuction.GoogleClient
 
   import ExUnit.CaptureLog
   import Mock

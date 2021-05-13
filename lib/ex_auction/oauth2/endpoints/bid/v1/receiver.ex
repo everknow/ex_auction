@@ -1,4 +1,7 @@
 defmodule ExAuction.Bid.V1.Receiver do
+  @moduledoc """
+  Bid receiver, version 1
+  """
   use Plug.Router
 
   alias ExAuction.Bid.Handler

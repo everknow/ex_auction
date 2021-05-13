@@ -8,7 +8,7 @@ defmodule ExAuction.SchemaValidator do
 
   require Logger
 
-  @schemas SchemaResolver.resolve(Application.get_env(:ex_auction, :schema_parts, []))
+  @schemas SchemaResolver.resolve(Application.compile_env(:ex_auction, :schema_parts, []))
 
   def validate(schema_id, data) when is_bitstring(data) do
     case Jason.decode(data) do
@@ -52,7 +52,7 @@ defmodule ExAuction.SchemaValidator do
     {:error, errors_list} = Validator.validate(schema, data)
 
     errors_list
-    |> Enum.map(fn {message, path} ->
+    |> Enum.each(fn {message, path} ->
       Logger.error(message <> " Path: " <> path)
     end)
 
