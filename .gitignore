@@ -17,3 +17,5 @@ shell.nix
 /priv/plts/*.plt
 /priv/plts/*.plt.hash
 google_client_id
+example/gate/_build
+example/gate/deps
