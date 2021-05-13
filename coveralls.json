@@ -5,6 +5,9 @@
     "skip_files": [
         "lib/auction.ex",
         "lib/ex_auction/repo.ex",
+        "lib/ex_auction/schema_resolver.ex",
+        "lib/ex_auction/oauth2/google_client.ex",
+        "lib/ex_auction/oauth2/endpoints/login/schema_entries.ex",
         "lib/ex_auction/router.ex",
         "test/support/gunserver.ex"
     ]

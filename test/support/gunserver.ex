@@ -58,24 +58,24 @@ defmodule GunServer do
   end
 
   @impl true
-  def handle_info({:send_message, msg}, %{ready: false} = state) do
+  def handle_info({:send_frame, msg}, %{ready: false} = state) do
     Logger.warn(
       "#{__MODULE__} received payload to send to the server #{inspect(msg)} with server not ready. Retrying..."
     )
 
-    Process.send_after(self(), {:send_message, msg}, 200)
+    Process.send_after(self(), {:send_frame, msg}, 200)
     {:noreply, state}
   end
 
   @impl true
-  def handle_info({:send_message, msg}, %{conn: conn, ready: true} = state) when is_map(msg) do
+  def handle_info({:send_frame, msg}, %{conn: conn, ready: true} = state) when is_map(msg) do
     Logger.warn("#{__MODULE__} received payload to send to the server #{inspect(msg)}")
     :gun.ws_send(conn, {:text, msg |> Jason.encode!()})
     {:noreply, state}
   end
 
   @impl true
-  def handle_info({:send_message, msg}, %{conn: conn, ready: true} = state)
+  def handle_info({:send_frame, msg}, %{conn: conn, ready: true} = state)
       when is_bitstring(msg) do
     Logger.warn("#{__MODULE__} received malformed payload to send to the server #{inspect(msg)}")
     :gun.ws_send(conn, {:text, msg})
@@ -157,8 +157,8 @@ defmodule GunServer do
   end
 
   # Public test api
-  def send_message(msg) do
-    :ok = Process.send(GunServer, {:send_message, msg}, [])
+  def send_frame(msg) do
+    :ok = Process.send(GunServer, {:send_frame, msg}, [])
   end
 
   def kill_client_process do

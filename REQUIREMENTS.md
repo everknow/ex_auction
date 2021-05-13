@@ -14,3 +14,5 @@
 - The DB **SHOULD** store the BID history so that an ephemeral state of an aouction can be restored if necessary.
 - It **MUST** support deployment scripts for any kubernetes and cloud services to be deployed on demand by specifying the type of environment (dev,prod ..etc..)
 - It **MUST** support a CI via github actions. (We **MUST** have a separate trigger for type spec check and code formatting).
+
+[Back](README.md) to docs.

@@ -16,7 +16,7 @@ defmodule ExAuction.SchemaValidator do
         validate(schema_id, decoded)
 
       {:error, _} ->
-        Logger.error("unable to deserialize the json schema")
+        Logger.error("#{__MODULE__} unable to deserialize the json schema: #{data}")
         false
     end
   end
@@ -24,7 +24,7 @@ defmodule ExAuction.SchemaValidator do
   def validate(schema_id, data) do
     case Map.get(@schemas, schema_id) do
       nil ->
-        Logger.error("#{__MODULE__} could not find schema #{inspect(schema_id)}")
+        Logger.error("#{__MODULE__} could not find schema: #{inspect(schema_id)}")
         false
 
       schema ->
