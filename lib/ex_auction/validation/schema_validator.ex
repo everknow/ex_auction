@@ -8,9 +8,11 @@ defmodule ExAuction.SchemaValidator do
 
   require Logger
 
-  @schemas SchemaResolver.resolve(Application.compile_env(:ex_auction, :schema_parts, []))
+  @schemas SchemaResolver.resolve(Application.get_env(:ex_auction, :schema_parts, []))
 
   def validate(schema_id, data) when is_bitstring(data) do
+    Logger.debug("1")
+
     case Jason.decode(data) do
       {:ok, decoded} ->
         validate(schema_id, decoded)
@@ -22,6 +24,8 @@ defmodule ExAuction.SchemaValidator do
   end
 
   def validate(schema_id, data) do
+    Logger.debug("2")
+
     case Map.get(@schemas, schema_id) do
       nil ->
         Logger.error("#{__MODULE__} could not find schema: #{inspect(schema_id)}")
@@ -30,7 +34,8 @@ defmodule ExAuction.SchemaValidator do
       schema ->
         Logger.debug("Schema detected: #{inspect(schema)} for data: #{inspect(data)}")
         ## TODO check validate(root, data, options \\ []) for tracking erros?
-        Validator.valid?(schema, data)
+        # Validator.valid?(schema, data)
+        Validator.validate(schema, data) |> IO.inspect(label: "-------")
     end
   end
 end

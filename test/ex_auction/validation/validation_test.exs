@@ -35,4 +35,25 @@ defmodule ExAuction.Validation.Tests do
              end) =~ "unable to deserialize the json schema: #{input_payload}"
     end
   end
+
+  describe "Dummy validation tests" do
+    test "success" do
+      %{
+        "name" => "Bruno",
+        "email" => "bruno.ripa@gmail.com",
+        "code" => UUID.uuid4()
+      }
+      |> (fn p -> SchemaValidator.validate(:dummy, p) end).()
+    end
+
+    test "failure by wrong email" do
+      p = %{
+        "name" => "Bruno",
+        "email" => "bruno",
+        "code" => "1"
+      }
+
+      refute SchemaValidator.validate(:dummy, p)
+    end
+  end
 end
