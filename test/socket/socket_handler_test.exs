@@ -45,11 +45,5 @@ defmodule ExAuction.SocketTests do
       GunServer.kill_client_process()
       assert_receive(:gunserver_killed, 5000)
     end
-
-    test "websocket_info" do
-      assert capture_log(fn ->
-               assert :ok = GunServer.get_socket_info()
-             end) =~ "bruno"
-    end
   end
 end

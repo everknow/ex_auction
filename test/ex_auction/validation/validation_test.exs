@@ -24,7 +24,7 @@ defmodule ExAuction.Validation.Tests do
 
       assert capture_log(fn ->
                refute SchemaValidator.validate(:bids, input_payload)
-             end) =~ "could not find schema: :bids"
+             end) =~ "unable to find schema: :bids"
     end
 
     test "failing validation - invalid json" do
@@ -41,19 +41,36 @@ defmodule ExAuction.Validation.Tests do
       %{
         "name" => "Bruno",
         "email" => "bruno.ripa@gmail.com",
-        "code" => UUID.uuid4()
+        "code" => UUID.uuid4() |> to_string()
       }
       |> (fn p -> SchemaValidator.validate(:dummy, p) end).()
     end
 
-    test "failure by wrong email" do
+    test "failure because code is not in the correct format" do
       p = %{
         "name" => "Bruno",
         "email" => "bruno",
         "code" => "1"
       }
 
-      refute SchemaValidator.validate(:dummy, p)
+      capture_log(fn ->
+        refute SchemaValidator.validate(:dummy, p)
+      end) =~ "Expected to be a valid uuid. Path: #/code"
+    end
+
+    test "failure by multiple fields mismatch - name missing and code in the wrong format" do
+      p = %{
+        "email" => "bruno.ripa@gmail.com",
+        "code" => "1"
+      }
+
+      result =
+        capture_log(fn ->
+          refute SchemaValidator.validate(:dummy, p)
+        end)
+
+      assert result =~ "Required property name was not present."
+      assert result =~ "Expected to be a valid uuid. Path: #/code"
     end
   end
 end
