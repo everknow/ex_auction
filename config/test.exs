@@ -1,0 +1,17 @@
+import Config
+
+# ExGate
+config :ex_gate, ExGate.Repo,
+  database: "auction_prod",
+  username: "postgres",
+  password: "postgres",
+  hostname: "localhost"
+
+config :ex_gate, google_client_id: "test_id"
+
+config :ex_gate,
+  port: 9999,
+  token: "token",
+  tls: true
+
+config :tesla, adapter: Tesla.Mock
