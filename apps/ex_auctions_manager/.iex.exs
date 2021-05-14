@@ -1,0 +1,1 @@
+alias ExAuctionsManager.AuctionsProcess
