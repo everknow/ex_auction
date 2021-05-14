@@ -1,4 +1,4 @@
-defmodule ExGate.Login.Handler.Tests do
+defmodule ExGate.Login.HandlerTests do
   use ExUnit.Case, async: true
   use Plug.Test
 
