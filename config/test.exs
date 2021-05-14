@@ -1,14 +1,15 @@
 import Config
 
-config :ex_auction, ExAuction.Repo,
+# ExGate
+config :ex_gate, ExGate.Repo,
   database: "auction_prod",
   username: "postgres",
   password: "postgres",
   hostname: "localhost"
 
-config :ex_auction, google_client_id: "test_id"
+config :ex_gate, google_client_id: "test_id"
 
-config :ex_auction,
+config :ex_gate,
   port: 9999,
   token: "token",
   tls: true

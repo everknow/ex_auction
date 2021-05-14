@@ -1,20 +1,21 @@
 import Config
 
-config :ex_auction, ecto_repos: [ExAuction.Repo]
+# ExGate configuration
+config :ex_gate, ecto_repos: [ExGate.Repo]
 
-config :ex_auction, ExAuction.Guardian,
-  issuer: "ExAuction",
+config :ex_gate, ExGate.Guardian,
+  issuer: "ExGate",
   secret_key: "not secret, by config",
-  secret_fetcher: ExAuction.SecretFetcher
+  secret_fetcher: ExGate.SecretFetcher
 
 # Schemas - this should be reasonably common to all the envs
-config :ex_auction,
+config :ex_gate,
   schema_parts: [
-    ExAuction.Login.SchemaEntries,
-    ExAuction.Dummy.SchemaEntries
+    ExGate.Login.SchemaEntries,
+    ExGate.Dummy.SchemaEntries
   ]
 
 config :ex_json_schema,
-  custom_format_validator: {ExAuction.CustomValidator, :validate}
+  custom_format_validator: {ExGate.CustomValidator, :validate}
 
 import_config "#{Mix.env()}.exs"
