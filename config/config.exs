@@ -9,6 +9,12 @@
 # move said applications out of the umbrella.
 import Config
 
+config :ex_auctions_manager, ExAuctionsManager.Repo,
+  database: "ex_auctions_manager_repo",
+  username: "user",
+  password: "pass",
+  hostname: "localhost"
+
 # Sample configuration:
 #
 #     config :logger, :console,
@@ -19,4 +25,4 @@ import Config
 
 # TODO: ideally we could use `import_config "../apps/*/config/config.exs"`
 # but for some reason this is not working. We'll inspect laters
-import_config "../apps/ex_gate/config/config.exs"
+import_config "../apps/*/config/config.exs"

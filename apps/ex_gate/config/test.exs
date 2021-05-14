@@ -1,11 +1,5 @@
 import Config
 
-config :ex_gate, ExGate.Repo,
-  database: "auction_prod",
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost"
-
 config :ex_gate, google_client_id: "test_id"
 
 config :ex_gate,

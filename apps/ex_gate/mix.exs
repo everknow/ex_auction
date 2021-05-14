@@ -56,9 +56,11 @@ defmodule ExGate.MixProject do
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
 
       # Testing
-      {:excoveralls, "~> 0.14", only: [:dev, :test]},
       {:gun, "~> 1.3", only: [:test]},
-      {:mock, "~> 0.3", only: :test}
+      {:mock, "~> 0.3", only: :test},
+
+      # Coverage
+      {:excoveralls, "~> 0.14", only: [:dev, :test]}
     ]
   end
 
