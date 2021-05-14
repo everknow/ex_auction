@@ -16,4 +16,6 @@ config :ex_auctions_manager, ExAuctionsManager.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",
-  pool: Ecto.Adapters.SQL.Sandbox
+  port: 5432,
+  pool: Ecto.Adapters.SQL.Sandbox,
+  show_sensitive_data_on_connection_error: true
