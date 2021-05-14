@@ -1,12 +1,6 @@
 import Config
 
 # ExGate
-config :ex_gate, ExGate.Repo,
-  database: "auction_prod",
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost"
-
 config :ex_gate, google_client_id: "test_id"
 
 config :ex_gate,
@@ -15,3 +9,11 @@ config :ex_gate,
   tls: true
 
 config :tesla, adapter: Tesla.Mock
+
+# ExAuctionsManager
+config :ex_auctions_manager, ExAuctionsManager.Repo,
+  database: "auctions_test",
+  username: "postgres",
+  password: "postgres",
+  hostname: "localhost",
+  pool: Ecto.Adapters.SQL.Sandbox

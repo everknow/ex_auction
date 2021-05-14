@@ -20,9 +20,6 @@ defmodule ExGate.MixProject do
         "coveralls.detail": :test,
         "coveralls.post": :test,
         "coveralls.html": :test
-      ],
-      dialyzer: [
-        plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
       ]
     ]
   end
@@ -51,10 +48,6 @@ defmodule ExGate.MixProject do
       {:uuid, "~> 1.1"},
       {:ex_json_schema, "0.8.0-rc1"},
 
-      # Code quality
-      {:dialyxir, "~> 1.1", only: [:dev], runtime: false},
-      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
-
       # Testing
       {:gun, "~> 1.3", only: [:test]},
       {:mock, "~> 0.3", only: :test},
@@ -69,8 +62,7 @@ defmodule ExGate.MixProject do
       setup: ["deps.get", "ecto.setup", "cmd npm install --prefix assets"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test --trace"],
-      validate: ["credo --strict", "dialyzer"]
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test --trace"]
     ]
   end
 end

@@ -1,4 +1,4 @@
-defmodule ExGate.Login.Receiver.Tests do
+defmodule ExGate.Login.ReceiverTests do
   use ExUnit.Case, async: true
   use Plug.Test
 
