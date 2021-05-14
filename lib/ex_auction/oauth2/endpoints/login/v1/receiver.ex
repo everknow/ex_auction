@@ -48,7 +48,7 @@ defmodule ExAuction.Login.V1.Receiver do
         conn
         |> put_resp_header("cache-control", "no-store")
         |> put_resp_header("pragma", "no-cache")
-        |> json_resp(%{
+        |> json_resp(200, %{
           "access_token" => tok,
           "token_type" => "Bearer",
           "expires_in" => 3600

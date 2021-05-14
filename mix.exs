@@ -45,6 +45,7 @@ defmodule ExAuction.MixProject do
       {:tesla, "~> 1.4"},
       {:poison, "~> 4.0"},
       {:uuid, "~> 1.1"},
+      {:ex_json_schema, "0.8.0-rc1"},
 
       # Code quality
       {:dialyxir, "~> 1.1", only: [:dev], runtime: false},
