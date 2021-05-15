@@ -18,6 +18,11 @@ defmodule ExAuction.MixProject do
       ],
       dialyzer: [
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
+      ],
+      # Docs
+      name: "Auctions",
+      docs: [
+        formatters: ["html"]
       ]
     ]
   end
@@ -33,7 +38,10 @@ defmodule ExAuction.MixProject do
     [
       # Code quality
       {:dialyxir, "~> 1.1", only: [:dev], runtime: false},
-      {:credo, "~> 1.5", only: [:dev, :test], runtime: false}
+      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
+
+      # Docs
+      {:ex_doc, "~> 0.24", only: :dev, runtime: false}
     ]
   end
 
