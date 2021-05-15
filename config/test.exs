@@ -1,7 +1,7 @@
 import Config
 
 # ExGate
-config :ex_gate, google_client_id: "test_id"
+config :ex_gate, google_client_id: System.fetch_env!("GOOGLE_CLIENT_ID")
 
 config :ex_gate,
   port: 9999,

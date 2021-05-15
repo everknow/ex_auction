@@ -1,4 +1,7 @@
 defmodule ExAuctionsManager.Bid do
+  @moduledoc """
+  Bid schema
+  """
   use Ecto.Schema
 
   import Ecto.Changeset

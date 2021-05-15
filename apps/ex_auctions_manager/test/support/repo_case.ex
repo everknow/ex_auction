@@ -1,5 +1,7 @@
 defmodule ExAuctionsManager.RepoCase do
+  @moduledoc false
   use ExUnit.CaseTemplate
+  alias Ecto.Adapters.SQL.Sandbox
   alias Ecto.Changeset
 
   using do
@@ -15,10 +17,10 @@ defmodule ExAuctionsManager.RepoCase do
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(ExAuctionsManager.Repo)
+    :ok = Sandbox.checkout(ExAuctionsManager.Repo)
 
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(ExAuctionsManager.Repo, {:shared, self()})
+      Sandbox.mode(ExAuctionsManager.Repo, {:shared, self()})
     end
 
     :ok
