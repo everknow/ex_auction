@@ -3,14 +3,15 @@ import Config
 # ExGate
 config :ex_gate, google_client_id: System.fetch_env!("GOOGLE_CLIENT_ID")
 
-config :ex_gate,
-  port: 9999,
-  token: "token",
-  tls: true
+config :ex_gate, port: 9999, token: "token", tls: false
 
 config :tesla, adapter: Tesla.Mock
 
 # ExAuctionsManager
+config :ex_auctions_manager,
+  port: 10000,
+  token: "token"
+
 config :ex_auctions_manager, ExAuctionsManager.Repo,
   database: "auctions_test",
   username: "postgres",

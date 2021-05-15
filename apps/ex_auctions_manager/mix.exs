@@ -33,7 +33,7 @@ defmodule ExAuctionsManager.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: [:logger, :plug_cowboy],
       mod: {ExAuctionsManager.Application, []}
     ]
   end
@@ -41,6 +41,11 @@ defmodule ExAuctionsManager.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:cowboy, "~> 2.6", override: true},
+      {:plug, "~> 1.11"},
+      {:plug_cowboy, "~> 2.5"},
+      {:corsica, "~> 1.1"},
+      {:guardian, "~> 2.1"},
       {:ecto_sql, "~> 3.4"},
       {:postgrex, ">= 0.0.0"},
 

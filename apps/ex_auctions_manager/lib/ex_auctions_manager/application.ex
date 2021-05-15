@@ -1,6 +1,4 @@
 defmodule ExAuctionsManager.Application do
-  # See https://hexdocs.pm/elixir/Application.html
-  # for more information on OTP Applications
   @moduledoc false
 
   use Application
@@ -8,11 +6,15 @@ defmodule ExAuctionsManager.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      Plug.Cowboy.child_spec(
+        # This must come from config, so that it can be https on prod
+        scheme: :http,
+        plug: ExAuctionsManager.Router,
+        port: Application.get_env(:ex_auctions_manager, :port, 8081)
+      ),
       {ExAuctionsManager.Repo, []}
     ]
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: ExAuctionsManager.Supervisor]
     Supervisor.start_link(children, opts)
   end
