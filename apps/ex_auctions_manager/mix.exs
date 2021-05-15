@@ -14,16 +14,7 @@ defmodule ExAuctionsManager.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases(),
-      test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: [
-        coveralls: :test,
-        "coveralls.detail": :test,
-        "coveralls.post": :test,
-        "coveralls.html": :test
-      ],
-      dialyzer: [
-        plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
-      ]
+      test_coverage: [tool: ExCoveralls]
     ]
   end
 

@@ -1,5 +1,5 @@
 defmodule ExGate.Login.HandlerTests do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use Plug.Test
 
   alias ExGate.GoogleClient
@@ -8,16 +8,16 @@ defmodule ExGate.Login.HandlerTests do
   import ExUnit.CaptureLog
   import Mock
 
+  setup_all do
+    Tesla.Mock.mock(fn
+      %{method: :get, url: "https://oauth2.googleapis.com/tokeninfo"} ->
+        %Tesla.Env{status: 200, body: {:ok, "something"}}
+    end)
+
+    :ok
+  end
+
   describe "Handler tests" do
-    setup do
-      Tesla.Mock.mock(fn
-        %{method: :get, url: "https://oauth2.googleapis.com/tokeninfo"} ->
-          %Tesla.Env{status: 200, body: {:ok, "something"}}
-      end)
-
-      :ok
-    end
-
     test "/login success" do
       with_mock(GoogleClient,
         verify: fn id_token ->

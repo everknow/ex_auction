@@ -39,11 +39,9 @@ defmodule ExAuctionsManager.BidEndpointTests do
         )
 
       {:ok, %Tesla.Env{status: 200, body: body}} =
-        Tesla.client([])
-        |> Tesla.get("http://localhost:10000/api/v1/bids/1",
+        TestHTTPClient.get("http://localhost:10000/api/v1/bids/1",
           headers: [
-            {"authorization",
-             "Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJFeEdhdGUiLCJleHAiOjE2MjEwOTU5MzIsImlhdCI6MTYyMTA5MjMzMiwiaXNzIjoiRXhHYXRlIiwianRpIjoiN2RkMDBkZDEtZDQ2MS00YTU1LTkyN2ItNGI4ZWUxZjQzMjllIiwibmJmIjoxNjIxMDkyMzMxLCJzdWIiOiIxIiwidHlwIjoiYWNjZXNzIn0.U33JuUNB1TN1Ru3lq-XiA7P8rsDreJ0MX3s4C6selYHNXJL6dOKPmEhxBTpSHE1NtSbNgbw_9hwDOdXRsmKNWA"}
+            {"authorization", "Bearer #{token}"}
           ]
         )
 
