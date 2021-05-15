@@ -7,6 +7,7 @@ defmodule ExAuctionsManager.Bid do
   import Ecto.Changeset
   import Ecto.Query
 
+  @derive {Jason.Encoder, only: [:auction_id, :bid_value, :bidder]}
   schema "bids" do
     field(:auction_id, :string)
     field(:bid_value, :string)

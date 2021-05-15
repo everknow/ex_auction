@@ -4,7 +4,9 @@ defmodule ExAuctionsManager.AdminUI.V1.Receiver do
   """
   use Plug.Router
 
-  require Logger
+  alias ExAuctionsManager.DB
+
+  plug(Plug.RequestId)
 
   plug(Guardian.Plug.Pipeline,
     module: ExGate.Guardian,
@@ -13,8 +15,6 @@ defmodule ExAuctionsManager.AdminUI.V1.Receiver do
 
   plug(Guardian.Plug.VerifyHeader, claims: %{typ: "access"})
   plug(Guardian.Plug.EnsureAuthenticated)
-
-  plug(Plug.Logger)
 
   # to be removed in prod
   plug(Corsica, origins: "*", allow_methods: :all, allow_headers: :all)
@@ -30,13 +30,15 @@ defmodule ExAuctionsManager.AdminUI.V1.Receiver do
   plug(:dispatch)
 
   get "/bids/:auction_id" do
-    %{"auction_id" => auction_id = }payload = conn.params
-    json_resp(conn, 200, %{success: true})
+    %{"auction_id" => auction_id} = conn.params
+    bids = DB.list_bids(auction_id)
+    json_resp(conn, 200, bids)
   end
 
-  defp json_resp(conn, status \\ 200, obj) do
+  defp json_resp(conn, status, obj) do
     conn
     |> put_resp_content_type("application/json")
+    |> put_status(status)
     |> send_resp(status, Jason.encode!(obj))
     |> halt()
   end

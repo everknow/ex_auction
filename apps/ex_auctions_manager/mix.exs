@@ -54,7 +54,10 @@ defmodule ExAuctionsManager.MixProject do
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
 
       # Coverage
-      {:excoveralls, "~> 0.14", only: [:dev, :test]}
+      {:excoveralls, "~> 0.14", only: [:dev, :test]},
+
+      # Test
+      {:tesla, "~> 1.4", only: [:test]}
     ]
   end
 

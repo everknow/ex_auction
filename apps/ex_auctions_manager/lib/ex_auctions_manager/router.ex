@@ -1,5 +1,6 @@
 defmodule ExAuctionsManager.Router do
   use Plug.Router
+  plug(Plug.Logger, log: :info)
 
   plug(:match)
 

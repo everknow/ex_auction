@@ -39,6 +39,7 @@ defmodule ExGate.MixProject do
       {:poison, "~> 4.0"},
       {:uuid, "~> 1.1"},
       {:ex_json_schema, "0.8.0-rc1"},
+      {:tesla, "~> 1.4"},
 
       # Testing
       {:gun, "~> 1.3", only: [:test]},
