@@ -36,4 +36,13 @@ defmodule ExAuctionsManager.DB do
     q = from(bid in Bid, where: bid.auction_id == ^auction_id)
     Repo.all(q)
   end
+
+  def get_latest_bid(auction_id) when is_bitstring(auction_id) do
+    q = from(bid in Bid, order_by: [desc: bid.id], limit: 1)
+
+    case Repo.one(q) do
+      nil -> "0"
+      otherwise -> otherwise
+    end
+  end
 end
