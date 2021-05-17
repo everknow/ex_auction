@@ -24,6 +24,6 @@ docker-compose down -v
 
 Note that `-v` is important because there are mounted volumes.
 
-### Development roadmap:
+### Development roadmap: [Plan](PLAN.md)
 
-[Plan](PLAN.md)
+### Demo1: [Use cases](doc/demo1_use_cases.md)
