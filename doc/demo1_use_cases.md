@@ -11,5 +11,5 @@ UC1
 - Bidder 3 joins and subscribes to the auction
 - Bidder 3 fetches the page of history, sees the two successful bids
 - Bidder 1 places a bid of 150 => success + multicast notifications (show it came through the WS)
-- Auction closes => multicast notifications (show it came through the WS)
+- Auction closes (because 10 mintues have elapsed) => multicast notifications (show it came through the WS)
 - Bidder 3 places a bid of 160 => failure for auction closed
