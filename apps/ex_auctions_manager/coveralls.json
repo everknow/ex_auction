@@ -1,0 +1,12 @@
+{
+    "terminal_options": {
+        "file_column_width": 80
+    },
+    "skip_files": [
+        "lib/ex_auctions_manager/application.ex",
+        "lib/ex_auctions_manager/router.ex",
+        "lib/ex_auctions_manager.ex",
+        "lib/ex_auctions_manager/repo.ex",
+        "test/"
+    ]
+}

@@ -28,7 +28,7 @@ defmodule ExGate.Application do
       {:_,
        [
          {"/ws/[...]", SocketHandler, []},
-         {:_, Plug.Adapters.Cowboy2.Handler, {ExGate.Router, []}}
+         {:_, Plug.Cowboy.Handler, {Router, []}}
        ]}
     ]
   end

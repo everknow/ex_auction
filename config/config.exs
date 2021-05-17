@@ -1,7 +1,6 @@
 import Config
 
 # ExGate configuration
-config :ex_gate, ecto_repos: [ExGate.Repo]
 
 config :ex_gate, ExGate.Guardian,
   issuer: "ExGate",
@@ -17,5 +16,8 @@ config :ex_gate,
 
 config :ex_json_schema,
   custom_format_validator: {ExGate.CustomValidator, :validate}
+
+# ExAuctionsManager
+config :ex_auctions_manager, ecto_repos: [ExAuctionsManager.Repo]
 
 import_config "#{Mix.env()}.exs"

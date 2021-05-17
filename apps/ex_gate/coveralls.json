@@ -3,12 +3,10 @@
         "file_column_width": 120
     },
     "skip_files": [
-        "lib/auction.ex",
-        "lib/ex_gate/repo.ex",
-        "lib/ex_gate/schema_resolver.ex",
+        "lib/ex_gate.ex",
         "lib/ex_gate/oauth2/google_client.ex",
-        "lib/ex_gate/oauth2/endpoints/login/schema_entries.ex",
         "lib/ex_gate/router.ex",
-        "test/support/gunserver.ex"
+        "lib/ex_gate/validation/dummy_schema_entries.ex",
+        "test"
     ]
 }
