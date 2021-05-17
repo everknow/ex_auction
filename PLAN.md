@@ -2,6 +2,7 @@
 
 ## Milestone 1 - MVP (ideally Wednesday, 19th)
 
+- [x] Bruno: add this PLAN.md
 - [ ] Bruno: AuctionsProcess not needed anymore (we are leveraging DB as source of truth)
 - [ ] Bruno: add Postgres unique index on (auction_id, bid) for `bids` table
 - [ ] Bruno: `auctions` need to be serialized in the database and must have a duration field
