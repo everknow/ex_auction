@@ -6,7 +6,7 @@ defmodule ExAuctionsManager.DB do
 
   import Ecto.Query
 
-  alias ExAuctionsManager.{Bid, Repo}
+  alias ExAuctionsManager.{Auction, Bid, Repo}
   @page Application.compile_env(:ex_auctions_manager, :page_size, 20)
 
   @doc """
@@ -32,17 +32,26 @@ defmodule ExAuctionsManager.DB do
     - page (optional): page number
     - size (optional): number of bids per page
   """
-  def list_bids(auction_id, page \\ 0, size \\ @page) when is_bitstring(auction_id) do
+  def list_bids(auction_id, page \\ 0, size \\ @page) do
     q = from(bid in Bid, where: bid.auction_id == ^auction_id)
     Repo.all(q)
   end
 
-  def get_latest_bid(auction_id) when is_bitstring(auction_id) do
+  def get_latest_bid(auction_id) do
     q = from(bid in Bid, order_by: [desc: bid.id], limit: 1)
+    Repo.one(q)
+  end
 
-    case Repo.one(q) do
-      nil -> "0"
-      otherwise -> otherwise
+  def create_auction(auction_base, duration) do
+    %Auction{}
+    |> Auction.changeset(%{auction_base: auction_base, duration: duration})
+    |> Repo.insert()
+  end
+
+  def auction_exists?(auction_id) do
+    case(Repo.get(Auction, auction_id)) do
+      nil -> false
+      _ -> true
     end
   end
 end

@@ -1,10 +1,8 @@
 defmodule ExAuctionsManager.BidEndpointTests do
   use ExAuctionsManager.RepoCase, async: false
 
-  alias ExAuctionsManager.{Bid, DB, AuctionsProcess}
+  alias ExAuctionsManager.{Auction, Bid, DB}
   alias ExAuctionsManager.TestHTTPClient
-
-  import ExUnit.CaptureLog
 
   describe "Bids list endpoint test" do
     test "/get empty list" do
@@ -12,15 +10,17 @@ defmodule ExAuctionsManager.BidEndpointTests do
     end
 
     test "/get populated list" do
-      auction_id = "1"
+      assert {:ok, %Auction{id: auction_id}} = DB.create_auction(100, 80000)
 
       for elem <- 1..10 do
-        bid_value = (elem * 10) |> to_string()
+        bid_value = elem * 10.0
         bidder = "some bidder"
 
         {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} =
           DB.create_bid(auction_id, bid_value, bidder)
       end
+
+      assert DB.list_bids(auction_id) |> length() == 10
 
       {:ok, token, _claims} =
         ExGate.Guardian.encode_and_sign(
@@ -31,7 +31,7 @@ defmodule ExAuctionsManager.BidEndpointTests do
         )
 
       {:ok, %Tesla.Env{status: 200, body: body}} =
-        TestHTTPClient.get("/api/v1/bids/1",
+        TestHTTPClient.get("/api/v1/bids/#{auction_id}",
           headers: [
             {"authorization", "Bearer #{token}"}
           ]
@@ -43,15 +43,14 @@ defmodule ExAuctionsManager.BidEndpointTests do
 
   describe "Bid creation endpoint test" do
     setup do
-      auction_id = "1"
-      start_supervised!({AuctionsProcess, [auction_id: auction_id]})
-      {:ok, %{auction_id: "1"}}
+      assert {:ok, %Auction{id: auction_id}} = DB.create_auction(100, 80000)
+      {:ok, %{auction_id: auction_id}}
     end
 
     test "/post create bid", %{auction_id: auction_id} do
       bidder = "bidder"
-      bid_value = "10"
-      new_bid_value = "11"
+      bid_value = 10.0
+      new_bid_value = 11.0
 
       {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} =
         DB.create_bid(auction_id, bid_value, bidder)
@@ -78,7 +77,7 @@ defmodule ExAuctionsManager.BidEndpointTests do
 
       assert ^new_bid_value = body |> Jason.decode!()
 
-      assert DB.list_bids("1") |> length() == 2
+      assert DB.list_bids(auction_id) |> length() == 2
     end
   end
 end

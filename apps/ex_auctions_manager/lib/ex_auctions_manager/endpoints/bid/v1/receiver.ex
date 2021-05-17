@@ -1,10 +1,12 @@
-defmodule ExAuctionsManager.AdminUI.V1.Receiver do
+defmodule ExAuctionsManager.Bids.V1.Receiver do
   @moduledoc """
   Admin UI receiver, version 1
   """
   use Plug.Router
 
   alias ExAuctionsManager.{Bid, DB, AuctionsProcess}
+
+  require Logger
 
   plug(Plug.RequestId)
 
@@ -31,6 +33,7 @@ defmodule ExAuctionsManager.AdminUI.V1.Receiver do
 
   get "/bids/:auction_id" do
     %{"auction_id" => auction_id} = conn.params
+    auction_id = auction_id |> String.to_integer()
     # TODO: this should go through the AuctionProcess genserver
     bids = DB.list_bids(auction_id)
     json_resp(conn, 200, bids)
@@ -39,18 +42,15 @@ defmodule ExAuctionsManager.AdminUI.V1.Receiver do
   post "/bid" do
     %{"auction_id" => auction_id, "bid_value" => bid_value, "bidder" => bidder} = conn.params
 
-    # DANGEROUS: ideally this could be exploited to spawn multiple processes !
-    with false <- AuctionsProcess.ready?(auction_id) do
-      # NOTE: a failure here could represent a critical problem
-      :started = AuctionsProcess.spawn(auction_id)
-    end
-
-    case AuctionsProcess.bid(auction_id, bid_value, bidder) do
-      {:accepted, ^bid_value} ->
+    case DB.create_bid(auction_id, bid_value, bidder) do
+      {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} ->
         json_resp(conn, 200, bid_value)
 
-      {:rejected, ^bid_value, latest_bid} ->
-        json_resp(conn, 500, %{status: :rejected, bid: bid_value, latest_bid: latest_bid})
+      {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
+        Logger.error("auction #{}: bid #{} cannot be accepted. Reason: #{inspect(errors)}")
+        # TODO: inspect changeset error to understand where is the error message and use the
+        # latest_bid value
+        json_resp(conn, 500, %{status: :rejected, bid: bid_value, latest_bid: "0"})
     end
 
     json_resp(conn, 200, %{accepted: true})

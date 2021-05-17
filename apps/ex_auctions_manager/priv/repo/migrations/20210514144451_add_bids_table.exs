@@ -3,8 +3,8 @@ defmodule ExAuctionsManager.Repo.Migrations.AddBidsTable do
 
   def change do
     create table("bids") do
-      add :auction_id,    :string
-      add :bid_value, :string
+      add :auction_id, :integer
+      add :bid_value, :float
       add :bidder, :string
     end
   end
