@@ -4,15 +4,19 @@ defmodule ExAuctionsManager.Bid do
   """
   use Ecto.Schema
 
-  import Ecto.Changeset
   import Ecto.Query
+  import Ecto.Changeset
+
+  alias ExAuctionsManager.{Auction, Bid, DB}
+
+  require Logger
 
   @derive {Jason.Encoder, only: [:auction_id, :bid_value, :bidder]}
   schema "bids" do
-    field(:auction_id, :string)
-    field(:bid_value, :string)
-    # Not sure if this is needed
+    field(:bid_value, :integer)
     field(:bidder, :string)
+
+    belongs_to(:auction, Auction)
   end
 
   def changeset(%__MODULE__{} = bid, attrs) do
@@ -27,5 +31,6 @@ defmodule ExAuctionsManager.Bid do
       :bid_value,
       :bidder
     ])
+    |> foreign_key_constraint(:auction_id)
   end
 end

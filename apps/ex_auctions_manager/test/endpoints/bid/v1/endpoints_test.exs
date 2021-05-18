@@ -1,10 +1,8 @@
 defmodule ExAuctionsManager.BidEndpointTests do
   use ExAuctionsManager.RepoCase, async: false
 
-  alias ExAuctionsManager.{Bid, DB, AuctionsProcess}
+  alias ExAuctionsManager.{Auction, Bid, DB}
   alias ExAuctionsManager.TestHTTPClient
-
-  import ExUnit.CaptureLog
 
   describe "Bids list endpoint test" do
     test "/get empty list" do
@@ -12,15 +10,18 @@ defmodule ExAuctionsManager.BidEndpointTests do
     end
 
     test "/get populated list" do
-      auction_id = "1"
+      assert {:ok, %Auction{id: auction_id}} =
+               DB.create_auction(TestUtils.shift_datetime(TestUtils.get_now(), 5), 2)
 
       for elem <- 1..10 do
-        bid_value = (elem * 10) |> to_string()
+        bid_value = elem * 10
         bidder = "some bidder"
 
         {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} =
           DB.create_bid(auction_id, bid_value, bidder)
       end
+
+      assert DB.list_bids(auction_id) |> length() == 10
 
       {:ok, token, _claims} =
         ExGate.Guardian.encode_and_sign(
@@ -31,7 +32,7 @@ defmodule ExAuctionsManager.BidEndpointTests do
         )
 
       {:ok, %Tesla.Env{status: 200, body: body}} =
-        TestHTTPClient.get("/api/v1/bids/1",
+        TestHTTPClient.get("/api/v1/bids/#{auction_id}",
           headers: [
             {"authorization", "Bearer #{token}"}
           ]
@@ -43,15 +44,16 @@ defmodule ExAuctionsManager.BidEndpointTests do
 
   describe "Bid creation endpoint test" do
     setup do
-      auction_id = "1"
-      start_supervised!({AuctionsProcess, [auction_id: auction_id]})
-      {:ok, %{auction_id: "1"}}
+      assert {:ok, %Auction{id: auction_id}} =
+               DB.create_auction(TestUtils.shift_datetime(TestUtils.get_now(), 5), 100)
+
+      {:ok, %{auction_id: auction_id}}
     end
 
     test "/post create bid", %{auction_id: auction_id} do
       bidder = "bidder"
-      bid_value = "10"
-      new_bid_value = "11"
+      bid_value = 110
+      new_bid_value = 120
 
       {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} =
         DB.create_bid(auction_id, bid_value, bidder)
@@ -67,7 +69,7 @@ defmodule ExAuctionsManager.BidEndpointTests do
       assert {:ok, %Tesla.Env{status: 200, body: body}} =
                Tesla.post(
                  Tesla.client([]),
-                 "http://localhost:10000/api/v1/bid",
+                 "http://localhost:10000/api/v1/bids/",
                  %{"auction_id" => auction_id, "bid_value" => new_bid_value, "bidder" => bidder}
                  |> Jason.encode!(),
                  headers: [
@@ -78,7 +80,33 @@ defmodule ExAuctionsManager.BidEndpointTests do
 
       assert ^new_bid_value = body |> Jason.decode!()
 
-      assert DB.list_bids("1") |> length() == 2
+      assert DB.list_bids(auction_id) |> length() == 2
+    end
+  end
+
+  describe "Auction creation endpoint test" do
+    test "/post create auction" do
+      exp = TestUtils.shift_datetime(TestUtils.get_now(), 5)
+
+      {:ok, token, _claims} =
+        ExGate.Guardian.encode_and_sign(
+          _resource = %{user_id: "1"},
+          _claims = %{},
+          # GOOGLE EXPIRY: decoded["exp"]
+          _opts = [ttl: {3600, :seconds}]
+        )
+
+      {:ok, %Tesla.Env{status: 201}} =
+        Tesla.post(
+          Tesla.client([]),
+          "http://localhost:10000/api/v1/auctions",
+          %{"expiration_date" => exp, "auction_base" => 10}
+          |> Jason.encode!(),
+          headers: [
+            {"authorization", "Bearer #{token}"},
+            {"content-type", "application/json"}
+          ]
+        )
     end
   end
 end
