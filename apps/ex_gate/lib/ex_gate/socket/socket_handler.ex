@@ -24,7 +24,7 @@ defmodule ExGate.SocketHandler do
 
   # coveralls-ignore-start
   def websocket_info(info, state) do
-    Logger.debug("#{__MODULE__} websocket_info invoked")
+    Logger.debug("#{__MODULE__} websocket_info invoked: #{info}")
     {:reply, {:text, "ok"}, state}
   end
 
