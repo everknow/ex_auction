@@ -28,51 +28,28 @@ defmodule ExAuctionsManager.DB do
           |> Bid.changeset(%{auction_id: auction_id, bid_value: bid_value, bidder: bidder})
 
         case get_and_lock_auction(auction_id) do
+          # Auction does not exist
           nil ->
             Logger.error("auction #{auction_id} does not exist")
             {:error, reject_bid(bid_changeset, :auction_id, "does not exist")}
 
-          %Auction{id: ^auction_id, highest_bid: highest_bid, open: true}
-          when highest_bid < bid_value ->
-            {:ok, %Bid{}} =
-              bid =
-              bid_changeset
-              |> Repo.insert()
-
-            {:ok, %Auction{id: ^auction_id, highest_bidder: ^bidder, highest_bid: ^bid_value}} =
-              update_auction(auction_id, bid_value, bidder)
-
-            bid
-
-          %Auction{id: ^auction_id, highest_bid: nil, open: true, auction_base: auction_base}
-          when bid_value >= auction_base ->
-            {:ok, %Bid{}} =
-              bid =
-              bid_changeset
-              |> Repo.insert()
-
-            {:ok, %Auction{id: ^auction_id, highest_bidder: ^bidder, highest_bid: ^bid_value}} =
-              update_auction(auction_id, bid_value, bidder)
-
-            bid
-
-          %Auction{id: ^auction_id, highest_bid: nil, open: true, auction_base: auction_base} ->
-            Logger.error("bid #{bid_value} is below the auction base #{auction_base}")
-            {:error, reject_bid(bid_changeset, :bid_value, "bid is not above auction base")}
-
-          %Auction{id: ^auction_id, highest_bid: highest_bid, open: true}
-          when highest_bid >= bid_value ->
-            Logger.error("bid #{bid_value} is not above highest bid #{highest_bid}")
-
-            {:error,
-             reject_bid(
-               bid_changeset,
-               :bid_value,
-               "bid #{bid_value} is not above highest bid #{highest_bid}"
-             )}
-
-          %Auction{id: ^auction_id, highest_bid: highest_bid, open: false} ->
+          # Auction is closed
+          %Auction{id: ^auction_id, open: false} ->
             {:error, reject_bid(bid_changeset, :auction_id, "is closed")}
+
+          %Auction{
+            auction_base: auction_base,
+            open: true
+          } = auction
+          when auction_base <= bid_value ->
+            bigger_than_auction_base(auction, bid_changeset)
+
+          %Auction{
+            auction_base: auction_base,
+            open: true
+          } = auction
+          when auction_base > bid_value ->
+            {:error, reject_bid(bid_changeset, :bid_value, "below auction base #{auction_base}")}
         end
       end)
 
@@ -91,21 +68,6 @@ defmodule ExAuctionsManager.DB do
   def list_bids(auction_id, page \\ 0, size \\ @page) do
     q = from(bid in Bid, where: bid.auction_id == ^auction_id)
     Repo.all(q)
-  end
-
-  defp get_latest_bid(auction_id) do
-    case from(b in Bid,
-           right_join: a in Auction,
-           on: a.id == b.auction_id,
-           where: a.id == ^auction_id,
-           limit: 1,
-           order_by: [desc: b.bid_value],
-           select: b
-         )
-         |> Repo.one() do
-      %Bid{} = bid -> bid
-      nil -> nil
-    end
   end
 
   def create_auction(expiration_date, auction_base) do
@@ -132,5 +94,50 @@ defmodule ExAuctionsManager.DB do
   defp reject_bid(bid_changeset, key, reason) do
     bid_changeset
     |> add_error(key, reason)
+  end
+
+  defp bigger_than_auction_base(
+         %Auction{id: auction_id, highest_bid: nil},
+         bid_changeset
+       ) do
+    bid_value = get_field(bid_changeset, :bid_value)
+    bidder = get_field(bid_changeset, :bidder)
+
+    {:ok, %Bid{} = bid} =
+      bid_changeset
+      |> Repo.insert()
+
+    {:ok, %Auction{id: ^auction_id, highest_bidder: ^bidder, highest_bid: ^bid_value}} =
+      update_auction(auction_id, bid_value, bidder)
+
+    {:ok, bid}
+  end
+
+  defp bigger_than_auction_base(
+         %Auction{id: auction_id, highest_bid: highest_bid},
+         bid_changeset
+       ) do
+    bid_value = get_field(bid_changeset, :bid_value)
+    bidder = get_field(bid_changeset, :bidder)
+
+    if highest_bid < bid_value do
+      {:ok, %Bid{} = bid} =
+        bid_changeset
+        |> Repo.insert()
+
+      {:ok, %Auction{id: ^auction_id, highest_bidder: ^bidder, highest_bid: ^bid_value}} =
+        update_auction(auction_id, bid_value, bidder)
+
+      {:ok, bid}
+    else
+      Logger.error("bid value #{bid_value} is not bigger than highest bid #{highest_bid}")
+
+      {:error,
+       reject_bid(
+         bid_changeset,
+         :bid_value,
+         "bid value #{bid_value} is not bigger than highest bid #{highest_bid}"
+       )}
+    end
   end
 end
