@@ -9,6 +9,8 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
 
   require Logger
 
+  require Logger
+
   plug(Plug.RequestId)
 
   plug(Guardian.Plug.Pipeline,
@@ -53,12 +55,11 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
 
       {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
         Logger.error("auction #{}: bid #{} cannot be accepted. Reason: #{inspect(errors)}")
-        # TODO: inspect changeset error to understand where is the error message and use the
-        # latest_bid value
+
         json_resp(
           conn,
           500,
-          %{status: :rejected, bid: bid_value, latest_bid: "0"}
+          %{status: :rejected, bid: bid_value}
         )
     end
   end
