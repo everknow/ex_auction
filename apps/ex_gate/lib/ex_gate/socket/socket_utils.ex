@@ -7,14 +7,11 @@ defmodule ExGate.WebsocketUtils do
     name =
       auction_id
       |> get_auction_pg_name()
-      |> IO.inspect(label: "----create")
 
     :pg2.create(name)
 
     name
-    |> IO.inspect(label: "----glt")
     |> :pg2.get_local_members()
-    |> IO.inspect(label: "----each")
     |> Enum.each(fn pid ->
       send(pid, {:auction, message |> Jason.encode!()})
     end)
