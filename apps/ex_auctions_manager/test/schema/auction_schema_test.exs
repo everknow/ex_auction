@@ -5,38 +5,59 @@ defmodule ExAuctionsManager.AuctionSchemaTests do
 
   describe "Auction schema tests" do
     test "auction creation success" do
+      expiration_date = TestUtils.shift_datetime(TestUtils.get_now(), 2)
+
       assert {:ok,
               %Auction{
                 open: true,
-                auction_base: 10.0,
-                duration: 80000
-              }} = DB.create_auction(10.0, 80000)
+                auction_base: 10,
+                expiration_date: ^expiration_date
+              }} = DB.create_auction(expiration_date, 10)
     end
 
     test "changeset overriding created and open fields" do
       created = "2018-05-17T17:04:42Z" |> DateTime.from_iso8601()
+      start = TestUtils.shift_datetime(TestUtils.get_now(), -2)
+      auction_end = TestUtils.shift_datetime(TestUtils.get_now(), 2)
 
       attrs = %{
         open: false,
-        auction_base: 10.0,
-        created: created,
-        duration: 80000
+        auction_base: 10,
+        creation_date: start,
+        expiration_date: auction_end
       }
 
       assert %Ecto.Changeset{
                valid?: true,
                changes: %{
-                 created: _,
-                 auction_base: 10.0,
-                 duration: 80000,
+                 creation_date: _,
+                 auction_base: 10,
+                 expiration_date: ^auction_end,
                  open: true
                }
              } = Auction.changeset(%Auction{}, attrs)
     end
 
-    test "auction creation error - non positive duration" do
-      assert {:error, %Ecto.Changeset{} = error} = DB.create_auction(10.0, -1)
-      assert "duration cannot be non-positive" in errors_on(error).duration
+    test "auction creation error - expiration_date in the past" do
+      auction_end = TestUtils.shift_datetime(TestUtils.get_now(), -2)
+
+      attrs = %{
+        open: false,
+        auction_base: 10,
+        expiration_date: auction_end
+      }
+
+      assert %Ecto.Changeset{
+               valid?: false,
+               changes: %{
+                 creation_date: _,
+                 auction_base: 10,
+                 expiration_date: ^auction_end,
+                 open: true
+               }
+             } = cs = Auction.changeset(%Auction{}, attrs)
+
+      assert "expiry date must be bigger then creation date" in errors_on(cs).expiration_date
     end
   end
 end

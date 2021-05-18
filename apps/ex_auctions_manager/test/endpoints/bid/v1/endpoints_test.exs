@@ -10,10 +10,11 @@ defmodule ExAuctionsManager.BidEndpointTests do
     end
 
     test "/get populated list" do
-      assert {:ok, %Auction{id: auction_id}} = DB.create_auction(100, 80000)
+      assert {:ok, %Auction{id: auction_id}} =
+               DB.create_auction(TestUtils.shift_datetime(TestUtils.get_now(), 5), 2)
 
       for elem <- 1..10 do
-        bid_value = elem * 10.0
+        bid_value = elem * 10
         bidder = "some bidder"
 
         {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} =
@@ -43,14 +44,16 @@ defmodule ExAuctionsManager.BidEndpointTests do
 
   describe "Bid creation endpoint test" do
     setup do
-      assert {:ok, %Auction{id: auction_id}} = DB.create_auction(100, 80000)
+      assert {:ok, %Auction{id: auction_id}} =
+               DB.create_auction(TestUtils.shift_datetime(TestUtils.get_now(), 5), 100)
+
       {:ok, %{auction_id: auction_id}}
     end
 
     test "/post create bid", %{auction_id: auction_id} do
       bidder = "bidder"
-      bid_value = 10.0
-      new_bid_value = 11.0
+      bid_value = 110
+      new_bid_value = 120
 
       {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} =
         DB.create_bid(auction_id, bid_value, bidder)
