@@ -37,6 +37,7 @@ defmodule ExAuctionsManager.DB do
           %Auction{id: ^auction_id, open: false} ->
             {:error, reject_bid(bid_changeset, :auction_id, "is closed")}
 
+          # bid is not below auction base
           %Auction{
             auction_base: auction_base,
             open: true
@@ -44,11 +45,11 @@ defmodule ExAuctionsManager.DB do
           when auction_base <= bid_value ->
             bigger_than_auction_base(auction, bid_changeset)
 
+          # bid is below auction base
           %Auction{
             auction_base: auction_base,
             open: true
-          } = auction
-          when auction_base > bid_value ->
+          } ->
             {:error, reject_bid(bid_changeset, :bid_value, "below auction base #{auction_base}")}
         end
       end)
