@@ -24,12 +24,12 @@ defmodule ExAuctionsManager.BidSchemaTests do
       assert {
                :error,
                %Ecto.Changeset{valid?: false} = cs
-             } = DB.create_bid(auction_id, 10, "some_bidder2") |> IO.inspect()
+             } = DB.create_bid(auction_id, 10, "some_bidder2")
 
-      # assert "bid 10 is not above highest bid 10" in errors_on(cs).bid_value
+      assert "bid value 10 is not bigger than highest bid 10" in errors_on(cs).bid_value
 
-      # %Auction{id: ^auction_id, highest_bidder: "some_bidder", highest_bid: 10} =
-      #   Auction |> Repo.get(auction_id)
+      %Auction{id: ^auction_id, highest_bidder: "some_bidder", highest_bid: 10} =
+        Auction |> Repo.get(auction_id)
     end
 
     test "bid creation failure - non existing auction" do
@@ -67,6 +67,29 @@ defmodule ExAuctionsManager.BidSchemaTests do
       assert {:error, %Ecto.Changeset{valid?: false} = cs} = DB.create_bid(1, 10, "some_bidder")
 
       assert "does not exist" in errors_on(cs).auction_id
+    end
+  end
+
+  describe "demo test" do
+    setup do
+      # 4 seconds for testing purposes
+      expiration_date = TestUtils.shift_datetime(TestUtils.get_now(), 0, 0, 10)
+      {:ok, %Auction{} = auction} = DB.create_auction(expiration_date, 100)
+      {:ok, %{auction: auction}}
+    end
+
+    test "scenario 1", %{auction: %Auction{id: auction_id}} do
+      assert {:error, cs} = DB.create_bid(auction_id, 90, "bidder1")
+      assert "below auction base 100" in errors_on(cs).bid_value
+
+      assert {:ok, %Bid{bid_value: 120, bidder: "bidder1"}} =
+               DB.create_bid(auction_id, 120, "bidder1")
+
+      assert {:error, cs} = DB.create_bid(auction_id, 110, "bidder2")
+      assert "bid value 110 is not bigger than highest bid 120" in errors_on(cs).bid_value
+
+      assert {:ok, %Bid{bid_value: 130, bidder: "bidder2"}} =
+               DB.create_bid(auction_id, 130, "bidder2")
     end
   end
 end

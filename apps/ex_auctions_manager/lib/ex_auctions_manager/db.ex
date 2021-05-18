@@ -98,20 +98,35 @@ defmodule ExAuctionsManager.DB do
   end
 
   defp bigger_than_auction_base(
-         %Auction{id: auction_id, highest_bid: nil},
+         %Auction{id: auction_id, highest_bid: nil, expiration_date: expiration_date},
          bid_changeset
        ) do
-    bid_value = get_field(bid_changeset, :bid_value)
-    bidder = get_field(bid_changeset, :bidder)
+    now = DateTime.utc_now()
 
-    {:ok, %Bid{} = bid} =
-      bid_changeset
-      |> Repo.insert()
+    Logger.warn(
+      "the auction is expired: #{now} - #{expiration_date} - #{
+        DateTime.compare(now, expiration_date)
+      }"
+    )
 
-    {:ok, %Auction{id: ^auction_id, highest_bidder: ^bidder, highest_bid: ^bid_value}} =
-      update_auction(auction_id, bid_value, bidder)
+    case DateTime.compare(now, expiration_date) do
+      :gt ->
+        Logger.error("the auction is expired: #{now} > #{expiration_date}")
+        {:error, reject_bid(bid_changeset, :auction_id, "is expired")}
 
-    {:ok, bid}
+      _ ->
+        bid_value = get_field(bid_changeset, :bid_value)
+        bidder = get_field(bid_changeset, :bidder)
+
+        {:ok, %Bid{} = bid} =
+          bid_changeset
+          |> Repo.insert()
+
+        {:ok, %Auction{id: ^auction_id, highest_bidder: ^bidder, highest_bid: ^bid_value}} =
+          update_auction(auction_id, bid_value, bidder)
+
+        {:ok, bid}
+    end
   end
 
   defp bigger_than_auction_base(
