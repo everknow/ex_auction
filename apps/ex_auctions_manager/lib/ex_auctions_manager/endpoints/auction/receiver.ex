@@ -39,7 +39,6 @@ defmodule ExAuctionsManager.Auctions.V1.Receiver do
     %{"auction_base" => auction_base, "expiration_date" => expiration_date} = conn.params
 
     {:ok, expiration_date, _} = expiration_date |> DateTime.from_iso8601()
-    auction_base = auction_base |> String.to_integer()
 
     case DB.create_auction(expiration_date, auction_base) do
       {:ok, %Auction{}} ->
