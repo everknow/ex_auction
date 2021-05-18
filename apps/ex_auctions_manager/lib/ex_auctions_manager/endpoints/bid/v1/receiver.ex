@@ -46,10 +46,7 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
 
     case DB.create_bid(auction_id, bid_value, bidder) do
       {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} ->
-        WebsocketUtils.notify_listeners(
-          auction_id,
-          %{reason: "a new bid has just been created", auction_id: auction_id}
-        )
+        WebsocketUtils.notify_bid(auction_id)
 
         json_resp(conn, 200, bid_value)
 

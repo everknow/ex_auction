@@ -69,7 +69,7 @@ defmodule ExAuctionsManager.BidEndpointTests do
       assert {:ok, %Tesla.Env{status: 200, body: body}} =
                Tesla.post(
                  Tesla.client([]),
-                 "http://localhost:10000/api/v1/bids/",
+                 "http://localhost:8081/api/v1/bids/",
                  %{"auction_id" => auction_id, "bid_value" => new_bid_value, "bidder" => bidder}
                  |> Jason.encode!(),
                  headers: [
