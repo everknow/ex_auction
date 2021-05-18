@@ -12,9 +12,9 @@ defmodule ExGate.SocketHandler do
   @behaviour :cowboy_websocket
   require Logger
 
-  def init(request, state) do
+  def init(request, _opts) do
     # The state should be somehow loaded now
-    {:cowboy_websocket, request, state}
+    {:cowboy_websocket, request, %{subscriptions: []}}
   end
 
   def websocket_init(state) do
@@ -33,6 +33,10 @@ defmodule ExGate.SocketHandler do
     with {:ok, payload} <- decode_payload(message),
          true <- is_authenticated?(payload) do
       case payload do
+        %{"subscribe" => auction_id} =>
+          :pg2.create(auction_id)
+          :pg2.join(auction_id, self())
+          {:reply, {:text, Jason.encode!(%{ok: "subscribedd"})}, Map.put(state, :subscriptions, [auction_id]}}
         %{"message" => message} ->
           Logger.debug("Message parsed")
           {:reply, {:text, "Received: " <> message}, state}
@@ -51,6 +55,10 @@ defmodule ExGate.SocketHandler do
         {:reply, {:text, "unable to decode the payload"}, state}
     end
   end
+
+  def websocket_terminate(_reason, _req, %{subscriptions: subscriptions} = state) do
+    subscriptions |> Enum.each(:pg2.leave(self()))
+    :ok
 
   defp decode_payload(payload) do
     payload
