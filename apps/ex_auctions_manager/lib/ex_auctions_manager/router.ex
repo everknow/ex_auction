@@ -12,7 +12,8 @@ defmodule ExAuctionsManager.Router do
 
   plug(:dispatch)
 
-  forward("/api/v1", to: ExAuctionsManager.Bids.V1.Receiver)
+  forward("/api/v1/bids", to: ExAuctionsManager.Bids.V1.Receiver)
+  forward("/api/v1/auctions", to: ExAuctionsManager.Auctions.V1.Receiver)
 
   # Two endpoints for K8s probes: liveness and readyness
   get "/live" do

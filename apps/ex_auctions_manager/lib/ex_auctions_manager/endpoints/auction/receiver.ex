@@ -1,14 +1,18 @@
-defmodule ExAuctionsManager.Bids.V1.Receiver do
+defmodule ExAuctionsManager.Auctions.V1.Receiver do
   @moduledoc """
   Admin UI receiver, version 1
   """
   use Plug.Router
 
-  alias ExAuctionsManager.{Bid, DB, AuctionsProcess}
+  use Plug.Debugger,
+    otp_app: :ex_auctions_manager
+
+  alias ExAuctionsManager.{Auction, DB}
 
   require Logger
 
   plug(Plug.RequestId)
+  plug(Plug.Logger)
 
   plug(Guardian.Plug.Pipeline,
     module: ExGate.Guardian,
@@ -31,25 +35,22 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
 
   plug(:dispatch)
 
-  get "/:auction_id" do
-    %{"auction_id" => auction_id} = conn.params
-    auction_id = auction_id |> String.to_integer()
-    bids = DB.list_bids(auction_id)
-    json_resp(conn, 200, bids)
-  end
-
   post "/" do
-    %{"auction_id" => auction_id, "bid_value" => bid_value, "bidder" => bidder} = conn.params
+    %{"auction_base" => auction_base, "expiration_date" => expiration_date} = conn.params
 
-    case DB.create_bid(auction_id, bid_value, bidder) do
-      {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} ->
-        json_resp(conn, 200, bid_value)
+    {:ok, expiration_date, _} = expiration_date |> DateTime.from_iso8601()
+    auction_base = auction_base |> String.to_integer()
+
+    case DB.create_auction(expiration_date, auction_base) do
+      {:ok, %Auction{}} ->
+        json_resp(conn, 201, :created)
 
       {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
         Logger.error("auction #{}: bid #{} cannot be accepted. Reason: #{inspect(errors)}")
         # TODO: inspect changeset error to understand where is the error message and use the
         # latest_bid value
-        json_resp(conn, 500, %{status: :rejected, bid: bid_value, latest_bid: "0"})
+        IO.inspect(errors)
+        json_resp(conn, 500, "unable to create auction")
     end
   end
 
@@ -59,5 +60,13 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
     |> put_status(status)
     |> send_resp(status, Jason.encode!(obj))
     |> halt()
+  end
+
+  match _ do
+    send_resp(conn, 404, "404")
+  end
+
+  def handle_errors(conn, %{kind: _kind, reason: _reason, stack: _stack}) do
+    send_resp(conn, conn.status, "Something went wrong")
   end
 end
