@@ -5,6 +5,7 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
   use Plug.Router
 
   alias ExAuctionsManager.{Bid, DB, AuctionsProcess}
+  alias ExGate.WebsocketUtils
 
   require Logger
 
@@ -43,13 +44,22 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
 
     case DB.create_bid(auction_id, bid_value, bidder) do
       {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} ->
+        WebsocketUtils.notify_listeners(
+          auction_id,
+          %{reason: "a new bid has just been created", auction_id: auction_id}
+        )
+
         json_resp(conn, 200, bid_value)
 
       {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
         Logger.error("auction #{}: bid #{} cannot be accepted. Reason: #{inspect(errors)}")
         # TODO: inspect changeset error to understand where is the error message and use the
         # latest_bid value
-        json_resp(conn, 500, %{status: :rejected, bid: bid_value, latest_bid: "0"})
+        json_resp(
+          conn,
+          500,
+          %{status: :rejected, bid: bid_value, latest_bid: "0"}
+        )
     end
   end
 

@@ -39,6 +39,7 @@ defmodule ExAuctionsManager.MixProject do
       {:guardian, "~> 2.1"},
       {:ecto_sql, "~> 3.4"},
       {:postgrex, ">= 0.0.0"},
+      {:ex_gate, in_umbrella: true},
 
       # Code quality
       {:dialyxir, "~> 1.1", only: [:dev], runtime: false},

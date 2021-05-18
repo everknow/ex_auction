@@ -39,7 +39,6 @@ defmodule ExAuctionsManager.Auctions.V1.Receiver do
     %{"auction_base" => auction_base, "expiration_date" => expiration_date} = conn.params
 
     {:ok, expiration_date, _} = expiration_date |> DateTime.from_iso8601()
-    auction_base = auction_base |> String.to_integer()
 
     case DB.create_auction(expiration_date, auction_base) do
       {:ok, %Auction{}} ->
@@ -49,7 +48,6 @@ defmodule ExAuctionsManager.Auctions.V1.Receiver do
         Logger.error("auction #{}: bid #{} cannot be accepted. Reason: #{inspect(errors)}")
         # TODO: inspect changeset error to understand where is the error message and use the
         # latest_bid value
-        IO.inspect(errors)
         json_resp(conn, 500, "unable to create auction")
     end
   end

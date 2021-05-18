@@ -10,11 +10,12 @@ defmodule ExGate.SocketHandler do
   }
   """
   @behaviour :cowboy_websocket
+
+  alias ExGate.WebsocketUtils
   require Logger
 
-  def init(request, state) do
-    # The state should be somehow loaded now
-    {:cowboy_websocket, request, state}
+  def init(request, _opts) do
+    {:cowboy_websocket, request, %{subscriptions: []}}
   end
 
   def websocket_init(state) do
@@ -24,15 +25,29 @@ defmodule ExGate.SocketHandler do
   # coveralls-ignore-start
   def websocket_info(info, state) do
     Logger.debug("#{__MODULE__} websocket_info invoked")
-    {:reply, state}
+    {:reply, {:text, "ok"}, state}
   end
 
   # coveralls-ignore-stop
+
+  def websocket_terminate(_reason, _req, %{subscriptions: subscriptions} = state) do
+    subscriptions |> Enum.each(&:pg2.leave(&1, self()))
+    :ok
+  end
 
   def websocket_handle({:text, message}, state) do
     with {:ok, payload} <- decode_payload(message),
          true <- is_authenticated?(payload) do
       case payload do
+        %{"subscribe" => auction_id} ->
+          Logger.info("Subscribing to auction #{auction_id}")
+
+          WebsocketUtils.register_subscription(auction_id, self())
+          Logger.info("Subscribed to auction #{auction_id}")
+
+          {:reply, {:text, Jason.encode!(%{ok: "subscribed"})},
+           Map.put(state, :subscriptions, [auction_id])}
+
         %{"message" => message} ->
           Logger.debug("Message parsed")
           {:reply, {:text, "Received: " <> message}, state}
