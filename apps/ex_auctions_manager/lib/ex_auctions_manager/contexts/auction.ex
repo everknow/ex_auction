@@ -57,7 +57,7 @@ defmodule ExAuctionsManager.Auction do
 
     validate_change(changeset, field, fn _, expiration_date ->
       if created >= expiration_date do
-        [{field, opts[field] || "expiry date must be bigger then creation date"}]
+        [{field, opts[field] || "expiry date must be bigger than creation date"}]
       else
         []
       end

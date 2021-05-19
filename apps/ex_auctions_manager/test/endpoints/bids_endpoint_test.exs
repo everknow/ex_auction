@@ -1,4 +1,4 @@
-defmodule ExAuctionsManager.BidEndpointTests do
+defmodule ExAuctionsManager.BidsEndpointTests do
   use ExAuctionsManager.RepoCase, async: false
 
   alias ExAuctionsManager.{Auction, Bid, DB}
@@ -66,10 +66,10 @@ defmodule ExAuctionsManager.BidEndpointTests do
           _opts = [ttl: {3600, :seconds}]
         )
 
-      assert {:ok, %Tesla.Env{status: 200, body: body}} =
+      assert {:ok, %Tesla.Env{status: 201, body: body}} =
                Tesla.post(
                  Tesla.client([]),
-                 "http://localhost:8081/api/v1/bids/",
+                 "http://localhost:10000/api/v1/bids/",
                  %{"auction_id" => auction_id, "bid_value" => new_bid_value, "bidder" => bidder}
                  |> Jason.encode!(),
                  headers: [
@@ -81,32 +81,6 @@ defmodule ExAuctionsManager.BidEndpointTests do
       assert ^new_bid_value = body |> Jason.decode!()
 
       assert DB.list_bids(auction_id) |> length() == 2
-    end
-  end
-
-  describe "Auction creation endpoint test" do
-    test "/post create auction" do
-      exp = TestUtils.shift_datetime(TestUtils.get_now(), 5)
-
-      {:ok, token, _claims} =
-        ExGate.Guardian.encode_and_sign(
-          _resource = %{user_id: "1"},
-          _claims = %{},
-          # GOOGLE EXPIRY: decoded["exp"]
-          _opts = [ttl: {3600, :seconds}]
-        )
-
-      {:ok, %Tesla.Env{status: 201}} =
-        Tesla.post(
-          Tesla.client([]),
-          "http://localhost:10000/api/v1/auctions",
-          %{"expiration_date" => exp, "auction_base" => 10}
-          |> Jason.encode!(),
-          headers: [
-            {"authorization", "Bearer #{token}"},
-            {"content-type", "application/json"}
-          ]
-        )
     end
   end
 end

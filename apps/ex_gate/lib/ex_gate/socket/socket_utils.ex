@@ -12,7 +12,6 @@ defmodule ExGate.WebsocketUtils do
 
     name
     |> :pg2.get_local_members()
-    |> IO.inspect(label: "Subscribers")
     |> Enum.each(fn pid ->
       send(
         pid,
