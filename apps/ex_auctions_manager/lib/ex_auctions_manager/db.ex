@@ -67,7 +67,11 @@ defmodule ExAuctionsManager.DB do
     - size (optional): number of bids per page
   """
   def list_bids(auction_id, page \\ 0, size \\ @page) do
-    q = from(bid in Bid, where: bid.auction_id == ^auction_id)
+    q =
+      from(bid in Bid,
+        where: bid.auction_id == ^auction_id
+      )
+
     Repo.all(q)
   end
 

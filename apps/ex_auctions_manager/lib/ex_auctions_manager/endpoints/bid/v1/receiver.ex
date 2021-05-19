@@ -36,7 +36,6 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
 
   get "/:auction_id" do
     %{"auction_id" => auction_id} = conn.params
-    auction_id = auction_id |> String.to_integer()
     bids = DB.list_bids(auction_id)
     json_resp(conn, 200, bids)
   end
