@@ -78,9 +78,43 @@ defmodule ExAuctionsManager.BidsEndpointTests do
                  ]
                )
 
-      assert ^new_bid_value = body |> Jason.decode!()
+      assert %{"auction_id" => auction_id, "bid_value" => ^new_bid_value, "bidder" => ^bidder} =
+               body |> Jason.decode!()
 
       assert DB.list_bids(auction_id) |> length() == 2
+    end
+
+    test "/post create bid failure" do
+      bidder = "bidder"
+      bid_value = 110
+      new_bid_value = 120
+
+      {:ok, token, _claims} =
+        ExGate.Guardian.encode_and_sign(
+          _resource = %{user_id: "1"},
+          _claims = %{},
+          # GOOGLE EXPIRY: decoded["exp"]
+          _opts = [ttl: {3600, :seconds}]
+        )
+
+      assert {:ok, %Tesla.Env{status: 500, body: body}} =
+               Tesla.post(
+                 Tesla.client([]),
+                 "http://localhost:10000/api/v1/bids/",
+                 %{"auction_id" => -1, "bid_value" => new_bid_value, "bidder" => bidder}
+                 |> Jason.encode!(),
+                 headers: [
+                   {"authorization", "Bearer #{token}"},
+                   {"content-type", "application/json"}
+                 ]
+               )
+
+      assert %{
+               "auction_id" => -1,
+               "bid_value" => ^new_bid_value,
+               "bidder" => ^bidder,
+               "reasons" => ["auction does not exist"]
+             } = body |> Jason.decode!()
     end
   end
 end

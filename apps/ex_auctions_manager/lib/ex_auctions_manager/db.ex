@@ -31,7 +31,7 @@ defmodule ExAuctionsManager.DB do
           # Auction does not exist
           nil ->
             Logger.error("auction #{auction_id} does not exist")
-            {:error, reject_bid(bid_changeset, :auction_id, "does not exist")}
+            {:error, reject_bid(bid_changeset, :auction_id, "auction does not exist")}
 
           # Auction is closed
           %Auction{id: ^auction_id, open: false} ->

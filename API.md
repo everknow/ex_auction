@@ -9,6 +9,7 @@ Base url: `http://localhost:8081/api/v1/auctions`
 Auction creation
 
     Method: POST
+    Path: /
     Headers:
         Content-type: application/json
         Authorization: Bearer <TOKEN>
@@ -50,6 +51,7 @@ Base url: `http://localhost:8081/api/v1/bids`
 Bids list
 
     Method: GET
+    Path: /:auction_id
     Headers:
         Authorization: Bearer <TOKEN>
     Body: none
@@ -59,11 +61,23 @@ Successful response:
     HTTP Status: 200
 
     Body
-    []
+        [
+            {"auction_id": 144, "bid_value": 10, "bidder": "some bidder"},
+            {"auction_id": 144, "bid_value": 20, "bidder": "some bidder"},
+            {"auction_id": 144, "bid_value": 30, "bidder": "some bidder"},
+            {"auction_id": 144, "bid_value": 40, "bidder": "some bidder"},
+            {"auction_id": 144, "bid_value": 50, "bidder": "some bidder"},
+            {"auction_id": 144, "bid_value": 60, "bidder": "some bidder"},
+            {"auction_id": 144, "bid_value": 70, "bidder": "some bidder"},
+            {"auction_id": 144, "bid_value": 80, "bidder": "some bidder"},
+            {"auction_id": 144, "bid_value": 90, "bidder": "some bidder"},
+            {"auction_id": 144, "bid_value": 100, "bidder": "some bidder"}
+        ]
 
 Bids creation
 
     Method: POST
+    Path: /
     Headers:
         Authorization: Bearer <TOKEN> 
         Content-Type: application/json
@@ -78,5 +92,21 @@ Successful response:
 
     HTTP Status: 201
 
-    Body
-    []
+    Body:
+        {
+            "auction_id": <AUCTION_ID>, (integer)
+            "bid_value": <BID>, (integer)
+            "bidder": "<BIDDER>"
+        }
+      
+Error response:
+
+    HTTP Status: 500 (Maybe a 404 ?)
+
+    Body:
+        {
+            "auction_id": <AUCTION_ID>)
+            "bid_value": <BID>,
+            "bidder": "<BIDDER>",
+            "reason": ["auction does not exist"]
+        }

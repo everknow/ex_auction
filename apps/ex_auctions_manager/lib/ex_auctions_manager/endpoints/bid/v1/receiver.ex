@@ -48,15 +48,16 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
       {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} ->
         WebsocketUtils.notify_bid(auction_id)
 
-        json_resp(conn, 201, bid_value)
+        json_resp(conn, 201, %{auction_id: auction_id, bid_value: bid_value, bidder: bidder})
 
       {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
         Logger.error("auction #{}: bid #{} cannot be accepted. Reason: #{inspect(errors)}")
+        reasons = errors |> Enum.map(fn {_, {reason, _}} -> reason end)
 
         json_resp(
           conn,
           500,
-          %{status: :rejected, bid: bid_value}
+          %{auction_id: auction_id, bid_value: bid_value, bidder: bidder, reasons: reasons}
         )
     end
   end
