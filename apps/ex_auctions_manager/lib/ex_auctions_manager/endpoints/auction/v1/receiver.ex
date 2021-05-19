@@ -51,7 +51,7 @@ defmodule ExAuctionsManager.Auctions.V1.Receiver do
       {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
         reasons = errors |> Enum.map(fn {_, {reason, _}} -> reason end)
 
-        json_resp(conn, 500, %{reasons: reasons})
+        json_resp(conn, 422, %{reasons: reasons})
     end
   end
 

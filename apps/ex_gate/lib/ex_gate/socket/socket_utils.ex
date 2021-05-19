@@ -3,7 +3,7 @@ defmodule ExGate.WebsocketUtils do
     "AUCTION::" <> to_string(auction_id)
   end
 
-  def notify_bid(auction_id) do
+  def notify_bid(auction_id, bid_value) do
     name =
       auction_id
       |> get_auction_pg_name()
@@ -15,7 +15,7 @@ defmodule ExGate.WebsocketUtils do
     |> Enum.each(fn pid ->
       send(
         pid,
-        %{notification_type: :bid, auction_id: auction_id}
+        %{notification_type: :bid, auction_id: auction_id, bid_value: bid_value}
         |> Jason.encode!()
       )
     end)

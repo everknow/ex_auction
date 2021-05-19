@@ -54,7 +54,7 @@ defmodule ExAuctionsManager.AuctionsEndpointTests do
           _opts = [ttl: {3600, :seconds}]
         )
 
-      {:ok, %Tesla.Env{status: 500, body: body}} =
+      {:ok, %Tesla.Env{status: 422, body: body}} =
         Tesla.post(
           Tesla.client([]),
           "http://localhost:10000/api/v1/auctions",
