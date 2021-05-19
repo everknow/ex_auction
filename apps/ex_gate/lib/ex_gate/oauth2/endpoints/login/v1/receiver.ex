@@ -33,24 +33,21 @@ defmodule ExGate.Login.V1.Receiver do
   # TODO: is this to be exposed here ?
   get("/ping", do: send_resp(conn, 200, Handler.ping()))
 
-  post "/login" do
-    %{"google_token" => id_token} = conn.params
+  post "/" do
+    %{"id_token" => id_token} = conn.params
 
     case Handler.login(id_token) do
-      {:error, code, description} ->
-        Logger.error(
-          "unable to login: code: #{inspect(code)} description: #{inspect(description)}"
-        )
+      {:error, code, reason} ->
+        json_resp(conn, code, %{error: reason})
 
-        json_resp(conn, code, %{error: description})
-
-      {:ok, tok, _} ->
+      {:ok, token, _} ->
         conn
         |> put_resp_header("cache-control", "no-store")
         |> put_resp_header("pragma", "no-cache")
         |> json_resp(200, %{
-          "access_token" => tok,
+          "access_token" => token,
           "token_type" => "Bearer",
+          # Shouldn't the expire come from the Guardian job ?
           "expires_in" => 3600
           # "refresh_token": ??
         })

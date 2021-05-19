@@ -20,16 +20,10 @@ defmodule ExGate.Login.HandlerTests do
   describe "Handler tests" do
     test "/login success" do
       with_mock(GoogleClient,
-        verify: fn id_token ->
+        verify_and_decode: fn id_token ->
           {:ok,
            %{
-             body:
-               %{
-                 "email" => "bruno.ripa@gmail.com",
-                 "sub" => "some_id",
-                 "aud" => Application.fetch_env!(:ex_gate, :google_client_id)
-               }
-               |> Jason.encode!()
+             "aud" => Application.get_env(:ex_gate, :google_client_id)
            }}
         end
       ) do
@@ -49,34 +43,31 @@ defmodule ExGate.Login.HandlerTests do
 
     test "/login failure - unable to decode google payload" do
       with_mock(GoogleClient,
-        verify: fn id_token ->
-          {:ok,
-           %{
-             body: "cant_decode_me"
-           }}
+        verify_and_decode: fn id_token ->
+          {:error, "something failed"}
         end
       ) do
         assert capture_log(fn ->
-                 {
-                   :error,
-                   401,
-                   "could not login"
-                 } = Handler.login("token")
-               end) =~ "unable to decode google response body: \"cant_decode_me\""
+                 assert {
+                          :error,
+                          401,
+                          "cannot verify google id token"
+                        } = Handler.login("token")
+               end) =~ "unable to verify the google token: \"something failed\""
       end
     end
 
     test "/login failure - verify error" do
       with_mock(GoogleClient,
-        verify: fn id_token ->
+        verify_and_decode: fn id_token ->
           {:error, "something went wrong"}
         end
       ) do
         assert capture_log(fn ->
                  assert {
                           :error,
-                          500,
-                          "could not reach google service"
+                          401,
+                          "cannot verify google id token"
                         } = Handler.login("token")
                end) =~ "unable to verify the google token: \"something went wrong\""
       end
