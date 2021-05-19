@@ -1,1 +1,1 @@
-alias ExAuctionsManager.AuctionsProcess
+alias ExAuctionsManager.{Repo, Auction, Bid}

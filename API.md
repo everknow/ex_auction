@@ -32,7 +32,7 @@ Successful response:
 
 Error response:
 
-    HTTP Status: 500
+    HTTP Status: 422
     Body
         {
             "reasons": [
@@ -101,7 +101,7 @@ Successful response:
       
 Error response:
 
-    HTTP Status: 500 (Maybe a 404 ?)
+    HTTP Status: 422
 
     Body:
         {

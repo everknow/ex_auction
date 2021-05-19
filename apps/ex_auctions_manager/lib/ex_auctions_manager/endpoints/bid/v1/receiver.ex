@@ -4,7 +4,7 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
   """
   use Plug.Router
 
-  alias ExAuctionsManager.{Bid, DB, AuctionsProcess}
+  alias ExAuctionsManager.{Bid, DB}
   alias ExGate.WebsocketUtils
 
   require Logger
