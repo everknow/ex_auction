@@ -110,3 +110,22 @@ Error response:
             "bidder": "<BIDDER>",
             "reason": ["auction does not exist"]
         }
+
+# Curl commands
+
+The above endpoints can be used with the following curl commands:
+
+
+# Bids list
+curl -H "Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJFeEdhdGUiLCJleHAiOjE2MjE0MjQ3MTYsImlhdCI6MTYyMTQyMTExNiwiaXNzIjoiRXhHYXRlIiwianRpIjoiNDI4Nzc1ZjQtN2E5ZC00MWViLWIzYmYtMGQwNzg5YzU5ODZmIiwibmJmIjoxNjIxNDIxMTE1LCJzdWIiOiIxIiwidHlwIjoiYWNjZXNzIn0.-C7Op6cUNIe6KQwncZTNK1f3Kw-p_9LqAtq6UwZs5qLxqqxZZYGcWhJhxLYroqXEem9qD7oK6bmC4mJgkCRDlA" http://localhost:8081/api/v1/bids/1
+
+# Auction creation
+
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJFeEdhdGUiLCJleHAiOjE2MjE0MjQ3MTYsImlhdCI6MTYyMTQyMTExNiwiaXNzIjoiRXhHYXRlIiwianRpIjoiNDI4Nzc1ZjQtN2E5ZC00MWViLWIzYmYtMGQwNzg5YzU5ODZmIiwibmJmIjoxNjIxNDIxMTE1LCJzdWIiOiIxIiwidHlwIjoiYWNjZXNzIn0.-C7Op6cUNIe6KQwncZTNK1f3Kw-p_9LqAtq6UwZs5qLxqqxZZYGcWhJhxLYroqXEem9qD7oK6bmC4mJgkCRDlA" -d "{\"auction_base\":100,\"expiration_date\":\"2021-05-25 03:54:09.124103Z\"}" http://localhost:8081/api/v1/auctions/
+
+
+# Bid creation
+
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJFeEdhdGUiLCJleHAiOjE2MjE0MjQ3MTYsImlhdCI6MTYyMTQyMTExNiwiaXNzIjoiRXhHYXRlIiwianRpIjoiNDI4Nzc1ZjQtN2E5ZC00MWViLWIzYmYtMGQwNzg5YzU5ODZmIiwibmJmIjoxNjIxNDIxMTE1LCJzdWIiOiIxIiwidHlwIjoiYWNjZXNzIn0.-C7Op6cUNIe6KQwncZTNK1f3Kw-p_9LqAtq6UwZs5qLxqqxZZYGcWhJhxLYroqXEem9qD7oK6bmC4mJgkCRDlA" -d "{\"auction_id\":1, \"bid_value\":110,\"bidder\":\"bruno\"}" http://localhost:8081/api/v1/bids/
+
+Of course tokens and values must be changed accordingly.
