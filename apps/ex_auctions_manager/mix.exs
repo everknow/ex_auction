@@ -41,6 +41,7 @@ defmodule ExAuctionsManager.MixProject do
       {:postgrex, ">= 0.0.0"},
       {:ex_gate, in_umbrella: true},
       {:tesla, "~> 1.4"},
+      {:timex, "~> 3.7"},
 
       # Code quality
       {:dialyxir, "~> 1.1", only: [:dev], runtime: false},

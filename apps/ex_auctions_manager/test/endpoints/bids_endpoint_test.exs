@@ -151,7 +151,7 @@ defmodule ExAuctionsManager.BidsEndpointTests do
                "auction_id" => ^auction_id,
                "bid_value" => ^new_bid_value,
                "bidder" => ^bidder,
-               "reasons" => ["is expired"]
+               "reasons" => ["auction is expired"]
              } = body |> Jason.decode!()
     end
   end
