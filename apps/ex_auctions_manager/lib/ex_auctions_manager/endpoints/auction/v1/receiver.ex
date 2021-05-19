@@ -41,12 +41,17 @@ defmodule ExAuctionsManager.Auctions.V1.Receiver do
     {:ok, expiration_date, _} = expiration_date |> DateTime.from_iso8601()
 
     case DB.create_auction(expiration_date, auction_base) do
-      {:ok, %Auction{}} ->
-        json_resp(conn, 201, :created)
+      {:ok, %Auction{id: auction_id, expiration_date: exp, auction_base: auction_base}} ->
+        json_resp(conn, 201, %{
+          auction_id: auction_id,
+          expiration_date: exp,
+          auction_base: auction_base
+        })
 
       {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
-        Logger.error("auction #{}: bid #{} cannot be accepted. Reason: #{inspect(errors)}")
-        json_resp(conn, 500, "unable to create auction")
+        reasons = errors |> Enum.map(fn {_, {reason, _}} -> reason end)
+
+        json_resp(conn, 500, %{reasons: reasons})
     end
   end
 
@@ -60,9 +65,5 @@ defmodule ExAuctionsManager.Auctions.V1.Receiver do
 
   match _ do
     send_resp(conn, 404, "404")
-  end
-
-  def handle_errors(conn, %{kind: _kind, reason: _reason, stack: _stack}) do
-    send_resp(conn, conn.status, "Something went wrong")
   end
 end

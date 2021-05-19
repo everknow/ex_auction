@@ -7,5 +7,6 @@
 - [x] Bruno: add Postgres unique index on (auction_id, bid) for `bids` table
 - [x] Bruno: `auctions` need to be serialized in the database and must have a duration field
 - [ ] Bruno: Add a `stop auction` emergency endpoint
-- [ ] Bruno: add endpoint documentation with `curl` example commands and response examples
+- [x] Bruno: add endpoint documentation
+- [ ] Bruno: add `curl` example commands
 - [x] Bruno: add websocket subscriptions

@@ -57,7 +57,9 @@ defmodule ExAuctionsManager.AuctionSchemaTests do
                }
              } = cs = Auction.changeset(%Auction{}, attrs)
 
-      assert "expiry date must be bigger then creation date" in errors_on(cs).expiration_date
+      assert "expiry date must be bigger than creation date" in errors_on(cs).expiration_date
+
+      {:error, %Ecto.Changeset{valid?: false}} = DB.create_auction(auction_end, 10)
     end
   end
 end

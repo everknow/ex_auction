@@ -27,38 +27,66 @@ defmodule ExAuctionsManager.DB do
           %Bid{}
           |> Bid.changeset(%{auction_id: auction_id, bid_value: bid_value, bidder: bidder})
 
-        case get_and_lock_auction(auction_id) do
-          # Auction does not exist
+        auction = get_and_lock_auction(auction_id)
+
+        with %Auction{} = auction <- get_and_lock_auction(auction_id),
+             true <- is_active(auction) do
+          process_bid_request(auction, bid_changeset)
+        else
           nil ->
             Logger.error("auction #{auction_id} does not exist")
-            {:error, reject_bid(bid_changeset, :auction_id, "does not exist")}
+            {:error, reject_bid(bid_changeset, :auction_id, "auction does not exist")}
 
-          # Auction is closed
-          %Auction{id: ^auction_id, open: false} ->
-            {:error, reject_bid(bid_changeset, :auction_id, "is closed")}
-
-          # bid is not below auction base
-          %Auction{
-            auction_base: auction_base,
-            open: true
-          } = auction
-          when auction_base <= bid_value ->
-            bigger_than_auction_base(auction, bid_changeset)
-
-          # bid is below auction base
-          %Auction{
-            auction_base: auction_base,
-            open: true
-          } ->
-            {:error, reject_bid(bid_changeset, :bid_value, "below auction base #{auction_base}")}
+          false ->
+            {:error, reject_bid(bid_changeset, :auction_id, "auction is expired")}
         end
       end)
 
     status
   end
 
+  defp is_active(auction) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    case Timex.compare(now, auction.expiration_date, :second) do
+      -1 ->
+        true
+
+      _ ->
+        Logger.error("is_active :: auction is expired #{now} - #{auction.expiration_date}")
+        false
+    end
+  end
+
+  defp process_bid_request(%Auction{id: auction_id} = auction, bid_changeset) do
+    Logger.warn("process_bid_request")
+    bid_value = get_field(bid_changeset, :bid_value)
+    bidder = get_field(bid_changeset, :bidder)
+
+    case auction do
+      # Auction is closed
+      %Auction{id: ^auction_id, open: false} ->
+        {:error, reject_bid(bid_changeset, :auction_id, "is closed")}
+
+      # bid is not below auction base
+      %Auction{
+        auction_base: auction_base,
+        open: true
+      } = auction
+      when auction_base <= bid_value ->
+        bigger_than_auction_base(auction, bid_changeset)
+
+      # bid is below auction base
+      %Auction{
+        auction_base: auction_base,
+        open: true
+      } ->
+        {:error, reject_bid(bid_changeset, :bid_value, "below auction base #{auction_base}")}
+    end
+  end
+
   @doc """
-  List auctions function.
+  List bids function.
 
   Input:
 
@@ -67,7 +95,11 @@ defmodule ExAuctionsManager.DB do
     - size (optional): number of bids per page
   """
   def list_bids(auction_id, page \\ 0, size \\ @page) do
-    q = from(bid in Bid, where: bid.auction_id == ^auction_id)
+    q =
+      from(bid in Bid,
+        where: bid.auction_id == ^auction_id
+      )
+
     Repo.all(q)
   end
 

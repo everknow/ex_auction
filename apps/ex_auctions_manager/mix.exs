@@ -40,16 +40,15 @@ defmodule ExAuctionsManager.MixProject do
       {:ecto_sql, "~> 3.4"},
       {:postgrex, ">= 0.0.0"},
       {:ex_gate, in_umbrella: true},
+      {:tesla, "~> 1.4"},
+      {:timex, "~> 3.7"},
 
       # Code quality
       {:dialyxir, "~> 1.1", only: [:dev], runtime: false},
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
 
       # Coverage
-      {:excoveralls, "~> 0.14", only: [:dev, :test]},
-
-      # Test
-      {:tesla, "~> 1.4", only: [:test]}
+      {:excoveralls, "~> 0.14", only: [:dev, :test]}
     ]
   end
 

@@ -5,7 +5,7 @@ defmodule ExAuctionsManager.BidSchemaTests do
 
   describe "Schema tests" do
     setup do
-      expiration_date = TestUtils.shift_datetime(TestUtils.get_now(), 5)
+      expiration_date = TestUtils.shift_datetime(TestUtils.get_now(), 10)
       {:ok, %Auction{} = auction} = DB.create_auction(expiration_date, 10)
       {:ok, %{auction: auction}}
     end
@@ -35,7 +35,7 @@ defmodule ExAuctionsManager.BidSchemaTests do
     test "bid creation failure - non existing auction" do
       assert {:error, %Ecto.Changeset{valid?: false} = cs} = DB.create_bid(1, 9, "some_bidder")
 
-      assert "does not exist" in errors_on(cs).auction_id
+      assert "auction does not exist" in errors_on(cs).auction_id
     end
 
     test "bid creation failure - bid below auction base", %{auction: %Auction{id: auction_id}} do
@@ -66,7 +66,7 @@ defmodule ExAuctionsManager.BidSchemaTests do
     test "bids creation - non_existing auction" do
       assert {:error, %Ecto.Changeset{valid?: false} = cs} = DB.create_bid(1, 10, "some_bidder")
 
-      assert "does not exist" in errors_on(cs).auction_id
+      assert "auction does not exist" in errors_on(cs).auction_id
     end
   end
 
