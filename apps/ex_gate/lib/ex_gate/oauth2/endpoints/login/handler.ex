@@ -14,15 +14,15 @@ defmodule ExGate.Login.Handler do
   @spec login(String.t()) :: {:ok, String.t(), String.t()} | {:error, integer, any()}
   def login(id_token) do
     id_token
-    |> verify_token()
-    |> maybe_decode_token()
+    |> verify_google_id_token()
+    |> maybe_generate_token()
   end
 
-  @spec verify_token(String.t()) :: {:ok, String.t()} | {:error, any()}
-  defp verify_token(id_token) do
-    case GoogleClient.verify(id_token) do
-      {:ok, %{body: body} = _response} ->
-        {:ok, body}
+  @spec verify_google_id_token(String.t()) :: {:ok, String.t()} | {:error, any()}
+  defp verify_google_id_token(id_token) do
+    case GoogleClient.verify_and_decode(id_token) do
+      {:ok, claims} ->
+        {:ok, claims}
 
       {:error, reason} ->
         Logger.error("unable to verify the google token: #{inspect(reason)}")
@@ -30,21 +30,22 @@ defmodule ExGate.Login.Handler do
     end
   end
 
-  @spec maybe_decode_token(
-          {:ok, any(), any()}
+  @spec maybe_generate_token(
+          {:ok, map()}
           | {:error, any}
         ) ::
           {:ok, String.t(), String.t()} | {:error, integer, any()}
-  defp maybe_decode_token({:error, _reason}) do
-    {:error, 500, "could not reach google service"}
+  defp maybe_generate_token({:error, _reason}) do
+    {:error, 401, "cannot verify google id token"}
   end
 
-  defp maybe_decode_token({:ok, body}) do
+  defp maybe_generate_token({:ok, %{"aud" => aud}}) do
     google_client_id = Application.get_env(:ex_gate, :google_client_id)
 
-    case Jason.decode(body) do
-      {:ok, %{"aud" => ^google_client_id}} ->
+    case aud do
+      ^google_client_id ->
         # create user here? [username | _] = String.split(email, "@")
+
         user_id = UUID.uuid4()
 
         ExGate.Guardian.encode_and_sign(
@@ -54,8 +55,8 @@ defmodule ExGate.Login.Handler do
           _opts = [ttl: {3600, :seconds}]
         )
 
-      {:error, %Jason.DecodeError{}} ->
-        Logger.error("unable to decode google response body: #{inspect(body)}")
+      _nope ->
+        Logger.error("`aud` claim not recognized: #{aud}")
         {:error, 401, "could not login"}
     end
   end

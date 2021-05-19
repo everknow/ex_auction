@@ -1,0 +1,49 @@
+<html>
+
+<head>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <!-- <link rel="stylesheet" href="/portal/client/v1/index.css"> -->
+    <meta name="google-signin-client_id"
+        content="323198697202-hjk4tg05cs6e38arnmloba6nshtighj5.apps.googleusercontent.com">
+</head>
+
+<body>
+
+
+    <h2>Login via Google</h2>
+
+    <div class="g-signin2" data-onsuccess="onSignIn"></div>
+    <div id="msg"></div><a href="#" onclick="signOut();">Sign out</a>
+    <script>
+        function signOut() {
+            var auth2 = gapi.auth2.getAuthInstance();
+            auth2.signOut().then(function () {
+                console.log('User signed out.');
+                document.getElementById('msg').innerHTML = ""
+            });
+        }
+
+        function onSignIn(googleUser) {
+            var profile = googleUser.getBasicProfile();
+            console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+            console.log('Name: ' + profile.getName());
+            console.log('Image URL: ' + profile.getImageUrl());
+            console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+
+            var id_token = googleUser.getAuthResponse().id_token;
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'verify');
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function () {
+                document.getElementById('msg').innerHTML = 'Signed in as: ' + JSON.parse(xhr.responseText)['name']
+                console.log('Signed in as: ' + xhr.responseText);
+            };
+            xhr.send(JSON.stringify({ "id_token": id_token }));
+
+        }
+
+    </script>
+</body>
+
+</html>
