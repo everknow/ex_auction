@@ -97,7 +97,7 @@ defmodule ExAuctionsManager.BidsEndpointTests do
           _opts = [ttl: {3600, :seconds}]
         )
 
-      assert {:ok, %Tesla.Env{status: 500, body: body}} =
+      assert {:ok, %Tesla.Env{status: 422, body: body}} =
                Tesla.post(
                  Tesla.client([]),
                  "http://localhost:10000/api/v1/bids/",
@@ -135,7 +135,7 @@ defmodule ExAuctionsManager.BidsEndpointTests do
 
       :timer.sleep(1500)
 
-      assert {:ok, %Tesla.Env{status: 500, body: body}} =
+      assert {:ok, %Tesla.Env{status: 422, body: body}} =
                Tesla.post(
                  Tesla.client([]),
                  "http://localhost:10000/api/v1/bids/",

@@ -55,7 +55,7 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
 
         json_resp(
           conn,
-          500,
+          422,
           %{auction_id: auction_id, bid_value: bid_value, bidder: bidder, reasons: reasons}
         )
     end
