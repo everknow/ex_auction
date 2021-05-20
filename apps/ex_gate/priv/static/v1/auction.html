@@ -177,6 +177,22 @@
             });
         };
 
+        const closeAuction = function () {
+            console.log("Closing auction");
+            const auction_id = document.getElementById("auction_id_closure").value;
+
+            make_async_query("post", `http://localhost:8081/api/v1/auctions/close/${auction_id}`, {}, function (response) {
+                if (response.status === 200) {
+                    console.log(response.responseText);
+                    setAuctionClosureMessage(`auction ${auction_id} closed`);
+                }
+                else {
+                    console.log(`Obtained: ${JSON.stringify(response.status)}`);
+                    setAuctionClosureMessage(`something went wrong: ${response.status}`);
+                }
+            });
+        };
+
         const showConnectionStatus = (status) => {
             document.getElementById("connection_status").innerText = status;
         }
@@ -185,6 +201,10 @@
             document.getElementById("ws_message").innerText = status;
         }
 
+
+        const setAuctionClosureMessage = (message) => {
+            document.getElementById("auction_closure_message").innerText = message;
+        }
 
         const subscribeToAuction = () => {
 
@@ -282,6 +302,22 @@
                 </div>
             </fieldset>
         </div>
+
+        <!-- Auction closure -->
+        <div>
+            <fieldset>
+                <label for="">
+                    <strong>Auction closure</strong>
+                </label>
+                <div>
+                    <label for="">Auction ID</label>
+                    <input type="text" id="auction_id_closure" />
+                </div>
+                <button onclick="closeAuction();">Close auction</button>
+                <span id="auction_closure_message"></span>
+        </div>
+        </fieldset>
+    </div>
     </div>
     <!-- Bids list -->
     <div>
