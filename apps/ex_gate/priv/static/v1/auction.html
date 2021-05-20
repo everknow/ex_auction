@@ -72,14 +72,14 @@
             sessionStorage.removeItem("access_token");
             window.location.href = "/";
         };
-        const fetch_bids = function () {
+        const fetchBids = function () {
             resetBidsList();
             const auction_id = document.getElementById("auction_id").value;
             console.log(JSON.stringify(auction_id));
             make_async_query("get", `http://localhost:8081/api/v1/bids/${auction_id}`, {}, render_bids_for_auction);
         }
 
-        const create_bid = function () {
+        const createBid = function () {
             const bid_auction_id = document.getElementById("bid_auction_id").value;
             const bid_value = document.getElementById("bid_value").value;
             const bidder = document.getElementById("bidder").value;
@@ -92,12 +92,18 @@
             console.log(`Payload: ${JSON.stringify(body)}`);
             make_async_query("post", "http://localhost:8081/api/v1/bids/", body, function (response) {
                 JSON.stringify(response);
-                if (response.status === 200) {
+                if (response.status === 201) {
                     setBidCreationMessage("Bid created");
                 }
                 else if (response.status === 422) {
                     console.log("Obtained 422");
-                    setBidCreationMessage(response.responseText);
+                    const reasons_list = JSON.parse(response.responseText).reasons;
+                    const reasons = []
+                    for (const [key, value] of Object.entries(reasons_list)) {
+                        reasons.push(`${key}: ${value}`);
+                    }
+                    console.log(reasons);
+                    setBidCreationMessage(reasons.join(" - "));
                 }
             });
         }
@@ -121,41 +127,94 @@
         }
 
         const setBidCreationMessage = function (msg) {
-            const body = JSON.parse(msg);
-            console.log(body);
-            document.getElementById("bids_creation_message").innerText = body.reasons;
+            document.getElementById("bids_creation_message").innerText = msg;
         }
 
-        const setupBidderName = function () {
-            document.getElementById("bidder_name").innerText = getCredentials().email;
+        const setAuctionCreationMessage = (message) => {
+            const body = JSON.parse(message);
+            console.log(body);
+            document.getElementById("auction_creation_message").innerText = body.reasons;
+        };
+
+        const createAuction = function () {
+            console.log("Creating auction");
+            const expiration_date = document.getElementById("expiration_date").value;
+            const auction_base = document.getElementById("auction_base").value;
+            const body = {
+                expiration_date,
+                auction_base
+            };
+
+            console.log(`Payload: ${JSON.stringify(body)}`);
+            make_async_query("post", "http://localhost:8081/api/v1/auctions/", body, function (response) {
+                JSON.stringify(response);
+                if (response.status === 201) {
+                    setAuctionCreationMessage("Auction created");
+                }
+                else if (response.status === 422) {
+                    console.log("Obtained 422");
+                    reason = JSON.parse(response.responseText.reasons)
+                    setAuctionCreationMessage(reasons);
+                }
+            });
         }
 
         window.onload = (event) => {
             if (getCredentials().access_token === undefined) {
                 window.location.href = "/";
             }
-
-            setupBidderName();
-
         };
     </script>
 </head>
 
 <body>
     <div>
+
+        <!-- Auction creation -->
         <div>
             <fieldset>
-                <input type="number" id="auction_id" />
-                <button onclick="fetch_bids();">Fetch bids</button>
+                <label for="">
+                    <strong>Auction creation</strong>
+                </label>
+                <div>
+                    <label for="">Expiration date</label>
+                    <input type="text" id="expiration_date" />
+                </div>
+                <div>
+                    <label for="">Auction base</label>
+                    <input type="number" id="auction_base" />
+                </div>
+                <button onclick="createAuction();">Create auction</button>
+                <div for="">Status message for auction creation:
+                    <span id="auction_creation_message"></span>
+                </div>
             </fieldset>
         </div>
-        <div for="">Bids for the above auction</div>
-        <div id="bids_for_auction"></div>
+    </div>
+    <!-- Bids list -->
+    <div>
+
+        <fieldset>
+            <label for="">
+                <strong>Bids list</strong>
+            </label>
+            <div>
+                <input type="number" id="auction_id" />
+                <button onclick="fetchBids();">List bids</button>
+            </div>
+            <div id="bids_for_auction"></div>
+        </fieldset>
+
+    </div>
     </div>
 
     <div>
+        <!-- Bid creation -->
         <div>
             <fieldset>
+                <label for="">
+                    <strong>Bid creation</strong>
+                </label>
                 <div>
                     <label for="">Auction ID</label>
                     <input type="number" id="bid_auction_id" />
@@ -168,16 +227,13 @@
                     <label for="">Bidder</label>
                     <input type="text" id="bidder" />
                 </div>
-                <button onclick="create_bid();">Create bid</button>
+                <button onclick="createBid();">Create bid</button>
                 <div for="">Status message for bid creation:
                     <span id="bids_creation_message"></span>
                 </div>
-
+                <div id="bid_creation_error_message"></div>
             </fieldset>
-
         </div>
-        <div id="bid_creation_error_message"></div>
-    </div>
     </div><a onclick="logout();">Logout</a></div>
 </body>
 

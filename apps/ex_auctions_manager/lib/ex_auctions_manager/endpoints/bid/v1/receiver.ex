@@ -42,7 +42,6 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
 
   post "/" do
     %{"auction_id" => auction_id, "bid_value" => bid_value, "bidder" => bidder} = conn.params
-    IO.inspect(conn.params, label: "----------")
     bid_value = maybe_convert(bid_value)
     auction_id = maybe_convert(auction_id)
 
@@ -72,11 +71,18 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
     |> halt()
   end
 
+  defp maybe_convert("") do
+    Logger.warn("empty")
+    0
+  end
+
   defp maybe_convert(value) when is_bitstring(value) do
+    Logger.warn("string")
     String.to_integer(value)
   end
 
   defp maybe_convert(value) do
+    Logger.warn("general")
     value
   end
 end

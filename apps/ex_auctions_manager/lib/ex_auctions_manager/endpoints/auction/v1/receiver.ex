@@ -39,6 +39,7 @@ defmodule ExAuctionsManager.Auctions.V1.Receiver do
     %{"auction_base" => auction_base, "expiration_date" => expiration_date} = conn.params
 
     {:ok, expiration_date, _} = expiration_date |> DateTime.from_iso8601()
+    auction_base = auction_base |> maybe_convert()
 
     case DB.create_auction(expiration_date, auction_base) do
       {:ok, %Auction{id: auction_id, expiration_date: exp, auction_base: auction_base}} ->
@@ -65,5 +66,19 @@ defmodule ExAuctionsManager.Auctions.V1.Receiver do
 
   match _ do
     send_resp(conn, 404, "404")
+  end
+
+  defp maybe_convert("") do
+    Logger.warn("empty")
+    0
+  end
+
+  defp maybe_convert(value) when is_bitstring(value) do
+    Logger.warn("string")
+    String.to_integer(value)
+  end
+
+  defp maybe_convert(value) do
+    value
   end
 end
