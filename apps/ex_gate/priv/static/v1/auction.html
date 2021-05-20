@@ -72,11 +72,17 @@
             sessionStorage.removeItem("access_token");
             window.location.href = "/";
         };
+
         const fetchBids = function () {
             resetBidsList();
             const auction_id = document.getElementById("auction_id").value;
             console.log(JSON.stringify(auction_id));
             make_async_query("get", `http://localhost:8081/api/v1/bids/${auction_id}`, {}, render_bids_for_auction);
+        }
+
+        const fetchAuctions = function () {
+            resetAuctionsList();
+            make_async_query("get", "http://localhost:8081/api/v1/auctions", {}, renderAuctions);
         }
 
         const createBid = function () {
@@ -108,7 +114,7 @@
             });
         }
 
-        const render_bids_for_auction = function (bids) {
+        const renderBidsForAuction = function (bids) {
             const bids_div = document.createElement("div");
             const root = document.getElementById("bids_for_auction");
             bids.map((elem) => {
@@ -120,8 +126,23 @@
             root.appendChild(bids_div);
         }
 
+        const renderAuctions = function (auctions) {
+            const auctions_div = document.createElement("div");
+            const root = document.getElementById("auctions_list");
+            auctions.map((elem) => {
+                const new_row = document.createElement("pre");
+                auctions_div.innerText = JSON.stringify(elem);
+                auctions_div.appendChild(new_row);
+            });
+            root.appendChild(auctions_div);
+        }
+
         const resetBidsList = function () {
             document.getElementById("bids_for_auction").innerText = "";
+        }
+
+        const resetAuctionsList = function () {
+            document.getElementById("auctions_list").innerText = "";
         }
 
         const setBidCreationMessage = function (msg) {
@@ -207,6 +228,22 @@
     <div>
         <div>Connection status: <span id="connection_status">disconnected</span></div>
         <div>Websocket message: <span id="ws_message" style="color: green"></span></div>
+
+        <!-- Auctions list -->
+        <div>
+
+            <fieldset>
+                <label for="">
+                    <strong>Auctions list</strong>
+                </label>
+                <div>
+                    <button onclick="fetchAuctions();">List auctions</button>
+                </div>
+                <div id="auctions_list"></div>
+            </fieldset>
+
+        </div>
+
         <!-- Auction creation -->
         <div>
             <fieldset>
@@ -260,7 +297,6 @@
             <div id="bids_for_auction"></div>
         </fieldset>
 
-    </div>
     </div>
 
     <div>
