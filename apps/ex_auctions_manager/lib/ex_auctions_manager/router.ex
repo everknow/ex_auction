@@ -1,6 +1,7 @@
 defmodule ExAuctionsManager.Router do
   use Plug.Router
   plug(Plug.Logger, log: :info)
+  plug(Corsica, origins: "*", allow_methods: :all, allow_headers: :all)
 
   plug(:match)
 

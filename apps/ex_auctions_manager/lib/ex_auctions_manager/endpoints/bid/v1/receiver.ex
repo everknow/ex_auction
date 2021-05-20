@@ -42,6 +42,9 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
 
   post "/" do
     %{"auction_id" => auction_id, "bid_value" => bid_value, "bidder" => bidder} = conn.params
+    IO.inspect(conn.params, label: "----------")
+    bid_value = maybe_convert(bid_value)
+    auction_id = maybe_convert(auction_id)
 
     case DB.create_bid(auction_id, bid_value, bidder) do
       {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} ->
@@ -67,5 +70,13 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
     |> put_status(status)
     |> send_resp(status, Jason.encode!(obj))
     |> halt()
+  end
+
+  defp maybe_convert(value) when is_bitstring(value) do
+    String.to_integer(value)
+  end
+
+  defp maybe_convert(value) do
+    value
   end
 end

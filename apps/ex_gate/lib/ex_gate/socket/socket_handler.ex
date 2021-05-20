@@ -10,7 +10,7 @@ defmodule ExGate.SocketHandler do
   }
   """
   @behaviour :cowboy_websocket
-
+  @ping_time 1000
   alias ExGate.WebsocketUtils
   require Logger
 
@@ -18,14 +18,20 @@ defmodule ExGate.SocketHandler do
     {:cowboy_websocket, request, %{subscriptions: []}}
   end
 
+  # When connection is established
   def websocket_init(state) do
     {:ok, state}
   end
 
+  def websocket_info(:ping, state) do
+    Logger.error("#{inspect(self())} [websocket_info] responding with pong")
+    {:reply, :pong, state}
+  end
+
   # coveralls-ignore-start
   def websocket_info(msg, state) do
-    Logger.debug("#{__MODULE__} websocket_info invoked: #{msg}")
-    {:reply, {:text, msg |> Jason.encode!()}, state}
+    Logger.debug("#{__MODULE__} generic websocket_info invoked: #{msg}")
+    {:reply, state}
   end
 
   # coveralls-ignore-stop
@@ -33,6 +39,10 @@ defmodule ExGate.SocketHandler do
   def websocket_terminate(_reason, _req, %{subscriptions: subscriptions} = state) do
     subscriptions |> Enum.each(&:pg2.leave(&1, self()))
     :ok
+  end
+
+  def websocket_handle({:text, "ping"}, state) do
+    {:reply, :pong, state}
   end
 
   def websocket_handle({:text, message}, state) do

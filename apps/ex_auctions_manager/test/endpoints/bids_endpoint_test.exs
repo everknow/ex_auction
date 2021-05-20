@@ -55,8 +55,8 @@ defmodule ExAuctionsManager.BidsEndpointTests do
       bid_value = 110
       new_bid_value = 120
 
-      {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} =
-        DB.create_bid(auction_id, bid_value, bidder)
+      assert {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} =
+               DB.create_bid(auction_id, bid_value, bidder)
 
       {:ok, token, _claims} =
         ExGate.Guardian.encode_and_sign(
@@ -70,7 +70,11 @@ defmodule ExAuctionsManager.BidsEndpointTests do
                Tesla.post(
                  Tesla.client([]),
                  "http://localhost:10000/api/v1/bids/",
-                 %{"auction_id" => auction_id, "bid_value" => new_bid_value, "bidder" => bidder}
+                 %{
+                   "auction_id" => auction_id,
+                   "bid_value" => new_bid_value,
+                   "bidder" => bidder
+                 }
                  |> Jason.encode!(),
                  headers: [
                    {"authorization", "Bearer #{token}"},
@@ -78,7 +82,11 @@ defmodule ExAuctionsManager.BidsEndpointTests do
                  ]
                )
 
-      assert %{"auction_id" => auction_id, "bid_value" => ^new_bid_value, "bidder" => ^bidder} =
+      assert %{
+               "auction_id" => auction_id,
+               "bid_value" => new_bid_value,
+               "bidder" => bidder
+             } ==
                body |> Jason.decode!()
 
       assert DB.list_bids(auction_id) |> length() == 2
