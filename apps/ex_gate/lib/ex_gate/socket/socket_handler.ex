@@ -23,11 +23,6 @@ defmodule ExGate.SocketHandler do
     {:ok, state}
   end
 
-  def websocket_info(:ping, state) do
-    Logger.error("#{inspect(self())} [websocket_info] responding with pong")
-    {:reply, :pong, state}
-  end
-
   # coveralls-ignore-start
   def websocket_info(msg, state) do
     Logger.debug("#{__MODULE__} generic websocket_info invoked: #{msg}")
@@ -49,19 +44,21 @@ defmodule ExGate.SocketHandler do
   def websocket_handle({:text, message}, state) do
     case decode_payload(message) do
       {:ok, %{"subscribe" => auction_id}} ->
+        # Maybe check if the auction exists
         WebsocketUtils.register_subscription(auction_id, self())
         Logger.info("Subscribed to auction #{auction_id}")
 
         Map.put(state, :subscriptions, [auction_id])
         {:reply, {:text, "subscribed"}, state}
 
-      {:ok, %{"message" => message}} ->
-        Logger.debug("Message parsed")
-        {:reply, {:text, "Received: " <> message}, state}
+      {:ok, different_message} ->
+        Logger.info("unrecognized message #{inspect(different_message)}")
 
-      otherwise ->
-        Logger.error("invalid payload: #{inspect(otherwise)}")
-        {:reply, {:text, "invalid payload"}, state}
+        {:reply, {:text, "unrecognized_message"}, state}
+
+      {:error, offending_message} ->
+        Logger.error("unable to decode message: #{inspect(offending_message)}")
+        {:reply, {:text, "unable to decode the message payload"}, state}
     end
   end
 
