@@ -10,3 +10,4 @@
 - [x] Bruno: add endpoint documentation
 - [x] Bruno: add `curl` example commands
 - [x] Bruno: add websocket subscriptions
+- [x] Bruno: created html login and auctions page

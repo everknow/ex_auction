@@ -35,6 +35,10 @@ defmodule ExAuctionsManager.Auctions.V1.Receiver do
 
   plug(:dispatch)
 
+  get "/" do
+    json_resp(conn, 200, DB.list_auctions())
+  end
+
   post "/" do
     %{"auction_base" => auction_base, "expiration_date" => expiration_date} = conn.params
 

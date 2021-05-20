@@ -72,11 +72,17 @@
             sessionStorage.removeItem("access_token");
             window.location.href = "/";
         };
+
         const fetchBids = function () {
             resetBidsList();
             const auction_id = document.getElementById("auction_id").value;
             console.log(JSON.stringify(auction_id));
             make_async_query("get", `http://localhost:8081/api/v1/bids/${auction_id}`, {}, render_bids_for_auction);
+        }
+
+        const fetchAuctions = function () {
+            resetAuctionsList();
+            make_async_query("get", "http://localhost:8081/api/v1/auctions", {}, renderAuctions);
         }
 
         const createBid = function () {
@@ -108,7 +114,7 @@
             });
         }
 
-        const render_bids_for_auction = function (bids) {
+        const renderBidsForAuction = function (bids) {
             const bids_div = document.createElement("div");
             const root = document.getElementById("bids_for_auction");
             bids.map((elem) => {
@@ -117,13 +123,26 @@
                 bids_div.appendChild(new_row);
                 console.log("Done");
             });
-
             root.appendChild(bids_div);
+        }
 
+        const renderAuctions = function (auctions) {
+            const auctions_div = document.createElement("div");
+            const root = document.getElementById("auctions_list");
+            auctions.map((elem) => {
+                const new_row = document.createElement("pre");
+                auctions_div.innerText = JSON.stringify(elem);
+                auctions_div.appendChild(new_row);
+            });
+            root.appendChild(auctions_div);
         }
 
         const resetBidsList = function () {
             document.getElementById("bids_for_auction").innerText = "";
+        }
+
+        const resetAuctionsList = function () {
+            document.getElementById("auctions_list").innerText = "";
         }
 
         const setBidCreationMessage = function (msg) {
@@ -131,9 +150,7 @@
         }
 
         const setAuctionCreationMessage = (message) => {
-            const body = JSON.parse(message);
-            console.log(body);
-            document.getElementById("auction_creation_message").innerText = body.reasons;
+            document.getElementById("auction_creation_message").innerText = message;
         };
 
         const createAuction = function () {
@@ -147,28 +164,85 @@
 
             console.log(`Payload: ${JSON.stringify(body)}`);
             make_async_query("post", "http://localhost:8081/api/v1/auctions/", body, function (response) {
-                JSON.stringify(response);
                 if (response.status === 201) {
-                    setAuctionCreationMessage("Auction created");
+                    console.log(response.responseText);
+                    const auction_id = JSON.parse(response.responseText).auction_id;
+                    setAuctionCreationMessage(`creation auction with id ${auction_id}`);
                 }
                 else if (response.status === 422) {
-                    console.log("Obtained 422");
+                    console.log(`Obtained 422: ${JSON.stringify(response.responseText)}`);
                     reason = JSON.parse(response.responseText.reasons)
                     setAuctionCreationMessage(reasons);
                 }
             });
+        };
+
+        const showConnectionStatus = (status) => {
+            document.getElementById("connection_status").innerText = status;
+        }
+
+        const showWebsocketMessage = (status) => {
+            document.getElementById("ws_message").innerText = status;
+        }
+
+
+        const subscribeToAuction = () => {
+
+            const auction_id = document.getElementById("sub_auction_id").value;
+
+            payload = {
+                subscribe: auction_id
+            };
+            ws.send(JSON.stringify(payload));
+            console.log(`Subscription message sent for auction_id ${auction_id}`);
         }
 
         window.onload = (event) => {
             if (getCredentials().access_token === undefined) {
                 window.location.href = "/";
             }
+            ws = new WebSocket("ws://localhost:8080/ws");
+            ws.onopen = function () {
+                showConnectionStatus("connected");
+                ping();
+
+            };
+            ws.onclose = function () {
+                showConnectionStatus("disconnected");
+            };
+            ws.onmessage = function (message) {
+                console.log(message);
+                showWebsocketMessage(message.data);
+            };
+
+            function ping() {
+                ws.send("ping");
+                console.log("Ping sent");
+                setTimeout(ping, 5000);
+            };
         };
     </script>
 </head>
 
 <body>
     <div>
+        <div>Connection status: <span id="connection_status">disconnected</span></div>
+        <div>Websocket message: <span id="ws_message" style="color: green"></span></div>
+
+        <!-- Auctions list -->
+        <div>
+
+            <fieldset>
+                <label for="">
+                    <strong>Auctions list</strong>
+                </label>
+                <div>
+                    <button onclick="fetchAuctions();">List auctions</button>
+                </div>
+                <div id="auctions_list"></div>
+            </fieldset>
+
+        </div>
 
         <!-- Auction creation -->
         <div>
@@ -179,6 +253,7 @@
                 <div>
                     <label for="">Expiration date</label>
                     <input type="text" id="expiration_date" />
+                    <div>[example: 2021-05-25 10:00:00Z]</div>
                 </div>
                 <div>
                     <label for="">Auction base</label>
@@ -187,6 +262,23 @@
                 <button onclick="createAuction();">Create auction</button>
                 <div for="">Status message for auction creation:
                     <span id="auction_creation_message"></span>
+                </div>
+            </fieldset>
+        </div>
+
+        <!-- Auction subscription -->
+        <div>
+            <fieldset>
+                <label for="">
+                    <strong>Auction subscription</strong>
+                </label>
+                <div>
+                    <label for="">Auction ID</label>
+                    <input type="text" id="sub_auction_id" />
+                </div>
+                <button onclick="subscribeToAuction();">Subscribe to auction</button>
+                <div for="">Status message for auction creation:
+                    <span id="subscription_request_feedback"></span>
                 </div>
             </fieldset>
         </div>
@@ -205,7 +297,6 @@
             <div id="bids_for_auction"></div>
         </fieldset>
 
-    </div>
     </div>
 
     <div>

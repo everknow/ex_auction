@@ -14,12 +14,13 @@ defmodule ExAuctionsManager.Auction do
   @fields [
     :open,
     :expiration_date,
-    :creation_date
+    :creation_date,
+    :auction_base
   ]
 
   @required_fields @fields -- [:creation_date]
 
-  @derive {Jason.Encoder, only: @required_fields}
+  @derive {Jason.Encoder, only: @fields ++ [:id]}
   schema "auctions" do
     field(:expiration_date, :utc_datetime)
     field(:creation_date, :utc_datetime)

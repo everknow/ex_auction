@@ -10,7 +10,7 @@ defmodule ExGate.SocketHandler do
   }
   """
   @behaviour :cowboy_websocket
-  @ping_time 1000
+
   alias ExGate.WebsocketUtils
   require Logger
 
@@ -23,15 +23,10 @@ defmodule ExGate.SocketHandler do
     {:ok, state}
   end
 
-  def websocket_info(:ping, state) do
-    Logger.error("#{inspect(self())} [websocket_info] responding with pong")
-    {:reply, :pong, state}
-  end
-
   # coveralls-ignore-start
   def websocket_info(msg, state) do
     Logger.debug("#{__MODULE__} generic websocket_info invoked: #{msg}")
-    {:reply, state}
+    {:reply, {:text, msg}, state}
   end
 
   # coveralls-ignore-stop
@@ -42,52 +37,33 @@ defmodule ExGate.SocketHandler do
   end
 
   def websocket_handle({:text, "ping"}, state) do
+    Logger.debug("Received ping. Sending pong...")
     {:reply, :pong, state}
   end
 
   def websocket_handle({:text, message}, state) do
-    with {:ok, payload} <- decode_payload(message),
-         true <- is_authenticated?(payload) do
-      case payload do
-        %{"subscribe" => auction_id} ->
-          Logger.info("Subscribing to auction #{auction_id}")
+    case decode_payload(message) do
+      {:ok, %{"subscribe" => auction_id}} ->
+        # Maybe check if the auction exists
+        WebsocketUtils.register_subscription(auction_id, self())
+        Logger.info("Subscribed to auction #{auction_id}")
 
-          WebsocketUtils.register_subscription(auction_id, self())
-          Logger.info("Subscribed to auction #{auction_id}")
+        Map.put(state, :subscriptions, [auction_id])
+        {:reply, {:text, "subscribed"}, state}
 
-          {:reply, {:text, Jason.encode!(%{ok: "subscribed"})},
-           Map.put(state, :subscriptions, [auction_id])}
+      {:ok, different_message} ->
+        Logger.info("unrecognized message #{inspect(different_message)}")
 
-        %{"message" => message} ->
-          Logger.debug("Message parsed")
-          {:reply, {:text, "Received: " <> message}, state}
+        {:reply, {:text, "unrecognized_message"}, state}
 
-        otherwise ->
-          Logger.error("invalid payload: #{inspect(otherwise)}")
-          {:reply, {:text, "invalid payload"}, state}
-      end
-    else
-      false ->
-        Logger.error("Missing authorization token")
-        {:reply, {:text, "missing authorization token"}, state}
-
-      otherwise ->
-        Logger.error("unable to decode the payload")
-        {:reply, {:text, "unable to decode the payload"}, state}
+      {:error, offending_message} ->
+        Logger.error("unable to decode message: #{inspect(offending_message)}")
+        {:reply, {:text, "unable to decode the message payload"}, state}
     end
   end
 
   defp decode_payload(payload) do
     payload
     |> Jason.decode()
-  end
-
-  defp is_authenticated?(%{"token" => token}) do
-    # This will execute the token verification and accordingly return true or false
-    true
-  end
-
-  defp is_authenticated?(_) do
-    false
   end
 end

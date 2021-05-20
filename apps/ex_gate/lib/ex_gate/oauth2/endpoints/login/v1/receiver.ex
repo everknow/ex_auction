@@ -8,13 +8,6 @@ defmodule ExGate.Login.V1.Receiver do
 
   require Logger
 
-  plug(Guardian.Plug.Pipeline,
-    module: ExGate.Guardian,
-    error_handler: ExGate.GuardianErrorHandler
-  )
-
-  plug(Guardian.Plug.VerifyHeader, claims: %{typ: "access"})
-
   plug(Plug.Logger)
 
   # to be removed in prod

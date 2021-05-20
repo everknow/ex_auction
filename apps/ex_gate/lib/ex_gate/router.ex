@@ -2,12 +2,20 @@ defmodule ExGate.Router do
   use Plug.Router
 
   plug(:match)
+  plug(Plug.Logger, log: :debug)
 
   plug(Plug.Parsers,
     parsers: [:json],
     pass: ["application/json"],
     json_decoder: Jason
   )
+
+  plug(Guardian.Plug.Pipeline,
+    module: ExGate.Guardian,
+    error_handler: ExGate.GuardianErrorHandler
+  )
+
+  plug(Guardian.Plug.VerifyHeader, claims: %{typ: "access"})
 
   plug(:dispatch)
 

@@ -11,26 +11,15 @@ defmodule ExGate.SocketTests do
       :ok
     end
 
-    test "valid message" do
-      original_message = "this is the message"
-      GunServer.send_frame(%{"message" => original_message, "token" => "some token"})
-      expected_message = "Received: " <> original_message
-      assert_receive({:websocket_replied, ^expected_message}, 5000)
+    test "subscription message" do
+      GunServer.send_frame(%{"subscribe" => 1})
+      expected_message = "Received: 1"
+      assert_receive({:websocket_replied, "subscribed"}, 5000)
     end
 
     test "malformed message" do
       GunServer.send_frame("i am not a valid message")
-      assert_receive({:websocket_replied, "unable to decode the payload"}, 5000)
-    end
-
-    test "payload with missing authorization token" do
-      GunServer.send_frame(%{"message" => "some message"})
-      assert_receive({:websocket_replied, "missing authorization token"}, 5000)
-    end
-
-    test "payload with missing message" do
-      GunServer.send_frame(%{"token" => "some token"})
-      assert_receive({:websocket_replied, "invalid payload"}, 5000)
+      assert_receive({:websocket_replied, "unable to decode the message payload"}, 5000)
     end
   end
 
