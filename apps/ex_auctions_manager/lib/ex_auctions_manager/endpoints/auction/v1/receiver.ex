@@ -39,6 +39,24 @@ defmodule ExAuctionsManager.Auctions.V1.Receiver do
     json_resp(conn, 200, DB.list_auctions())
   end
 
+  post "/close/:auction_id" do
+    %{"auction_id" => auction_base} = conn.params
+
+    case DB.close_auction(auction_id) do
+      {:ok, %Auction{id: auction_id, expiration_date: exp, auction_base: auction_base}} ->
+        json_resp(conn, 200, %{
+          auction_id: auction_id,
+          expiration_date: exp,
+          auction_base: auction_base
+        })
+
+      {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
+        reasons = errors |> Enum.map(fn {_, {reason, _}} -> reason end)
+
+        json_resp(conn, 422, %{reasons: reasons})
+    end
+  end
+
   post "/" do
     %{"auction_base" => auction_base, "expiration_date" => expiration_date} = conn.params
 

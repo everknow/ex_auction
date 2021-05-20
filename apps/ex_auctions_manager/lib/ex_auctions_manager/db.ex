@@ -119,6 +119,17 @@ defmodule ExAuctionsManager.DB do
     |> Repo.update()
   end
 
+  def close_auction(auction_id) when is_integer(auction_id) do
+    Auction
+    |> Repo.get(auction_id)
+    |> change(open: false)
+    |> Repo.update()
+  end
+
+  def close_auction(auction_id) when is_bitstring(auction_id) do
+    auction_id |> String.to_integer() |> close_auction()
+  end
+
   def list_auctions() do
     Auction |> Repo.all()
   end
