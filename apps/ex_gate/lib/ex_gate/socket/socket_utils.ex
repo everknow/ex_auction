@@ -1,4 +1,6 @@
 defmodule ExGate.WebsocketUtils do
+  require Logger
+
   def get_auction_pg_name(auction_id) do
     "AUCTION::" <> to_string(auction_id)
   end
@@ -13,6 +15,8 @@ defmodule ExGate.WebsocketUtils do
     name
     |> :pg2.get_local_members()
     |> Enum.each(fn pid ->
+      Logger.debug("Notifying to #{inspect(pid)}")
+
       send(
         pid,
         %{notification_type: :bid, auction_id: auction_id, bid_value: bid_value}
