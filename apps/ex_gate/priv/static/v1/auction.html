@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script>
+
+        const make_async_query = function (method, url, body, f) {
+            if (method === "get") {
+                return _make_get(url, f)
+            }
+            else if (method === "post") {
+                return _make_post(url, body, f)
+            }
+        }
+
+        const _make_get = function (url, f) {
+            console.log("Making get request");
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url);
+            xhr.setRequestHeader('Authorization', `Bearer ${getCredentials().access_token}`);
+            xhr.onload = function () {
+                if (xhr.status == 200) {
+                    console.log(`Obtained response: ${xhr.responseText}`);
+                    f(JSON.parse(xhr.responseText));
+                }
+                else {
+                    console.error("An error occurred");
+                    return [];
+                }
+
+            };
+            xhr.send();
+        }
+
+        const _make_post = function (url, body, f) {
+            console.log("Making post request");
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', url);
+            xhr.setRequestHeader('Authorization', `Bearer ${getCredentials().access_token}`);
+            xhr.setRequestHeader('Content-Type', "application/json");
+            console.log("Before onload");
+            xhr.onload = function () {
+                f(xhr);
+            };
+
+            xhr.onerror = function () {
+                console.error(`Error: ${JSON.stringify(xhr.status)}`);
+            }
+            xhr.send(JSON.stringify(body));
+        }
+
+        const getCredentials = function () {
+            return {
+                id: sessionStorage.getItem("id"),
+                name: sessionStorage.getItem("name"),
+                image_url: sessionStorage.getItem("image_url"),
+                email: sessionStorage.getItem("email"),
+                access_token: sessionStorage.getItem("access_token")
+            };
+        }
+
+        const logout = function () {
+            sessionStorage.removeItem("id");
+            sessionStorage.removeItem("id");
+            sessionStorage.removeItem("name");
+            sessionStorage.removeItem("image_url");
+            sessionStorage.removeItem("email");
+            sessionStorage.removeItem("access_token");
+            window.location.href = "/";
+        };
+        const fetchBids = function () {
+            resetBidsList();
+            const auction_id = document.getElementById("auction_id").value;
+            console.log(JSON.stringify(auction_id));
+            make_async_query("get", `http://localhost:8081/api/v1/bids/${auction_id}`, {}, render_bids_for_auction);
+        }
+
+        const createBid = function () {
+            const bid_auction_id = document.getElementById("bid_auction_id").value;
+            const bid_value = document.getElementById("bid_value").value;
+            const bidder = document.getElementById("bidder").value;
+            const body = {
+                bidder: bidder,
+                bid_value: bid_value,
+                auction_id: bid_auction_id
+            };
+
+            console.log(`Payload: ${JSON.stringify(body)}`);
+            make_async_query("post", "http://localhost:8081/api/v1/bids/", body, function (response) {
+                JSON.stringify(response);
+                if (response.status === 201) {
+                    setBidCreationMessage("Bid created");
+                }
+                else if (response.status === 422) {
+                    console.log("Obtained 422");
+                    const reasons_list = JSON.parse(response.responseText).reasons;
+                    const reasons = []
+                    for (const [key, value] of Object.entries(reasons_list)) {
+                        reasons.push(`${key}: ${value}`);
+                    }
+                    console.log(reasons);
+                    setBidCreationMessage(reasons.join(" - "));
+                }
+            });
+        }
+
+        const render_bids_for_auction = function (bids) {
+            const bids_div = document.createElement("div");
+            const root = document.getElementById("bids_for_auction");
+            bids.map((elem) => {
+                const new_row = document.createElement("pre");
+                new_row.innerText = JSON.stringify(elem);
+                bids_div.appendChild(new_row);
+                console.log("Done");
+            });
+
+            root.appendChild(bids_div);
+
+        }
+
+        const resetBidsList = function () {
+            document.getElementById("bids_for_auction").innerText = "";
+        }
+
+        const setBidCreationMessage = function (msg) {
+            document.getElementById("bids_creation_message").innerText = msg;
+        }
+
+        const setAuctionCreationMessage = (message) => {
+            const body = JSON.parse(message);
+            console.log(body);
+            document.getElementById("auction_creation_message").innerText = body.reasons;
+        };
+
+        const createAuction = function () {
+            console.log("Creating auction");
+            const expiration_date = document.getElementById("expiration_date").value;
+            const auction_base = document.getElementById("auction_base").value;
+            const body = {
+                expiration_date,
+                auction_base
+            };
+
+            console.log(`Payload: ${JSON.stringify(body)}`);
+            make_async_query("post", "http://localhost:8081/api/v1/auctions/", body, function (response) {
+                JSON.stringify(response);
+                if (response.status === 201) {
+                    setAuctionCreationMessage("Auction created");
+                }
+                else if (response.status === 422) {
+                    console.log("Obtained 422");
+                    reason = JSON.parse(response.responseText.reasons)
+                    setAuctionCreationMessage(reasons);
+                }
+            });
+        }
+
+        window.onload = (event) => {
+            if (getCredentials().access_token === undefined) {
+                window.location.href = "/";
+            }
+        };
+    </script>
+</head>
+
+<body>
+    <div>
+
+        <!-- Auction creation -->
+        <div>
+            <fieldset>
+                <label for="">
+                    <strong>Auction creation</strong>
+                </label>
+                <div>
+                    <label for="">Expiration date</label>
+                    <input type="text" id="expiration_date" />
+                </div>
+                <div>
+                    <label for="">Auction base</label>
+                    <input type="number" id="auction_base" />
+                </div>
+                <button onclick="createAuction();">Create auction</button>
+                <div for="">Status message for auction creation:
+                    <span id="auction_creation_message"></span>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+    <!-- Bids list -->
+    <div>
+
+        <fieldset>
+            <label for="">
+                <strong>Bids list</strong>
+            </label>
+            <div>
+                <input type="number" id="auction_id" />
+                <button onclick="fetchBids();">List bids</button>
+            </div>
+            <div id="bids_for_auction"></div>
+        </fieldset>
+
+    </div>
+    </div>
+
+    <div>
+        <!-- Bid creation -->
+        <div>
+            <fieldset>
+                <label for="">
+                    <strong>Bid creation</strong>
+                </label>
+                <div>
+                    <label for="">Auction ID</label>
+                    <input type="number" id="bid_auction_id" />
+                </div>
+                <div>
+                    <label for="">Bid value</label>
+                    <input type="number" id="bid_value" />
+                </div>
+                <div>
+                    <label for="">Bidder</label>
+                    <input type="text" id="bidder" />
+                </div>
+                <button onclick="createBid();">Create bid</button>
+                <div for="">Status message for bid creation:
+                    <span id="bids_creation_message"></span>
+                </div>
+                <div id="bid_creation_error_message"></div>
+            </fieldset>
+        </div>
+    </div><a onclick="logout();">Logout</a></div>
+</body>
+
+</html>
