@@ -10,25 +10,25 @@ defmodule ExGate.GoogleClient do
       {:ok, %Tesla.Env{body: body, status: 200}} ->
         claims =
           %{
-            "alg" => _,
-            "at_hash" => _,
-            "aud" => _,
-            "azp" => _,
+            # "alg" => _,
+            # "at_hash" => _,
+            # "aud" => _,
+            # "azp" => _,
             "email" => _,
-            "email_verified" => _,
-            "exp" => _,
-            "family_name" => _,
-            "given_name" => _,
-            "hd" => _,
-            "iat" => _,
-            "iss" => _,
-            "jti" => _,
-            "kid" => _,
-            "locale" => _,
+            # "email_verified" => _,
+            # "exp" => _,
+            # "family_name" => _,
+            # "given_name" => _,
+            # "hd" => _,
+            # "iat" => _,
+            # "iss" => _,
+            # "jti" => _,
+            # "kid" => _,
+            # "locale" => _,
             "name" => _,
             "picture" => _,
-            "sub" => _,
-            "typ" => _
+            # "sub" => _,
+            # "typ" => _
           } = Jason.decode!(body)
 
         {:ok, claims}
