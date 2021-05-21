@@ -136,11 +136,12 @@
         }
 
         const renderAuctions = function (auctions) {
+            console.log(`Auctions: ${JSON.stringify(auctions)}`);
             const auctions_div = document.createElement("div");
             const root = document.getElementById("auctions_list");
             auctions.map((elem) => {
                 const new_row = document.createElement("pre");
-                auctions_div.innerText = JSON.stringify(elem);
+                new_row.innerText = JSON.stringify(elem);
                 auctions_div.appendChild(new_row);
             });
             root.appendChild(auctions_div);

@@ -26,7 +26,7 @@ defmodule ExGate.GoogleClient do
             # "kid" => _,
             # "locale" => _,
             "name" => _,
-            "picture" => _,
+            "picture" => _
             # "sub" => _,
             # "typ" => _
           } = Jason.decode!(body)
