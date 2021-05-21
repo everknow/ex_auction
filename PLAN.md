@@ -6,8 +6,9 @@
 - [x] Bruno: AuctionsProcess not needed anymore (we are leveraging DB as source of truth)
 - [x] Bruno: add Postgres unique index on (auction_id, bid) for `bids` table
 - [x] Bruno: `auctions` need to be serialized in the database and must have a duration field
-- [ ] Bruno: Add a `stop auction` emergency endpoint
+- [x] Bruno: Add a `stop auction` emergency endpoint
 - [x] Bruno: add endpoint documentation
 - [x] Bruno: add `curl` example commands
 - [x] Bruno: add websocket subscriptions
 - [x] Bruno: created html login and auctions page
+- [ ] Bruno: add pagination and headers support
