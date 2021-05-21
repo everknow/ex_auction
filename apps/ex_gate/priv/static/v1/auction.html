@@ -77,7 +77,7 @@
             resetBidsList();
             const auction_id = document.getElementById("auction_id").value;
             console.log(JSON.stringify(auction_id));
-            make_async_query("get", `http://localhost:8081/api/v1/bids/${auction_id}`, {}, render_bids_for_auction);
+            make_async_query("get", `http://localhost:8081/api/v1/bids/${auction_id}`, {}, renderBidsForAuction);
         }
 
         const fetchAuctions = function () {
