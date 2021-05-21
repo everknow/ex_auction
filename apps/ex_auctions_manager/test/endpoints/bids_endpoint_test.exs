@@ -5,11 +5,7 @@ defmodule ExAuctionsManager.BidsEndpointTests do
   alias ExAuctionsManager.TestHTTPClient
 
   describe "Bids list endpoint test" do
-    test "/get empty list" do
-      assert [] = DB.list_bids("1")
-    end
-
-    test "/get populated list" do
+    test "get populated list" do
       assert {:ok, %Auction{id: auction_id}} =
                DB.create_auction(TestUtils.shift_datetime(TestUtils.get_now(), 5), 2)
 
@@ -21,7 +17,8 @@ defmodule ExAuctionsManager.BidsEndpointTests do
           DB.create_bid(auction_id, bid_value, bidder)
       end
 
-      assert DB.list_bids(auction_id) |> length() == 10
+      assert {results, _} = DB.list_bids(auction_id)
+      assert length(results) == 10
 
       {:ok, token, _claims} =
         ExGate.Guardian.encode_and_sign(
@@ -89,7 +86,8 @@ defmodule ExAuctionsManager.BidsEndpointTests do
              } ==
                body |> Jason.decode!()
 
-      assert DB.list_bids(auction_id) |> length() == 2
+      assert {results, _} = DB.list_bids(auction_id)
+      assert length(results) == 2
     end
 
     test "/post create bid failure" do
