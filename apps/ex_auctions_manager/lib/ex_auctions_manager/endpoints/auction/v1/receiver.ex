@@ -57,7 +57,7 @@ defmodule ExAuctionsManager.Auctions.V1.Receiver do
           json_resp(conn, 422, %{reasons: reasons})
       end
     else
-      json_resp(conn, 400, :bad_request)
+      json_resp(conn, 400, "BAD REQUEST")
     end
   end
 
@@ -82,9 +82,8 @@ defmodule ExAuctionsManager.Auctions.V1.Receiver do
           json_resp(conn, 422, %{reasons: reasons})
       end
     rescue
-      MatchError -> json_resp(conn, 400, :bad_request)
+      MatchError -> json_resp(conn, 400, "BAD REQUEST")
     end
-
   end
 
   defp json_resp(conn, status, obj) do

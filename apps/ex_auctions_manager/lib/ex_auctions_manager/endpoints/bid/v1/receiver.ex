@@ -65,7 +65,7 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
         end
 
       false ->
-        json_resp(conn, 400, :bad_request)
+        json_resp(conn, 400, "BAD REQUEST")
     end
   end
 
