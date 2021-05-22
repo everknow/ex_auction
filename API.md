@@ -30,7 +30,7 @@ Successful response:
             "expiration_date": "2021-05-25T03:54:09Z"
         }
 
-Error response:
+Error responses:
 
     HTTP Status: 422
     Body
@@ -39,6 +39,9 @@ Error response:
                 "expiry date must be bigger than creation date"
             ]
         }
+    
+    HTTP Status: 400 (in case of missing payload or part of it)
+    Body: bad_request
 
 
 
@@ -111,6 +114,9 @@ Error response:
             "reason": ["auction does not exist"]
         }
 
+    HTTP Status: 400 (in case of missing payload or part of it)
+    Body: bad_request
+    
 # Curl commands
 
 The above endpoints can be used with the following curl commands:

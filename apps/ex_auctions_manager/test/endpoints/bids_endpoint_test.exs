@@ -151,6 +151,8 @@ defmodule ExAuctionsManager.BidsEndpointTests do
                  ]
                )
 
+      IO.inspect(body, label: "------------------------")
+
       assert {:ok, %Tesla.Env{status: 400, body: body}} =
                Tesla.post(
                  Tesla.client([]),
