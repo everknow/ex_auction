@@ -152,11 +152,11 @@ defmodule ExAuctionsManager.DB do
 
     Logger.warn(
       "the auction is expired: #{now} - #{expiration_date} - #{
-        DateTime.compare(now, expiration_date)
+        Timex.compare(now, expiration_date)
       }"
     )
 
-    case DateTime.compare(now, expiration_date) do
+    case Timex.compare(now, expiration_date) do
       :gt ->
         Logger.error("the auction is expired: #{now} > #{expiration_date}")
         {:error, reject_bid(bid_changeset, :auction_id, "is expired")}
