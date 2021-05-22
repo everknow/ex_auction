@@ -3,8 +3,8 @@ defmodule ExAuctionsManager.AuctionsEndpointTests do
 
   alias ExAuctionsManager.{Auction, Bid, DB, Repo}
 
-  describe "Auction creation endpoint test" do
-    test "/ get auctions list" do
+  describe "Auction endpoint tests" do
+    test "auctions list" do
       exp = TestUtils.shift_datetime(TestUtils.get_now(), 5)
 
       {:ok,
@@ -43,7 +43,7 @@ defmodule ExAuctionsManager.AuctionsEndpointTests do
              ] = Jason.decode!(body)
     end
 
-    test "/post create auction" do
+    test "create auction" do
       exp = TestUtils.shift_datetime(TestUtils.get_now(), 5)
 
       {:ok, token, _claims} =
@@ -82,7 +82,7 @@ defmodule ExAuctionsManager.AuctionsEndpointTests do
              } = Jason.decode!(body)
     end
 
-    test "/post create auction with invalid exp date" do
+    test "create auction with invalid exp date -- 422 unprocessable entity" do
       exp = TestUtils.shift_datetime(TestUtils.get_now(), -5)
 
       {:ok, token, _claims} =
@@ -110,6 +110,123 @@ defmodule ExAuctionsManager.AuctionsEndpointTests do
                  "expiry date must be bigger than creation date"
                ]
              } = Jason.decode!(body)
+    end
+
+    test "create auction with invalid payload - 400 bad request" do
+      exp = TestUtils.shift_datetime(TestUtils.get_now(), -5)
+
+      {:ok, token, _claims} =
+        ExGate.Guardian.encode_and_sign(
+          _resource = %{user_id: "1"},
+          _claims = %{},
+          # GOOGLE EXPIRY: decoded["exp"]
+          _opts = [ttl: {3600, :seconds}]
+        )
+
+      {:ok, %Tesla.Env{status: 400, body: body}} =
+        Tesla.post(
+          Tesla.client([]),
+          "http://localhost:10000/api/v1/auctions",
+          %{"auction_base" => 10}
+          |> Jason.encode!(),
+          headers: [
+            {"authorization", "Bearer #{token}"},
+            {"content-type", "application/json"}
+          ]
+        )
+
+      {:ok, %Tesla.Env{status: 400, body: body}} =
+        Tesla.post(
+          Tesla.client([]),
+          "http://localhost:10000/api/v1/auctions",
+          %{"expiration_date" => exp}
+          |> Jason.encode!(),
+          headers: [
+            {"authorization", "Bearer #{token}"},
+            {"content-type", "application/json"}
+          ]
+        )
+    end
+
+    test "auction closure endpoint" do
+      exp = TestUtils.shift_datetime(TestUtils.get_now(), 10)
+
+      {:ok, token, _claims} =
+        ExGate.Guardian.encode_and_sign(
+          _resource = %{user_id: "1"},
+          _claims = %{},
+          # GOOGLE EXPIRY: decoded["exp"]
+          _opts = [ttl: {3600, :seconds}]
+        )
+
+      assert {:ok, %Tesla.Env{status: 201, body: body}} =
+               Tesla.post(
+                 Tesla.client([]),
+                 "http://localhost:10000/api/v1/auctions",
+                 %{"expiration_date" => exp, "auction_base" => 10}
+                 |> Jason.encode!(),
+                 headers: [
+                   {"authorization", "Bearer #{token}"},
+                   {"content-type", "application/json"}
+                 ]
+               )
+
+      %{
+        "auction_id" => auction_id
+      } = body |> Jason.decode!()
+
+      assert {:ok, %Tesla.Env{status: 200, body: body}} =
+               Tesla.post(
+                 Tesla.client([]),
+                 "http://localhost:10000/api/v1/auctions/close/#{auction_id}",
+                 %{}
+                 |> Jason.encode!(),
+                 headers: [
+                   {"authorization", "Bearer #{token}"},
+                   {"content-type", "application/json"}
+                 ]
+               )
+
+      %{
+        id: ^auction_id,
+        open: false
+      } = DB.get_auction(auction_id)
+    end
+
+    test "auction closure endpoint with invalid payload - 400 bad request" do
+      exp = TestUtils.shift_datetime(TestUtils.get_now(), -5)
+
+      {:ok, token, _claims} =
+        ExGate.Guardian.encode_and_sign(
+          _resource = %{user_id: "1"},
+          _claims = %{},
+          # GOOGLE EXPIRY: decoded["exp"]
+          _opts = [ttl: {3600, :seconds}]
+        )
+
+      {:ok, %Tesla.Env{status: 400, body: body}} =
+        Tesla.post(
+          Tesla.client([]),
+          "http://localhost:10000/api/v1/auctions",
+          %{"auction_base" => 10}
+          |> Jason.encode!(),
+          headers: [
+            {"authorization", "Bearer #{token}"},
+            {"content-type", "application/json"}
+          ]
+        )
+
+      {:ok, %Tesla.Env{status: 400, body: body}} =
+        Tesla.post(
+          Tesla.client([]),
+          "http://localhost:10000/api/v1/auctions",
+          %{"expiration_date" => exp}
+          |> Jason.encode!(),
+          headers: [
+            {"authorization", "Bearer #{token}"},
+            {"content-type", "application/json"}
+          ]
+        )
     end
   end
 end

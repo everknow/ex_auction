@@ -134,6 +134,10 @@ defmodule ExAuctionsManager.DB do
     Auction |> Repo.all()
   end
 
+  def get_auction(auction_id) do
+    Repo.get(Auction, auction_id)
+  end
+
   def get_and_lock_auction(auction_id) do
     from(a in Auction, where: a.id == ^auction_id, lock: "FOR UPDATE")
     |> Repo.one()

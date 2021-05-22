@@ -5,11 +5,7 @@ defmodule ExAuctionsManager.BidsEndpointTests do
   alias ExAuctionsManager.TestHTTPClient
 
   describe "Bids list endpoint test" do
-    test "/get empty list" do
-      assert [] = DB.list_bids("1")
-    end
-
-    test "/get populated list" do
+    test "/bids/:auction_id populated list" do
       assert {:ok, %Auction{id: auction_id}} =
                DB.create_auction(TestUtils.shift_datetime(TestUtils.get_now(), 5), 2)
 
@@ -50,7 +46,7 @@ defmodule ExAuctionsManager.BidsEndpointTests do
       {:ok, %{auction_id: auction_id}}
     end
 
-    test "/post create bid", %{auction_id: auction_id} do
+    test "/bids create bid", %{auction_id: auction_id} do
       bidder = "bidder"
       bid_value = 110
       new_bid_value = 120
@@ -92,7 +88,7 @@ defmodule ExAuctionsManager.BidsEndpointTests do
       assert DB.list_bids(auction_id) |> length() == 2
     end
 
-    test "/post create bid failure" do
+    test "/post create bid failure - unprocessable entity" do
       bidder = "bidder"
       bid_value = 110
       new_bid_value = 120
@@ -125,7 +121,7 @@ defmodule ExAuctionsManager.BidsEndpointTests do
              } = body |> Jason.decode!()
     end
 
-    test "/post create bid failure - expired auction" do
+    test "/post create bid failure - 400 bad request" do
       assert {:ok, %Auction{id: auction_id}} =
                DB.create_auction(TestUtils.shift_datetime(TestUtils.get_now(), 0, 0, 0, 1), 100)
 
@@ -143,11 +139,11 @@ defmodule ExAuctionsManager.BidsEndpointTests do
 
       :timer.sleep(1500)
 
-      assert {:ok, %Tesla.Env{status: 422, body: body}} =
+      assert {:ok, %Tesla.Env{status: 400, body: body}} =
                Tesla.post(
                  Tesla.client([]),
                  "http://localhost:10000/api/v1/bids/",
-                 %{"auction_id" => auction_id, "bid_value" => new_bid_value, "bidder" => bidder}
+                 %{"bid_value" => new_bid_value, "bidder" => bidder}
                  |> Jason.encode!(),
                  headers: [
                    {"authorization", "Bearer #{token}"},
@@ -155,12 +151,29 @@ defmodule ExAuctionsManager.BidsEndpointTests do
                  ]
                )
 
-      assert %{
-               "auction_id" => ^auction_id,
-               "bid_value" => ^new_bid_value,
-               "bidder" => ^bidder,
-               "reasons" => ["auction is expired"]
-             } = body |> Jason.decode!()
+      assert {:ok, %Tesla.Env{status: 400, body: body}} =
+               Tesla.post(
+                 Tesla.client([]),
+                 "http://localhost:10000/api/v1/bids/",
+                 %{"auction_id" => auction_id, "bidder" => bidder}
+                 |> Jason.encode!(),
+                 headers: [
+                   {"authorization", "Bearer #{token}"},
+                   {"content-type", "application/json"}
+                 ]
+               )
+
+      assert {:ok, %Tesla.Env{status: 400, body: body}} =
+               Tesla.post(
+                 Tesla.client([]),
+                 "http://localhost:10000/api/v1/bids/",
+                 %{"auction_id" => auction_id, "bid_value" => new_bid_value}
+                 |> Jason.encode!(),
+                 headers: [
+                   {"authorization", "Bearer #{token}"},
+                   {"content-type", "application/json"}
+                 ]
+               )
     end
   end
 end

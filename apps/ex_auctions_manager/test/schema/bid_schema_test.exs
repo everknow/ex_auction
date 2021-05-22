@@ -34,8 +34,7 @@ defmodule ExAuctionsManager.BidSchemaTests do
     end
 
     test "bid creation failure - non existing auction" do
-      assert {:error, %Ecto.Changeset{valid?: false} = cs} =
-               DB.create_bid(1, 9, "some_bidder") |> IO.inspect()
+      assert {:error, %Ecto.Changeset{valid?: false} = cs} = DB.create_bid(1, 9, "some_bidder")
 
       assert "auction does not exist" in errors_on(cs).auction_id
     end

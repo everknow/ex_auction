@@ -40,6 +40,7 @@ defmodule ExAuctionsManager.AuctionSchemaTests do
 
     test "auction creation error - expiration_date in the past" do
       auction_end = TestUtils.shift_datetime(TestUtils.get_now(), -2)
+      auction_end_str = auction_end |> DateTime.to_iso8601()
 
       attrs = %{
         open: false,
@@ -47,19 +48,18 @@ defmodule ExAuctionsManager.AuctionSchemaTests do
         expiration_date: auction_end
       }
 
-      assert %Ecto.Changeset{
-               valid?: false,
-               changes: %{
-                 creation_date: _,
-                 auction_base: 10,
-                 expiration_date: ^auction_end,
-                 open: true
-               }
-             } = cs = Auction.changeset(%Auction{}, attrs)
+      assert {:error,
+              %Ecto.Changeset{
+                valid?: false,
+                changes: %{
+                  creation_date: _,
+                  auction_base: 10,
+                  expiration_date: auction_end,
+                  open: true
+                }
+              } = cs} = DB.create_auction(auction_end, 10)
 
       assert "expiry date must be bigger than creation date" in errors_on(cs).expiration_date
-
-      {:error, %Ecto.Changeset{valid?: false}} = DB.create_auction(auction_end, 10)
     end
   end
 end

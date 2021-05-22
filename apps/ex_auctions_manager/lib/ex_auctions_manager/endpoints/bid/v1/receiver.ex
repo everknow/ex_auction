@@ -41,25 +41,31 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
   end
 
   post "/" do
-    %{"auction_id" => auction_id, "bid_value" => bid_value, "bidder" => bidder} = conn.params
-    bid_value = maybe_convert(bid_value)
-    auction_id = maybe_convert(auction_id)
+    case valid_payload?(conn) do
+      true ->
+        %{"auction_id" => auction_id, "bid_value" => bid_value, "bidder" => bidder} = conn.params
+        bid_value = maybe_convert(bid_value)
+        auction_id = maybe_convert(auction_id)
 
-    case DB.create_bid(auction_id, bid_value, bidder) do
-      {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} ->
-        WebsocketUtils.notify_bid(auction_id, bid_value)
+        case DB.create_bid(auction_id, bid_value, bidder) do
+          {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} ->
+            WebsocketUtils.notify_bid(auction_id, bid_value)
 
-        json_resp(conn, 201, %{auction_id: auction_id, bid_value: bid_value, bidder: bidder})
+            json_resp(conn, 201, %{auction_id: auction_id, bid_value: bid_value, bidder: bidder})
 
-      {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
-        Logger.error("auction #{}: bid #{} cannot be accepted. Reason: #{inspect(errors)}")
-        reasons = errors |> Enum.map(fn {_, {reason, _}} -> reason end)
+          {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
+            Logger.error("auction #{}: bid #{} cannot be accepted. Reason: #{inspect(errors)}")
+            reasons = errors |> Enum.map(fn {_, {reason, _}} -> reason end)
 
-        json_resp(
-          conn,
-          422,
-          %{auction_id: auction_id, bid_value: bid_value, bidder: bidder, reasons: reasons}
-        )
+            json_resp(
+              conn,
+              422,
+              %{auction_id: auction_id, bid_value: bid_value, bidder: bidder, reasons: reasons}
+            )
+        end
+
+      false ->
+        json_resp(conn, 400, :bad_request)
     end
   end
 
@@ -84,5 +90,11 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
   defp maybe_convert(value) do
     Logger.warn("general")
     value
+  end
+
+  defp valid_payload?(conn) do
+    Map.has_key?(conn.params, "auction_id") &&
+      Map.has_key?(conn.params, "bid_value") &&
+      Map.has_key?(conn.params, "bidder")
   end
 end
