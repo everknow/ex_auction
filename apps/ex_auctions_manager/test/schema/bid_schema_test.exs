@@ -8,6 +8,7 @@ defmodule ExAuctionsManager.BidSchemaTests do
       expiration_date = TestUtils.shift_datetime(TestUtils.get_now(), 10)
 
       {:ok, %Auction{} = auction} = DB.create_auction(expiration_date, 10)
+
       {:ok, %{auction: auction}}
     end
 
@@ -47,21 +48,23 @@ defmodule ExAuctionsManager.BidSchemaTests do
     end
 
     test "bids list", %{auction: %Auction{id: auction_id} = auction} do
-      assert {:ok,
-              %Bid{
-                auction_id: ^auction_id,
-                bid_value: 12,
-                bidder: "some_bidder"
-              }} = DB.create_bid(auction_id, 12, "some_bidder")
+      for elem <- 1..32 do
+        bid_value = elem * 10
+        bidder = "some bidder"
 
-      assert {:ok,
-              %Bid{
-                auction_id: ^auction_id,
-                bid_value: 14,
-                bidder: "some_bidder2"
-              }} = DB.create_bid(auction_id, 14, "some_bidder2")
+        {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} =
+          DB.create_bid(auction_id, bid_value, bidder)
+      end
 
-      assert 2 == length(DB.list_bids(auction_id))
+      assert {bids, %{next_page: 1}} = DB.list_bids(auction_id, 0, 10)
+      assert {bids, %{prev_page: 0, next_page: 2}} = DB.list_bids(auction_id, 1, 10)
+
+      assert {bids, %{prev_page: 1, next_page: 3}} = DB.list_bids(auction_id, 2, 10)
+
+      assert {bids, %{prev_page: 2}} = DB.list_bids(auction_id, 3, 10)
+
+      assert length(bids) == 2
+      assert {bids, %{}} = DB.list_bids(auction_id, 4, 10)
     end
 
     test "bids creation - non_existing auction" do

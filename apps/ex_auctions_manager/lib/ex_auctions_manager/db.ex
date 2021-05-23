@@ -95,12 +95,56 @@ defmodule ExAuctionsManager.DB do
     - size (optional): number of bids per page
   """
   def list_bids(auction_id, page \\ 0, size \\ @page) do
+    bids_count =
+      from(bid in Bid,
+        select: count(bid.id)
+      )
+      |> Repo.one()
+
+    offset = page * size
+    last = (page + 1) * size
+
     q =
       from(bid in Bid,
-        where: bid.auction_id == ^auction_id
+        where: bid.auction_id == ^auction_id,
+        limit: ^size,
+        offset: ^offset
       )
 
-    Repo.all(q)
+    results = Repo.all(q)
+
+    headers = %{}
+
+    headers =
+      headers
+      |> maybe_add_prev_page(page, bids_count, size)
+      |> maybe_add_next_page(results, size, page, bids_count)
+
+    {results, headers}
+  end
+
+  defp maybe_add_prev_page(headers, 0, bids_count, size) do
+    headers
+  end
+
+  defp maybe_add_prev_page(headers, page, bids_count, size) do
+    if page * size < bids_count do
+      headers = Map.put(headers, :prev_page, page - 1)
+    else
+      headers
+    end
+  end
+
+  defp maybe_add_next_page(headers, results, size, page, bids_count) do
+    last = (page + 1) * size
+    Logger.debug("Maybe add next page")
+
+    if length(results) != size || (length(results) == size and last == bids_count) do
+      headers
+    else
+      Logger.debug("Adding page")
+      headers |> Map.put(:next_page, page + 1)
+    end
   end
 
   def create_auction(expiration_date, auction_base) do
@@ -154,14 +198,8 @@ defmodule ExAuctionsManager.DB do
        ) do
     now = DateTime.utc_now()
 
-    Logger.warn(
-      "the auction is expired: #{now} - #{expiration_date} - #{
-        Timex.compare(now, expiration_date)
-      }"
-    )
-
     case Timex.compare(now, expiration_date) do
-      :gt ->
+      x when x > -1 ->
         Logger.error("the auction is expired: #{now} > #{expiration_date}")
         {:error, reject_bid(bid_changeset, :auction_id, "is expired")}
 
