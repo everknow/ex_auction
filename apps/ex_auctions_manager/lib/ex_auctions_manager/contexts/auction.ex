@@ -57,7 +57,7 @@ defmodule ExAuctionsManager.Auction do
     created = get_field(changeset, :creation_date)
 
     validate_change(changeset, field, fn _, expiration_date ->
-      if created >= expiration_date do
+      if Timex.compare(created, expiration_date) > -1 do
         [{field, opts[field] || "expiry date must be bigger than creation date"}]
       else
         []

@@ -3,6 +3,7 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
   Admin UI receiver, version 1
   """
   use Plug.Router
+  import Plug.Conn
 
   alias ExAuctionsManager.{Bid, DB}
   alias ExGate.WebsocketUtils
@@ -35,9 +36,17 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
   plug(:dispatch)
 
   get "/:auction_id" do
+    # TODO: move this in the configuration
+    default_size = 10
     %{"auction_id" => auction_id} = conn.params
-    {bids, headers} = DB.list_bids(auction_id)
-    json_resp(conn, 200, bids)
+    page = Map.get(conn.params, "page", 0) |> String.to_integer()
+    size = Map.get(conn.params, "size", default_size) |> String.to_integer()
+
+    {bids, headers} = DB.list_bids(auction_id, page, size)
+
+    conn
+    |> inject_headers(headers)
+    |> json_resp(200, bids)
   end
 
   post "/" do
@@ -84,5 +93,12 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
   defp maybe_convert(value) do
     Logger.warn("general")
     value
+  end
+
+  def inject_headers(conn, headers) do
+    string_headers =
+      headers |> Enum.map(fn {key, value} -> {key |> to_string(), value |> to_string()} end)
+
+    %{conn | resp_headers: conn.resp_headers ++ Enum.to_list(string_headers)}
   end
 end

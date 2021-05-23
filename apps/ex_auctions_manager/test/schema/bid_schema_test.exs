@@ -6,7 +6,9 @@ defmodule ExAuctionsManager.BidSchemaTests do
   describe "Schema tests" do
     setup do
       expiration_date = TestUtils.shift_datetime(TestUtils.get_now(), 10)
+
       {:ok, %Auction{} = auction} = DB.create_auction(expiration_date, 10)
+
       {:ok, %{auction: auction}}
     end
 
