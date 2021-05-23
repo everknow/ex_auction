@@ -5,13 +5,12 @@ defmodule ExAuctionsManager.BidsEndpointTests do
   alias ExAuctionsManager.TestHTTPClient
 
   describe "Bids list endpoint test" do
-    test "/get empty list" do
-      assert [] = DB.list_bids("1")
-    end
-
-    test "/get populated list" do
+    test "get populated list" do
       assert {:ok, %Auction{id: auction_id}} =
                DB.create_auction(TestUtils.shift_datetime(TestUtils.get_now(), 5), 2)
+
+      page_size = 2
+      page = 1
 
       for elem <- 1..10 do
         bid_value = elem * 10
@@ -21,7 +20,8 @@ defmodule ExAuctionsManager.BidsEndpointTests do
           DB.create_bid(auction_id, bid_value, bidder)
       end
 
-      assert DB.list_bids(auction_id) |> length() == 10
+      assert {results, _} = DB.list_bids(auction_id, 1, 2)
+      assert length(results) == 2
 
       {:ok, token, _claims} =
         ExGate.Guardian.encode_and_sign(
@@ -31,14 +31,17 @@ defmodule ExAuctionsManager.BidsEndpointTests do
           _opts = [ttl: {3600, :seconds}]
         )
 
-      {:ok, %Tesla.Env{status: 200, body: body}} =
-        TestHTTPClient.get("/api/v1/bids/#{auction_id}",
-          headers: [
-            {"authorization", "Bearer #{token}"}
-          ]
-        )
+      assert {:ok, %Tesla.Env{status: 200, body: body, headers: headers}} =
+               TestHTTPClient.get("/api/v1/bids/#{auction_id}?page=#{page}&size=#{page_size}",
+                 headers: [
+                   {"authorization", "Bearer #{token}"}
+                 ]
+               )
 
-      assert 10 == body |> Jason.decode!() |> length()
+      assert page_size == body |> Jason.decode!() |> length()
+
+      assert {"prev_page", "0"} in headers
+      assert {"next_page", "2"} in headers
     end
   end
 
@@ -89,7 +92,8 @@ defmodule ExAuctionsManager.BidsEndpointTests do
              } ==
                body |> Jason.decode!()
 
-      assert DB.list_bids(auction_id) |> length() == 2
+      assert {results, _} = DB.list_bids(auction_id)
+      assert length(results) == 2
     end
 
     test "/post create bid failure" do
