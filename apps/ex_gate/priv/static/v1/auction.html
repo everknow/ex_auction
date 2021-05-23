@@ -6,6 +6,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <!-- <link rel="stylesheet" href="/portal/client/v1/index.css"> -->
+    <meta name="google-signin-client_id"
+        content="323198697202-hjk4tg05cs6e38arnmloba6nshtighj5.apps.googleusercontent.com">
+
     <script>
 
         const make_async_query = function (method, url, body, f) {
@@ -64,13 +69,17 @@
         }
 
         const logout = function () {
-            sessionStorage.removeItem("id");
-            sessionStorage.removeItem("id");
-            sessionStorage.removeItem("name");
-            sessionStorage.removeItem("image_url");
-            sessionStorage.removeItem("email");
-            sessionStorage.removeItem("access_token");
-            window.location.href = "/";
+            var auth2 = gapi.auth2.getAuthInstance();
+            auth2.signOut().then(function () {
+                sessionStorage.removeItem("id");
+                sessionStorage.removeItem("id");
+                sessionStorage.removeItem("name");
+                sessionStorage.removeItem("image_url");
+                sessionStorage.removeItem("email");
+                sessionStorage.removeItem("access_token");
+                window.location.href = "/";
+            });
+
         };
 
         const fetchBids = function () {
@@ -88,7 +97,7 @@
         const createBid = function () {
             const bid_auction_id = document.getElementById("bid_auction_id").value;
             const bid_value = document.getElementById("bid_value").value;
-            const bidder = document.getElementById("bidder").value;
+            const bidder = getCredentials().email;
             const body = {
                 bidder: bidder,
                 bid_value: bid_value,
@@ -235,11 +244,21 @@
                 showWebsocketMessage(message.data);
             };
 
+            gapi.load('auth2', function () {
+                gapi.auth2.init();
+            });
+
             function ping() {
                 ws.send("ping");
                 console.log("Ping sent");
                 setTimeout(ping, 5000);
             };
+
+            const setupBidder = () => {
+                const auction_id = document.getElementById("bidder_name").innerText = getCredentials().email;
+            }
+
+            setupBidder();
         };
     </script>
 </head>
@@ -351,8 +370,8 @@
                     <input type="number" id="bid_value" />
                 </div>
                 <div>
-                    <label for="">Bidder</label>
-                    <input type="text" id="bidder" />
+                    <label for="">Bidder: </label>
+                    <span style="font-weight: bold;" id="bidder_name"></span>
                 </div>
                 <button onclick="createBid();">Create bid</button>
                 <div for="">Status message for bid creation:
