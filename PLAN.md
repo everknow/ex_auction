@@ -11,4 +11,5 @@
 - [x] Bruno: add `curl` example commands
 - [x] Bruno: add websocket subscriptions
 - [x] Bruno: created html login and auctions page
-- [ ] Bruno: add pagination and headers support
+- [x] Bruno: add pagination and headers support
+- [ ] Bruno: update API doc with authorization information
