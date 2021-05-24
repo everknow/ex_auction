@@ -40,41 +40,49 @@ defmodule ExAuctionsManager.Auctions.V1.Receiver do
   end
 
   post "/close/:auction_id" do
-    %{"auction_id" => auction_base} = conn.params
+    if Map.has_key?(conn.params, "auction_id") do
+      %{"auction_id" => auction_base} = conn.params
 
-    case DB.close_auction(auction_id) do
-      {:ok, %Auction{id: auction_id, expiration_date: exp, auction_base: auction_base}} ->
-        json_resp(conn, 200, %{
-          auction_id: auction_id,
-          expiration_date: exp,
-          auction_base: auction_base
-        })
+      case DB.close_auction(auction_id) do
+        {:ok, %Auction{id: auction_id, expiration_date: exp, auction_base: auction_base}} ->
+          json_resp(conn, 200, %{
+            auction_id: auction_id,
+            expiration_date: exp,
+            auction_base: auction_base
+          })
 
-      {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
-        reasons = errors |> Enum.map(fn {_, {reason, _}} -> reason end)
+        {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
+          reasons = errors |> Enum.map(fn {_, {reason, _}} -> reason end)
 
-        json_resp(conn, 422, %{reasons: reasons})
+          json_resp(conn, 422, %{reasons: reasons})
+      end
+    else
+      json_resp(conn, 400, "BAD REQUEST")
     end
   end
 
   post "/" do
-    %{"auction_base" => auction_base, "expiration_date" => expiration_date} = conn.params
+    try do
+      %{"auction_base" => auction_base, "expiration_date" => expiration_date} = conn.params
 
-    {:ok, expiration_date, _} = expiration_date |> DateTime.from_iso8601()
-    auction_base = auction_base |> maybe_convert()
+      {:ok, expiration_date, _} = expiration_date |> DateTime.from_iso8601()
+      auction_base = auction_base |> maybe_convert()
 
-    case DB.create_auction(expiration_date, auction_base) do
-      {:ok, %Auction{id: auction_id, expiration_date: exp, auction_base: auction_base}} ->
-        json_resp(conn, 201, %{
-          auction_id: auction_id,
-          expiration_date: exp,
-          auction_base: auction_base
-        })
+      case DB.create_auction(expiration_date, auction_base) do
+        {:ok, %Auction{id: auction_id, expiration_date: exp, auction_base: auction_base}} ->
+          json_resp(conn, 201, %{
+            auction_id: auction_id,
+            expiration_date: exp,
+            auction_base: auction_base
+          })
 
-      {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
-        reasons = errors |> Enum.map(fn {_, {reason, _}} -> reason end)
+        {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
+          reasons = errors |> Enum.map(fn {_, {reason, _}} -> reason end)
 
-        json_resp(conn, 422, %{reasons: reasons})
+          json_resp(conn, 422, %{reasons: reasons})
+      end
+    rescue
+      MatchError -> json_resp(conn, 400, "BAD REQUEST")
     end
   end
 

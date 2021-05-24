@@ -2,6 +2,7 @@ defmodule ExAuctionsManager.AuctionSchemaTests do
   use ExAuctionsManager.RepoCase, async: false
 
   alias ExAuctionsManager.{Auction, DB}
+  import ExUnit.CaptureLog
 
   describe "Auction schema tests" do
     test "auction creation success" do
@@ -47,19 +48,40 @@ defmodule ExAuctionsManager.AuctionSchemaTests do
         expiration_date: auction_end
       }
 
-      assert %Ecto.Changeset{
-               valid?: false,
-               changes: %{
-                 creation_date: _,
-                 auction_base: 10,
-                 expiration_date: ^auction_end,
-                 open: true
-               }
-             } = cs = Auction.changeset(%Auction{}, attrs)
+      assert {:error,
+              %Ecto.Changeset{
+                valid?: false,
+                changes: %{
+                  creation_date: _,
+                  auction_base: 10,
+                  expiration_date: auction_end,
+                  open: true
+                }
+              } = cs} = DB.create_auction(auction_end, 10)
 
       assert "expiry date must be bigger than creation date" in errors_on(cs).expiration_date
+    end
 
-      {:error, %Ecto.Changeset{valid?: false}} = DB.create_auction(auction_end, 10)
+    test "auction creation error - auction is expired" do
+      auction_end = TestUtils.shift_datetime(TestUtils.get_now(), 0, 0, 0, 1)
+
+      attrs = %{
+        open: false,
+        auction_base: 10,
+        expiration_date: auction_end
+      }
+
+      assert {:ok, %Auction{id: auction_id}} = DB.create_auction(auction_end, 100)
+      :timer.sleep(1000)
+
+      assert capture_log(fn ->
+               assert {
+                        :error,
+                        %Ecto.Changeset{valid?: false} = cs
+                      } = DB.create_bid(auction_id, 101, "some_bidder")
+
+               assert "auction is expired" in errors_on(cs).auction_id
+             end) =~ "auction is expired"
     end
   end
 end
