@@ -5,7 +5,7 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
   use Plug.Router
   import Plug.Conn
 
-  alias ExAuctionsManager.{Bid, DB}
+  alias ExAuctionsManager.{Auction, Bid, DB}
   alias ExGate.WebsocketUtils
 
   require Logger
@@ -55,11 +55,10 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
         %{"auction_id" => auction_id, "bid_value" => bid_value, "bidder" => bidder} = conn.params
         bid_value = maybe_convert(bid_value)
         auction_id = maybe_convert(auction_id)
+        auction = DB.get_auction(auction_id)
 
         case DB.create_bid(auction_id, bid_value, bidder) do
           {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} ->
-            WebsocketUtils.notify_bid(auction_id, bid_value)
-
             json_resp(conn, 201, %{auction_id: auction_id, bid_value: bid_value, bidder: bidder})
 
           {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
@@ -76,6 +75,14 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
       false ->
         json_resp(conn, 400, "BAD REQUEST")
     end
+  end
+
+  defp handle_ws_notify(%Auction{id: auction_id, blind: false}, bid_value) do
+    WebsocketUtils.notify_bid(auction_id, bid_value)
+  end
+
+  defp handle_ws_notify(%Auction{id: auction_id, blind: true}, bid_value) do
+    WebsocketUtils.notify_bid(auction_id, bid_value)
   end
 
   defp json_resp(conn, status, obj) do

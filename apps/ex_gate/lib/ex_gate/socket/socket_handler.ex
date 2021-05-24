@@ -42,18 +42,23 @@ defmodule ExGate.SocketHandler do
   end
 
   def websocket_handle({:text, message}, state) do
-    case decode_payload(message) do
+    case decode_payload(message) |> IO.inspect(label: "----------------------") do
       {:ok, %{"subscribe" => auction_id}} ->
         # Maybe check if the auction exists
         WebsocketUtils.register_subscription(auction_id, self())
         Logger.info("Subscribed to auction #{auction_id}")
 
         Map.put(state, :subscriptions, [auction_id])
+
         {:reply, {:text, "subscribed"}, state}
+
+      {:ok, %{"user_identification" => user_id}} ->
+        Logger.info("Received user identification")
+        WebsocketUtils.register_user_identity(user_id, self())
+        {:reply, {:text, "user identification received"}, state}
 
       {:ok, different_message} ->
         Logger.info("unrecognized message #{inspect(different_message)}")
-
         {:reply, {:text, "unrecognized_message"}, state}
 
       {:error, offending_message} ->

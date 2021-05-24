@@ -227,6 +227,25 @@
             console.log(`Subscription message sent for auction_id ${auction_id}`);
         }
 
+        function ping() {
+            ws.send("ping");
+            console.log("Ping sent");
+            setTimeout(ping, 5000);
+        };
+
+        function sendUserID(user_id) {
+            const payload = JSON.stringify({
+                user_identification: user_id
+            });
+            console.log(`Sending: ${payload}`);
+            ws.send(payload);
+            console.log("User identification sent");
+        };
+
+        const setupBidder = () => {
+            const auction_id = document.getElementById("bidder_name").innerText = getCredentials().email;
+        }
+
         window.onload = (event) => {
             if (getCredentials().access_token === undefined) {
                 window.location.href = "/";
@@ -234,6 +253,8 @@
             ws = new WebSocket("ws://localhost:8080/ws");
             ws.onopen = function () {
                 showConnectionStatus("connected");
+                // Just a temporary solution
+                sendUserID(getCredentials().email);
                 ping();
 
             };
@@ -248,17 +269,6 @@
             gapi.load('auth2', function () {
                 gapi.auth2.init();
             });
-
-            function ping() {
-                ws.send("ping");
-                console.log("Ping sent");
-                setTimeout(ping, 5000);
-            };
-
-            const setupBidder = () => {
-                const auction_id = document.getElementById("bidder_name").innerText = getCredentials().email;
-            }
-
             setupBidder();
         };
     </script>
