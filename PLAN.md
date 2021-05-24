@@ -17,9 +17,9 @@
 ## Milestone 2 - Correction of direction (distinction between blind auction and offers)
 
 - [ ] Bruno: (OFFERS) ex_auction operates openly and can be applied to any artwork, effectively making every artwork a kind of "auction" automatically. For the moment no search will be used , the seed of the "browsing" is an artwork.
-- [ ] Bruno: (BLIND AUCTION) to implement a configuration by which the auction details are hidden (flag on the auction record).
-- [ ] This should be activated by an admin operator (the one who starts these auctions). 
-- [ ] The rest of the auction functionality MUST remain the same. 
+- [x] Bruno: (BLIND AUCTION) to implement a configuration by which the auction details are hidden (flag on the auction record).
+- [x] This should be activated by an admin operator (the one who starts these auctions). 
+- [x] The rest of the auction functionality MUST remain the same. 
 - [ ] The auction details can be seen by an admin but not from the wide audience. 
 - [ ] The public user who accesses the auction information should see nothing except the expiry date and start date and the artwork for auction.
 - [ ] When it bids it can receive only the info that says the bid was successful or not (because it is smaller that the highest bid (without info on the amount of the highest bid)).
