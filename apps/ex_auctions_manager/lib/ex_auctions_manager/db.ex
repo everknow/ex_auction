@@ -178,6 +178,10 @@ defmodule ExAuctionsManager.DB do
     Auction |> Repo.all()
   end
 
+  def get_auction(auction_id) do
+    Repo.get(Auction, auction_id)
+  end
+
   def get_and_lock_auction(auction_id) do
     from(a in Auction, where: a.id == ^auction_id, lock: "FOR UPDATE")
     |> Repo.one()
@@ -194,30 +198,17 @@ defmodule ExAuctionsManager.DB do
        ) do
     now = DateTime.utc_now()
 
-    Logger.warn(
-      "the auction is expired: #{now} - #{expiration_date} - #{
-        DateTime.compare(now, expiration_date)
-      }"
-    )
+    bid_value = get_field(bid_changeset, :bid_value)
+    bidder = get_field(bid_changeset, :bidder)
 
-    case DateTime.compare(now, expiration_date) do
-      :gt ->
-        Logger.error("the auction is expired: #{now} > #{expiration_date}")
-        {:error, reject_bid(bid_changeset, :auction_id, "is expired")}
+    {:ok, %Bid{} = bid} =
+      bid_changeset
+      |> Repo.insert()
 
-      _ ->
-        bid_value = get_field(bid_changeset, :bid_value)
-        bidder = get_field(bid_changeset, :bidder)
+    {:ok, %Auction{id: ^auction_id, highest_bidder: ^bidder, highest_bid: ^bid_value}} =
+      update_auction(auction_id, bid_value, bidder)
 
-        {:ok, %Bid{} = bid} =
-          bid_changeset
-          |> Repo.insert()
-
-        {:ok, %Auction{id: ^auction_id, highest_bidder: ^bidder, highest_bid: ^bid_value}} =
-          update_auction(auction_id, bid_value, bidder)
-
-        {:ok, bid}
-    end
+    {:ok, bid}
   end
 
   defp bigger_than_auction_base(
