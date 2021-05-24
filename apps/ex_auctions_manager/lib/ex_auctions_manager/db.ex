@@ -198,24 +198,17 @@ defmodule ExAuctionsManager.DB do
        ) do
     now = DateTime.utc_now()
 
-    case Timex.compare(now, expiration_date) do
-      x when x > -1 ->
-        Logger.error("the auction is expired: #{now} > #{expiration_date}")
-        {:error, reject_bid(bid_changeset, :auction_id, "is expired")}
+    bid_value = get_field(bid_changeset, :bid_value)
+    bidder = get_field(bid_changeset, :bidder)
 
-      _ ->
-        bid_value = get_field(bid_changeset, :bid_value)
-        bidder = get_field(bid_changeset, :bidder)
+    {:ok, %Bid{} = bid} =
+      bid_changeset
+      |> Repo.insert()
 
-        {:ok, %Bid{} = bid} =
-          bid_changeset
-          |> Repo.insert()
+    {:ok, %Auction{id: ^auction_id, highest_bidder: ^bidder, highest_bid: ^bid_value}} =
+      update_auction(auction_id, bid_value, bidder)
 
-        {:ok, %Auction{id: ^auction_id, highest_bidder: ^bidder, highest_bid: ^bid_value}} =
-          update_auction(auction_id, bid_value, bidder)
-
-        {:ok, bid}
-    end
+    {:ok, bid}
   end
 
   defp bigger_than_auction_base(
