@@ -1,4 +1,4 @@
-defmodule ExAuctionsManager.Router do
+defmodule ExAuctionsAdmin.Router do
   use Plug.Router
   plug(Plug.Logger, log: :debug)
   plug(Corsica, origins: "*", allow_methods: :all, allow_headers: :all)
@@ -13,10 +13,7 @@ defmodule ExAuctionsManager.Router do
 
   plug(:dispatch)
 
-  forward("/api/v1/offers", to: ExAuctionsManager.Offers.V1.Receiver)
-  forward("/api/v1/auctions", to: ExAuctionsManager.Auctions.V1.Receiver)
-  forward("/api/v1/bids", to: ExAuctionsManager.Bids.V1.Receiver)
-  forward("/api/v1/auctions", to: ExAuctionsManager.Auctions.V1.Receiver)
+  forward("/api/v1/blind_auctions", to: ExAuctionsAdmin.BlindAuctions.V1.Receiver)
 
   # Two endpoints for K8s probes: liveness and readyness
   get "/live" do

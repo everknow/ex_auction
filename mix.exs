@@ -6,7 +6,6 @@ defmodule ExAuction.MixProject do
       apps_path: "apps",
       version: "0.1.0",
       start_permanent: Mix.env() == :prod,
-      dialyzer: dialyzer(),
       deps: deps(),
       aliases: aliases(),
       test_coverage: [tool: ExCoveralls],
@@ -24,13 +23,6 @@ defmodule ExAuction.MixProject do
       docs: [
         formatters: ["html"]
       ]
-    ]
-  end
-
-  defp dialyzer do
-    [
-      plt_file: {:no_warn, "./priv/plts/dialyzer.plt"},
-      ignore_warnings: ".dialyzer_ignore.exs"
     ]
   end
 

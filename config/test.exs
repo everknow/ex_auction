@@ -18,3 +18,8 @@ config :ex_auctions_manager, ExAuctionsManager.Repo,
   port: 5432,
   pool: Ecto.Adapters.SQL.Sandbox,
   show_sensitive_data_on_connection_error: true
+
+# ExAuctionsAdmin
+config :ex_auctions_admin,
+  port: 10001,
+  token: "token"

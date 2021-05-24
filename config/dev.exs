@@ -13,3 +13,8 @@ config :ex_auctions_manager, ExAuctionsManager.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost"
+
+# ExAuctionsAdmin
+config :ex_auctions_admin, google_client_id: System.fetch_env!("GOOGLE_CLIENT_ID")
+
+config :ex_auctions_admin, port: 8082, token: "token", tls: false

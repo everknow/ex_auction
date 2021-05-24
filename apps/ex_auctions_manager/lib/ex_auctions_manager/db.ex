@@ -147,10 +147,18 @@ defmodule ExAuctionsManager.DB do
     end
   end
 
-  def create_auction(expiration_date, auction_base) do
+  def create_auction(expiration_date, auction_base, blind \\ false) do
     %Auction{}
-    |> Auction.changeset(%{auction_base: auction_base, expiration_date: expiration_date})
+    |> Auction.changeset(%{
+      auction_base: auction_base,
+      expiration_date: expiration_date,
+      blind: blind
+    })
     |> Repo.insert()
+  end
+
+  def create_blind_auction(expiration_date, auction_base) do
+    create_auction(expiration_date, auction_base, true)
   end
 
   def update_auction(auction_id, highest_bid, highest_bidder) do
