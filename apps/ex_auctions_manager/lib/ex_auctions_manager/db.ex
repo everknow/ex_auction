@@ -216,7 +216,6 @@ defmodule ExAuctionsManager.DB do
       update_auction(auction_id, bid_value, bidder)
 
     # last operation in the transaction: no exception so far, so this will be executed
-    notify_bid_to_user(auction_id, bidder)
 
     {:ok, bid}
   end
@@ -236,14 +235,10 @@ defmodule ExAuctionsManager.DB do
       {:ok, %Auction{id: ^auction_id, highest_bidder: ^bidder, highest_bid: ^bid_value}} =
         update_auction(auction_id, bid_value, bidder)
 
-      # last operation in the transaction: no exception so far, so this will be executed
-      notify_bid_to_user(auction_id, bidder)
-      notify_outbid_to_user(auction_id)
       {:ok, bid}
     else
       Logger.error("bid value #{bid_value} is not bigger than highest bid #{highest_bid}")
       # last operation in the transaction: no exception so far, so this will be executed
-      notify_bid_too_low_to_user(auction_id, bidder)
 
       {:error,
        reject_bid(
@@ -252,13 +247,5 @@ defmodule ExAuctionsManager.DB do
          "bid value #{bid_value} is not bigger than highest bid #{highest_bid}"
        )}
     end
-  end
-
-  defp notify_bid_to_user(auction_id, bidder) do
-    WebsocketUtils.notify_blind_bid_success(auction_id, bidder)
-  end
-
-  defp notify_bid_too_low_to_user(auction_id, bidder) do
-    WebsocketUtils.notify_blind_bid_rejection(auction_id, bidder)
   end
 end

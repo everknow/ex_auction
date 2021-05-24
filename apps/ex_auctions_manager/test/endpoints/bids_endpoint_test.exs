@@ -125,7 +125,7 @@ defmodule ExAuctionsManager.BidsEndpointTests do
                "auction_id" => -1,
                "bid_value" => ^new_bid_value,
                "bidder" => ^bidder,
-               "reasons" => ["auction does not exist"]
+               "reasons" => %{"auction_id" => "auction does not exist"}
              } = body |> Jason.decode!()
     end
 

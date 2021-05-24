@@ -1,4 +1,4 @@
-defmodule ExAuctionsManager.Bids.V1.Receiver do
+defmodule ExAuctionsManager.Offers.V1.Receiver do
   @moduledoc """
   Admin UI receiver, version 1
   """
@@ -6,7 +6,6 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
   import Plug.Conn
 
   alias ExAuctionsManager.{Auction, Bid, DB}
-  alias ExAuctionsManager.Bids.V1.Handler
   alias ExGate.WebsocketUtils
 
   require Logger
@@ -36,42 +35,43 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
 
   plug(:dispatch)
 
-  get "/:auction_id" do
-    # TODO: move this in the configuration
-    default_size = "10"
-    %{"auction_id" => auction_id} = conn.params
-    page = Map.get(conn.params, "page", "0") |> String.to_integer()
-    size = Map.get(conn.params, "size", default_size) |> String.to_integer()
-
-    {bids, headers} = Handler.list_bids(auction_id, page, size)
-
-    conn
-    |> inject_headers(headers)
-    |> json_resp(200, bids)
-  end
-
   post "/" do
     case valid_payload?(conn) do
       true ->
         %{"auction_id" => auction_id, "bid_value" => bid_value, "bidder" => bidder} = conn.params
         bid_value = maybe_convert(bid_value)
         auction_id = maybe_convert(auction_id)
+        auction = DB.get_auction(auction_id)
 
-        case Handler.create_bid(auction_id, bid_value, bidder) do
-          {:ok, :created} ->
+        case DB.create_bid(auction_id, bid_value, bidder) do
+          {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} ->
+            WebsocketUtils.notify_blind_bid_success(auction_id, bidder)
+            WebsocketUtils.notify_blind_bid_outbid(auction_id)
+
             json_resp(conn, 201, %{auction_id: auction_id, bid_value: bid_value, bidder: bidder})
 
-          {:error, reason} ->
+          {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
+            Logger.error("auction #{}: bid #{} cannot be accepted. Reason: #{inspect(errors)}")
+            reasons = errors |> Enum.map(fn {_, {reason, _}} -> reason end)
+            # TODO: notify user has eventually been outbid
             json_resp(
               conn,
               422,
-              %{auction_id: auction_id, bid_value: bid_value, bidder: bidder, reasons: reason}
+              %{auction_id: auction_id, bid_value: bid_value, bidder: bidder, reasons: reasons}
             )
         end
 
       false ->
         json_resp(conn, 400, "BAD REQUEST")
     end
+  end
+
+  defp handle_ws_notify(%Auction{id: auction_id, blind: false}, bid_value) do
+    WebsocketUtils.notify_bid(auction_id, bid_value)
+  end
+
+  defp handle_ws_notify(%Auction{id: auction_id, blind: true}, bid_value) do
+    WebsocketUtils.notify_bid(auction_id, bid_value)
   end
 
   defp json_resp(conn, status, obj) do

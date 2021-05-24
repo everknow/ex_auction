@@ -1,6 +1,8 @@
 defmodule ExGate.WebsocketUtils do
   require Logger
 
+  alias ExAuctionsManager.DB
+
   def get_auction_pg_name(auction_id) do
     "AUCTION::" <> to_string(auction_id)
   end
@@ -50,25 +52,27 @@ defmodule ExGate.WebsocketUtils do
     end)
   end
 
-  def notify_outbid(auction_id, bidder) do
-    name =
-      bidder
-      |> get_blind_bidder_pg_name()
+  def notify_blind_bid_outbid(auction_id) do
+    with [_first, second] <- DB.list_bids(auction_id, 0, 2) do
+      name =
+        second.bidder
+        |> get_blind_bidder_pg_name()
 
-    :pg2.create(name)
+      :pg2.create(name)
 
-    name
-    |> IO.inspect(label: "Lookup:")
-    |> :pg2.get_local_members()
-    |> Enum.each(fn pid ->
-      Logger.debug("Notifying outbid for #{bidder} to #{inspect(pid)}")
+      name
+      |> IO.inspect(label: "Lookup:")
+      |> :pg2.get_local_members()
+      |> Enum.each(fn pid ->
+        Logger.debug("Notifying outbid for #{second.bidder} to #{inspect(pid)}")
 
-      send(
-        pid,
-        %{notification_type: :outbid, auction_id: auction_id}
-        |> Jason.encode!()
-      )
-    end)
+        send(
+          pid,
+          %{notification_type: :outbid, auction_id: auction_id}
+          |> Jason.encode!()
+        )
+      end)
+    end
   end
 
   def notify_blind_bid_rejection(auction_id, bidder) do

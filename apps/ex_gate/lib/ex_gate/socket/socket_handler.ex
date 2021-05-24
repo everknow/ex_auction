@@ -37,7 +37,6 @@ defmodule ExGate.SocketHandler do
   end
 
   def websocket_handle({:text, "ping"}, state) do
-    Logger.debug("Received ping. Sending pong...")
     {:reply, :pong, state}
   end
 
