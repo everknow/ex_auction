@@ -56,26 +56,16 @@ defmodule ExContractCache.NFTFecther do
     int_last = String.to_integer(last)
 
     latest = token_id + size
-    IO.inspect(latest, label: "Latest")
 
     case latest < int_last do
       true ->
-        Logger.warn("Iteration #{latest}")
-
-        diff = max(size, latest - token_id) |> IO.inspect(label: "Diff")
-        nn = do_fetch(latest, diff) |> IO.inspect(label: "do_fetch")
-        [new_addresses, new_hashes, new_prices, last] = nn
-        IO.inspect(nn, label: "Recursive call")
+        diff = max(size, latest - token_id)
+        [new_addresses, new_hashes, new_prices, last] = do_fetch(latest, diff)
 
         [addresses ++ new_addresses, hashes ++ new_hashes, prices ++ new_prices, last]
-        |> IO.inspect(label: "Merged")
 
       false ->
         info
     end
-  end
-
-  defp next_token_id(token_id) when is_bitstring(token_id) do
-    token_id |> String.to_integer() |> (&(&1 + 1)).() |> to_string()
   end
 end
