@@ -18,3 +18,8 @@ config :ex_auctions_manager, ExAuctionsManager.Repo,
   port: 5432,
   pool: Ecto.Adapters.SQL.Sandbox,
   show_sensitive_data_on_connection_error: true
+
+# ExContractCache
+config :ex_contract_cache, google_client_id: System.fetch_env!("GOOGLE_CLIENT_ID")
+
+config :ex_contract_cache, port: 10002, token: "token", tls: false
