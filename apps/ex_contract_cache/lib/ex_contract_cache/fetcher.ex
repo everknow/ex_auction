@@ -12,35 +12,6 @@ defmodule ExContractCache.NFTFecther do
     [addresses, hashes, prices, last] = info = make_call(index, size)
 
     info
-
-    # [addresses, hashes, prices, last] = do_fetch(1, 10)
-
-    # # Count editions
-    # {_, editions} =
-    #   Enum.map_reduce(hashes, %{}, fn elem, acc ->
-    #     {1, Map.update(acc, elem, 1, fn v -> v + 1 end)}
-    #   end)
-
-    # # Count items that are for sale
-    # {_, sales} =
-    #   Enum.zip([hashes, prices])
-    #   |> Enum.map_reduce(%{}, fn {hash, price} = t, acc ->
-    #     case price do
-    #       "0" -> {0, acc}
-    #       _ -> {1, Map.update(acc, hash, 1, fn v -> v + 1 end)}
-    #     end
-    #   end)
-
-    # # Aggregate info on hashes
-    # hashes
-    # |> Enum.uniq()
-    # |> Enum.map(fn hash ->
-    #   %{
-    #     hash: hash,
-    #     availableEditions: Map.fetch!(sales, hash),
-    #     totalEditions: Map.fetch!(editions, hash)
-    #   }
-    # end)
   end
 
   defp do_fetch(token_id, size) when is_integer(token_id) and is_integer(size) do
