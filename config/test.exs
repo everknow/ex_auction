@@ -23,3 +23,4 @@ config :ex_auctions_manager, ExAuctionsManager.Repo,
 config :ex_contract_cache, google_client_id: System.fetch_env!("GOOGLE_CLIENT_ID")
 
 config :ex_contract_cache, port: 10002, token: "token", tls: false
+config :ex_contract_cache, :memorystore_adapter, ExContractCache.RedisBehaviourMock

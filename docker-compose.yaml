@@ -7,6 +7,10 @@ services:
     environment: 
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+  memorystore:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
   pgadmin:
     image: dpage/pgadmin4
     ports:

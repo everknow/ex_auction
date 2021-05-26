@@ -44,6 +44,9 @@ defmodule ExContractCache.MixProject do
       {:tesla, "~> 1.4"},
       {:redix, "~> 1.1"},
 
+      # Tests
+      {:mox, "1.0.0", only: :test},
+
       # Code quality
       {:dialyxir, "~> 1.1", only: [:dev], runtime: false},
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},

@@ -8,8 +8,8 @@ defmodule ExContractCache.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      {Redix, [host: "localhost", port: 6379]},
-      {ExContractCache.Traversal, []},
+      {Redix, [host: "localhost", port: 6379, name: RedixInstance]},
+      {ExContractCache.TraverseAndAggregate, []},
       Plug.Cowboy.child_spec(
         # This must come from config, so that it can be https on prod
         scheme: :http,
