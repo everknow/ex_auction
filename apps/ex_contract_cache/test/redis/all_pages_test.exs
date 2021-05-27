@@ -2,7 +2,6 @@ defmodule ExContractCacheTest.RedisAllPagesTests do
   use ExUnit.Case
 
   alias ExContractCache.{MemoryStore, TraverseAndAggregate, NFTFetcher}
-  alias ExContractCache.RedisBehaviourMock
   import Mock
 
   @page_1 [

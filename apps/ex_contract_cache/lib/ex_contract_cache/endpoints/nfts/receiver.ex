@@ -5,6 +5,7 @@ defmodule ExContractCache.Endpoints.NFT.Receiver do
     otp_app: :ex_auctions_manager
 
   alias ExContractCache.NFTFetcher
+  alias ExContractCache.Endpoints.NFT.Handler
 
   require Logger
 

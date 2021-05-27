@@ -3,24 +3,6 @@ defmodule ExContractCache.Endpoints.NFT.HandlerTest do
   alias ExContractCache.Endpoints.NFT.Handler
   import Mock
 
-  # response = %{
-  #   # List of artworks to show. Each one contains may contain many NFT
-  #   "artworks": [
-  #     {
-  #       # Hash of the NFT
-  #       "hash": "string",
-
-  #       # Number of currently avaialble editions (tokens)
-  #       "availableEditions": "string",
-  #       # Total number of editions for this NFT
-  #       "totalEditions": "string",
-
-  #       # ... Other metadata of the NFT fetched from S3 (title, description, imageUrl, ...
-
-  #     }
-  #   ],
-  #   "lastNftId": "string" // Highest nft id
-
   describe "" do
     Tesla.Mock.mock(fn
       %{method: :post, url: "/api/v1/nfts/page"} ->

@@ -30,9 +30,6 @@ config :ex_contract_cache,
   scheme: :http
 
 config :ex_contract_cache,
-  memorystore_adapter: ExContractCache.RedisBehaviourMock
-
-config :ex_contract_cache,
   base_uri: "https://everknow.it/web3",
   contract: "0xe04DCd6e51312E05b43466463687425Da3229cde",
   headers: [{"Accept", "application/json"}],

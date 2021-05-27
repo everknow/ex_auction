@@ -18,6 +18,11 @@ defmodule ExContractCache.TraverseAndAggregate do
     GenServer.start_link(__MODULE__, opts, name: name || get_process_name())
   end
 
+  def handle_call(:fetch, _from, %{partial_aggregate: partial_aggregate} = state) do
+    IO.inspect(partial_aggregate, label: "----------------")
+    {:reply, partial_aggregate, state}
+  end
+
   def handle_info(:fetch, %{partial_aggregate: partial_aggregate, index: index}) do
     page = NFTFetcher.fetch(index, @page_size)
 
@@ -36,15 +41,12 @@ defmodule ExContractCache.TraverseAndAggregate do
   end
 
   defp store(index, [addresses, hashes, prices, last_id] = page) do
-    Logger.debug("Received: #{inspect(page)}")
-
     cached_page =
       case MemoryStore.get_pages() do
         nil ->
           [[], [], [], ""]
 
         otherwise ->
-          Logger.debug("Already in cache: #{inspect(otherwise)}")
           [cached_addresses, cached_hashes, cached_prices, cached_last_id] = otherwise
       end
 
@@ -147,5 +149,9 @@ defmodule ExContractCache.TraverseAndAggregate do
 
   defp increment(value) do
     value + 1
+  end
+
+  def get_nfts do
+    GenServer.call(get_process_name(), :fetch)
   end
 end

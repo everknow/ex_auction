@@ -8,7 +8,6 @@ defmodule ExContractCache.NFTFetcher do
   @headers Application.fetch_env!(:ex_contract_cache, :headers)
 
   def fetch(index, size) do
-    Logger.warn("Fetcher called with: #{index}")
     [addresses, hashes, prices, last] = info = make_call(index, size)
 
     info

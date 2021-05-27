@@ -4,7 +4,6 @@ defmodule ExContractCacheTest.RedisSinglePageTests do
   import Mock
 
   alias ExContractCache.{MemoryStore, TraverseAndAggregate, NFTFetcher}
-  alias ExContractCache.RedisBehaviourMock
 
   @page_1 [
     [
