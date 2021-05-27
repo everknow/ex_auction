@@ -6,9 +6,8 @@ defmodule ExContractCache.TraverseAndAggregate do
 
   @memorystore_adapter Application.get_env(:ex_contract_cache, :memorystore_adapter)
 
-  # TODO: this comes from the config
-  @size 10
-  @time 5000
+  @page_size Application.fetch_env!(:ex_contract_cache, :page_size)
+  @time Application.fetch_env!(:ex_contract_cache, :time)
 
   def init(_) do
     Process.send_after(get_process_name(), :fetch, 1000)
@@ -20,7 +19,7 @@ defmodule ExContractCache.TraverseAndAggregate do
   end
 
   def handle_info(:fetch, %{partial_aggregate: partial_aggregate, index: index}) do
-    page = NFTFecther.fetch(index, @size)
+    page = NFTFecther.fetch(index, @page_size)
 
     last_index = store(index, page)
 

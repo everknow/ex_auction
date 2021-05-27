@@ -3,9 +3,9 @@ defmodule ExContractCache.NFTFecther do
 
   require Logger
 
-  @base_uri "https://everknow.it/web3"
-  @contract "0xe04DCd6e51312E05b43466463687425Da3229cde"
-  @headers [{"Accept", "application/json"}]
+  @base_uri Application.fetch_env!(:ex_contract_cache, :base_uri)
+  @contract Application.fetch_env!(:ex_contract_cache, :contract)
+  @headers Application.fetch_env!(:ex_contract_cache, :headers)
 
   def fetch(index, size) do
     [addresses, hashes, prices, last] = info = make_call(index, size)

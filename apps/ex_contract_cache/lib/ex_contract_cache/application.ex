@@ -7,19 +7,20 @@ defmodule ExContractCache.Application do
 
   @impl true
   def start(_type, _args) do
+    redis_host = Application.fetch_env!(:ex_contract_cache, :redis_host)
+    redis_port = Application.fetch_env!(:ex_contract_cache, :redis_port)
+
     children = [
-      {Redix, [host: "localhost", port: 6379, name: RedixInstance]},
+      {Redix, [host: redis_host, port: redis_port, name: RedisInstance]},
       {ExContractCache.TraverseAndAggregate, []},
       Plug.Cowboy.child_spec(
         # This must come from config, so that it can be https on prod
-        scheme: :http,
+        scheme: Application.fetch_env!(:ex_contract_cache, :scheme),
         plug: ExContractCache.Router,
-        port: Application.get_env(:ex_contract_cache, :port, 8083)
+        port: Application.fetch_env!(:ex_contract_cache, :port)
       )
     ]
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: ExContractCache.Supervisor]
     Supervisor.start_link(children, opts)
   end
