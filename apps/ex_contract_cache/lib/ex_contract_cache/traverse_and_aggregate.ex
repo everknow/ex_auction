@@ -20,14 +20,9 @@ defmodule ExContractCache.TraverseAndAggregate do
   end
 
   def handle_info(:fetch, %{partial_aggregate: partial_aggregate, index: index}) do
-    Logger.debug("Current index: #{index}")
     page = NFTFecther.fetch(index, @size)
 
-    last_index =
-      store(index, page)
-      |> IO.inspect(label: "++++ Store(#{index} returns")
-
-    Logger.debug("Check: #{last_index}:#{index + 10}")
+    last_index = store(index, page)
 
     if last_index == index + 10 do
       send(self(), :fetch)
@@ -51,13 +46,16 @@ defmodule ExContractCache.TraverseAndAggregate do
       |> Enum.filter(fn {_, hash, _} -> hash != String.duplicate("0", 64) end)
       |> Enum.reduce({index, cached_page}, fn {address, hash, price},
                                               {id, [as, ha, pr, l_id] = acc} ->
+        new_id = increment(id)
+
         {
-          increment(id),
+          new_id,
           [
             as ++ [address],
             ha ++ [hash],
             pr ++ [price],
-            l_id
+            # Converting to string to respect the format coming from the API
+            new_id |> to_string()
           ]
         }
       end)
@@ -135,13 +133,6 @@ defmodule ExContractCache.TraverseAndAggregate do
 
   defp get_process_name do
     TraversalAgent
-  end
-
-  defp increment(value) when is_bitstring(value) do
-    value
-    |> String.to_integer()
-    |> (&(&1 + 1)).()
-    |> to_string()
   end
 
   defp increment(value) do

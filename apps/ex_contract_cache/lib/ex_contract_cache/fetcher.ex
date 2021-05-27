@@ -8,7 +8,6 @@ defmodule ExContractCache.NFTFecther do
   @headers [{"Accept", "application/json"}]
 
   def fetch(index, size) do
-    Logger.debug(" Fetcher :: #{index} - #{size}")
     [addresses, hashes, prices, last] = info = make_call(index, size)
 
     info
