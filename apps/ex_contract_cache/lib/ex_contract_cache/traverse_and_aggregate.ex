@@ -1,25 +1,25 @@
 defmodule ExContractCache.TraverseAndAggregate do
+  @moduledoc false
   use GenServer
   require Logger
 
-  alias ExContractCache.NFTFecther
-
-  @memorystore_adapter Application.get_env(:ex_contract_cache, :memorystore_adapter)
+  alias ExContractCache.{MemoryStore, NFTFetcher}
 
   @page_size Application.fetch_env!(:ex_contract_cache, :page_size)
   @time Application.fetch_env!(:ex_contract_cache, :time)
 
-  def init(_) do
+  def init(opts) do
     Process.send_after(get_process_name(), :fetch, 1000)
     {:ok, %{partial_aggregate: [], index: 1}}
   end
 
   def start_link(opts) do
-    GenServer.start_link(__MODULE__, opts, name: get_process_name())
+    name = Keyword.get(opts, :name)
+    GenServer.start_link(__MODULE__, opts, name: name || get_process_name())
   end
 
   def handle_info(:fetch, %{partial_aggregate: partial_aggregate, index: index}) do
-    page = NFTFecther.fetch(index, @page_size)
+    page = NFTFetcher.fetch(index, @page_size)
 
     last_index = store(index, page)
 
@@ -31,12 +31,22 @@ defmodule ExContractCache.TraverseAndAggregate do
     end
 
     aggregated = aggregate(partial_aggregate, page)
+
     {:noreply, %{partial_aggregate: aggregated, index: last_index}}
   end
 
-  defp store(index, [addresses, hashes, prices, last_id]) do
-    [cached_addresses, cached_hashes, cached_prices, cached_last_id] =
-      cached_page = @memorystore_adapter.get("pages")
+  defp store(index, [addresses, hashes, prices, last_id] = page) do
+    Logger.debug("Received: #{inspect(page)}")
+
+    cached_page =
+      case MemoryStore.get_pages() do
+        nil ->
+          [[], [], [], ""]
+
+        otherwise ->
+          Logger.debug("Already in cache: #{inspect(otherwise)}")
+          [cached_addresses, cached_hashes, cached_prices, cached_last_id] = otherwise
+      end
 
     # Need to zip since I need the full row to write in redis (address, hash, price)
     {last_index, new_pages} =
@@ -59,16 +69,17 @@ defmodule ExContractCache.TraverseAndAggregate do
         }
       end)
 
-    :ok = @memorystore_adapter.store(new_pages)
+    Logger.debug("Writing in cache: #{inspect(new_pages)}")
+    :ok = MemoryStore.store_pages(new_pages)
 
     last_index
   end
 
-  def aggregate([], page) do
+  defp aggregate([], page) do
     calculate_aggregate(page)
   end
 
-  def aggregate(partial_aggregate, page) do
+  defp aggregate(partial_aggregate, page) do
     aggregated_data = calculate_aggregate(page)
 
     (aggregated_data ++ partial_aggregate)
@@ -97,7 +108,7 @@ defmodule ExContractCache.TraverseAndAggregate do
     end)
   end
 
-  def calculate_aggregate([addresses, hashes, prices, _last_id]) do
+  defp calculate_aggregate([addresses, hashes, prices, _last_id]) do
     # Count editions
     {_, editions} =
       Enum.map_reduce(hashes, %{}, fn elem, acc ->
@@ -130,8 +141,8 @@ defmodule ExContractCache.TraverseAndAggregate do
       end)
   end
 
-  defp get_process_name do
-    TraversalAgent
+  def get_process_name do
+    TraverseAndAggregateAgent
   end
 
   defp increment(value) do
