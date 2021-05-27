@@ -20,6 +20,7 @@ defmodule ExContractCache.TraverseAndAggregate do
   end
 
   def handle_info(:fetch, %{partial_aggregate: partial_aggregate, index: index}) do
+    Logger.debug("Current index: #{index}")
     page = NFTFecther.fetch(index, @size)
 
     last_index =
