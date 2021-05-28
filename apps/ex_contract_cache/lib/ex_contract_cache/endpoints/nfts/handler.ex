@@ -4,6 +4,6 @@ defmodule ExContractCache.Endpoints.NFT.Handler do
   alias ExContractCache.TraverseAndAggregate
 
   def list_nfts(start_index, limit, owner_address) do
-    nfts = TraverseAndAggregate.get_nfts()
+    nfts = TraverseAndAggregate.get_nfts(start_index, limit)
   end
 end

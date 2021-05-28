@@ -3,14 +3,14 @@ defmodule ExContractCache.TraverseAndAggregate do
   use GenServer
   require Logger
 
-  alias ExContractCache.{MemoryStore, NFTFetcher}
+  alias ExContractCache.{MemoryStore, NFTFetcher, SortAgent}
 
   @page_size Application.fetch_env!(:ex_contract_cache, :page_size)
   @time Application.fetch_env!(:ex_contract_cache, :time)
 
   def init(opts) do
     Process.send_after(get_process_name(), :fetch, 1000)
-    {:ok, %{partial_aggregate: [], index: 1}}
+    {:ok, %{partial_aggregate: [], index: 1, sort_map: nil}}
   end
 
   def start_link(opts) do
@@ -18,17 +18,35 @@ defmodule ExContractCache.TraverseAndAggregate do
     GenServer.start_link(__MODULE__, opts, name: name || get_process_name())
   end
 
-  def handle_call(:fetch, _from, %{partial_aggregate: partial_aggregate} = state) do
-    IO.inspect(partial_aggregate, label: "----------------")
-    {:reply, partial_aggregate, state}
+  def handle_call(
+        {:get, start, limit},
+        _from,
+        %{partial_aggregate: partial_aggregate} = state
+      ) do
+    IO.inspect(state)
+    sort_map = SortAgent.get()
+
+    nfts =
+      1..limit
+      |> Enum.map(fn index -> Map.get(sort_map, index + start, {}) end)
+      |> Enum.filter(&(&1 != {}))
+
+    {:reply, nfts, state}
   end
 
-  def handle_info(:fetch, %{partial_aggregate: partial_aggregate, index: index}) do
+  def handle_info(
+        :fetch,
+        %{
+          partial_aggregate: partial_aggregate,
+          index: index
+        }
+      ) do
     page = NFTFetcher.fetch(index, @page_size)
 
     last_index = store(index, page)
 
     if last_index == index + 10 do
+      Logger.debug("Next page message ...")
       send(self(), :fetch)
     else
       Logger.debug("Cycle done. Repeting in 5 seconds")
@@ -36,7 +54,6 @@ defmodule ExContractCache.TraverseAndAggregate do
     end
 
     aggregated = aggregate(partial_aggregate, page)
-
     {:noreply, %{partial_aggregate: aggregated, index: last_index}}
   end
 
@@ -51,7 +68,7 @@ defmodule ExContractCache.TraverseAndAggregate do
       end
 
     # Need to zip since I need the full row to write in redis (address, hash, price)
-    {last_index, new_pages} =
+    {last_index, [_, new_hashes, _, _] = new_pages} =
       Enum.zip([addresses, hashes, prices])
       # Reduce all the valid rows into the updated cache pages
       |> Enum.filter(fn {_, hash, _} -> hash != String.duplicate("0", 64) end)
@@ -73,6 +90,7 @@ defmodule ExContractCache.TraverseAndAggregate do
 
     Logger.debug("Writing in cache: #{inspect(new_pages)}")
     :ok = MemoryStore.store_pages(new_pages)
+    :ok = SortAgent.update(new_hashes)
 
     last_index
   end
@@ -151,7 +169,7 @@ defmodule ExContractCache.TraverseAndAggregate do
     value + 1
   end
 
-  def get_nfts do
-    GenServer.call(get_process_name(), :fetch)
+  def get_nfts(start, limit) do
+    GenServer.call(get_process_name(), {:get, start, limit})
   end
 end

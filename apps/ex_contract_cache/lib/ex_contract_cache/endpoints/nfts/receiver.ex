@@ -35,8 +35,8 @@ defmodule ExContractCache.Endpoints.NFT.Receiver do
 
   get "/page" do
     try do
-      start_index = Map.fetch!(conn.params, "startIndex")
-      limit = Map.fetch!(conn.params, "limit")
+      start_index = Map.fetch!(conn.params, "startIndex") |> String.to_integer()
+      limit = Map.fetch!(conn.params, "limit") |> String.to_integer()
       owner_address = Map.get(conn.params, "ownerAddress", nil)
 
       result = Handler.list_nfts(start_index, limit, owner_address)

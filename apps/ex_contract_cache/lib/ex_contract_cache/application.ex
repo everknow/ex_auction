@@ -13,6 +13,7 @@ defmodule ExContractCache.Application do
     children = [
       {Redix, [host: redis_host, port: redis_port, name: RedisInstance]},
       {ExContractCache.TraverseAndAggregate, []},
+      {ExContractCache.SortAgent, []},
       Plug.Cowboy.child_spec(
         # This must come from config, so that it can be https on prod
         scheme: Application.fetch_env!(:ex_contract_cache, :scheme),
