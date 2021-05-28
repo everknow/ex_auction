@@ -5,7 +5,6 @@ defmodule ExContractCache.NFTFetcher do
 
   @base_uri Application.fetch_env!(:ex_contract_cache, :base_uri)
   @contract Application.fetch_env!(:ex_contract_cache, :contract)
-  @headers Application.fetch_env!(:ex_contract_cache, :headers)
 
   def fetch(index, size) do
     [addresses, hashes, prices, last] = info = make_call(index, size)
@@ -44,7 +43,7 @@ defmodule ExContractCache.NFTFetcher do
           t: %{ts: ["address[]", "bytes32[]", "uint256[]", "uint256"]}
         }
         |> Jason.encode!(),
-        @headers
+        [{"content-type", "application/json"}]
       )
 
     %{"ok" => [_addresses, _hashes, _prices, _last] = result} = Jason.decode!(body)
