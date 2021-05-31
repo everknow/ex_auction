@@ -46,7 +46,6 @@ defmodule ExAuctionsManager.Offers.V1.Receiver do
         case DB.create_bid(auction_id, bid_value, bidder) do
           {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} ->
             WebsocketUtils.notify_blind_bid_success(auction_id, bidder)
-            WebsocketUtils.notify_blind_bid_outbid(auction_id)
 
             json_resp(conn, 201, %{auction_id: auction_id, bid_value: bid_value, bidder: bidder})
 
@@ -66,14 +65,6 @@ defmodule ExAuctionsManager.Offers.V1.Receiver do
     end
   end
 
-  defp handle_ws_notify(%Auction{id: auction_id, blind: false}, bid_value) do
-    WebsocketUtils.notify_bid(auction_id, bid_value)
-  end
-
-  defp handle_ws_notify(%Auction{id: auction_id, blind: true}, bid_value) do
-    WebsocketUtils.notify_bid(auction_id, bid_value)
-  end
-
   defp json_resp(conn, status, obj) do
     conn
     |> put_resp_content_type("application/json")
@@ -83,17 +74,14 @@ defmodule ExAuctionsManager.Offers.V1.Receiver do
   end
 
   defp maybe_convert("") do
-    Logger.warn("empty")
     0
   end
 
   defp maybe_convert(value) when is_bitstring(value) do
-    Logger.warn("string")
     String.to_integer(value)
   end
 
   defp maybe_convert(value) do
-    Logger.warn("general")
     value
   end
 

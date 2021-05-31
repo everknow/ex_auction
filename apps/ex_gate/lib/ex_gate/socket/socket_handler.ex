@@ -41,7 +41,7 @@ defmodule ExGate.SocketHandler do
   end
 
   def websocket_handle({:text, message}, state) do
-    case decode_payload(message) |> IO.inspect(label: "----------------------") do
+    case decode_payload(message) do
       {:ok, %{"subscribe" => auction_id}} ->
         # Maybe check if the auction exists
         WebsocketUtils.register_subscription(auction_id, self())

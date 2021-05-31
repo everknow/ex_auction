@@ -84,6 +84,15 @@ defmodule ExAuctionsManager.DB do
     end
   end
 
+  def get_bid_and_outbid(auction_id) do
+    from(bid in Bid,
+      select: bid,
+      order_by: [desc: bid.id],
+      limit: 2
+    )
+    |> Repo.all()
+  end
+
   @doc """
   List bids function.
 

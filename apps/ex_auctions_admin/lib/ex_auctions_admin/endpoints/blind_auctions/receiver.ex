@@ -88,23 +88,33 @@ defmodule ExAuctionsAdmin.BlindAuctions.V1.Receiver do
 
   defp process_post(conn, {:ok, %{"expiration_date" => exp, "auction_base" => auction_base}}) do
     auction_base = auction_base |> maybe_convert()
-    {:ok, exp, _} = exp |> DateTime.from_iso8601()
 
-    case DB.create_blind_auction(exp, auction_base) do
-      {:ok,
-       %Auction{id: auction_id, expiration_date: ^exp, auction_base: ^auction_base, blind: true}} ->
-        json_resp(conn, 201, %{
-          auction_id: auction_id,
-          auction_base: auction_base,
-          expiration_date: exp,
-          open: true,
-          blind: true
-        })
+    case exp |> DateTime.from_iso8601() do
+      {:ok, exp, _} ->
+        case DB.create_blind_auction(exp, auction_base) do
+          {:ok,
+           %Auction{
+             id: auction_id,
+             expiration_date: ^exp,
+             auction_base: ^auction_base,
+             blind: true
+           }} ->
+            json_resp(conn, 201, %{
+              auction_id: auction_id,
+              auction_base: auction_base,
+              expiration_date: exp,
+              open: true,
+              blind: true
+            })
 
-      {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
-        reasons = errors |> Enum.map(fn {_, {reason, _}} -> reason end)
+          {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
+            reasons = errors |> Enum.map(fn {_, {reason, _}} -> reason end)
 
-        json_resp(conn, 422, %{reasons: reasons})
+            json_resp(conn, 422, %{reasons: reasons})
+        end
+
+      {:error, _} ->
+        json_resp(conn, 422, %{reasons: ["date format is not valid: #{exp}"]})
     end
   end
 end
