@@ -67,6 +67,7 @@ defmodule ExAuctionsAdmin.BlindAuctionsEndpointTests do
                )
 
       IO.inspect(body)
+      # TODO: fix this
     end
   end
 end

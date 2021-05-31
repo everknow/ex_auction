@@ -14,21 +14,24 @@ defmodule ExAuctionsManager.DB do
   require Logger
 
   @doc """
-  Bid function.
-
-  Input:
-
-    - auction_id: the id of the auction
-    - bid_value: the bid value
+  Creates an offer for a  blind auction.
   """
-  def create_bid(auction_id, bid_value, bidder) do
+  def create_offer(auction_id, bid_value, bidder) do
+    create_bid(auction_id, bid_value, bidder, true)
+  end
+
+  @doc """
+  Creates a bid for a standard auction
+  """
+  def create_bid(auction_id, bid_value, bidder, blind \\ false) do
     {_, status} =
       Repo.transaction(fn ->
         bid_changeset =
           %Bid{}
           |> Bid.changeset(%{auction_id: auction_id, bid_value: bid_value, bidder: bidder})
 
-        with %Auction{} = auction <- get_and_lock_auction(auction_id),
+        with %Auction{} = auction <-
+               get_and_lock_auction(auction_id, blind),
              true <- is_active(auction) do
           process_bid_request(auction, bid_changeset)
         else
@@ -198,8 +201,8 @@ defmodule ExAuctionsManager.DB do
     Repo.get(Auction, auction_id)
   end
 
-  def get_and_lock_auction(auction_id) do
-    from(a in Auction, where: a.id == ^auction_id, lock: "FOR UPDATE")
+  def get_and_lock_auction(auction_id, blind \\ false) do
+    from(a in Auction, where: a.id == ^auction_id and a.blind == ^blind, lock: "FOR UPDATE")
     |> Repo.one()
   end
 

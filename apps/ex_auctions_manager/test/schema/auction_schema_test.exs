@@ -72,7 +72,7 @@ defmodule ExAuctionsManager.AuctionSchemaTests do
       }
 
       assert {:ok, %Auction{id: auction_id}} = DB.create_auction(auction_end, 100)
-      :timer.sleep(1000)
+      :timer.sleep(2000)
 
       assert capture_log(fn ->
                assert {

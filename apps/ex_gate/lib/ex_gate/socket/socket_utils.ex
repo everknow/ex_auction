@@ -44,16 +44,19 @@ defmodule ExGate.WebsocketUtils do
   """
   def notify_blind_bid_success(auction_id, bidder) do
     # The mapping user - auction_id
-    name = get_blind_bidder_pg_name(bidder, auction_id) |> IO.inspect(label: "---")
+    name = get_blind_bidder_pg_name(bidder, auction_id)
     Logger.warn("Notifying blind success: #{name}")
 
     :pg2.create(name)
+
+    bidder
+    |> get_user_pg_name()
+    |> :pg2.create()
 
     # Registering the user to the blid auctions for auction_id
     bidder
     |> get_user_pg_name()
     |> :pg2.get_local_members()
-    |> IO.inspect(label: "Sockets for user #{name}")
     # We can't assume there's only 1 pid because the user can have multiple
     # browser tabs open
     |> Enum.each(fn pid ->
@@ -68,7 +71,7 @@ defmodule ExGate.WebsocketUtils do
     Logger.warn("Notiying outbid for #{auction_id}")
     # I only take 2 bids the get the winner and the outbid
     with [_first, second] <-
-           DB.get_bid_and_outbid(auction_id) |> IO.inspect(label: "Last two bids") do
+           DB.get_bid_and_outbid(auction_id) do
       name =
         second.bidder
         |> get_blind_bidder_pg_name(auction_id)
@@ -99,7 +102,6 @@ defmodule ExGate.WebsocketUtils do
     :pg2.create(name)
 
     name
-    |> IO.inspect(label: "Lookup:")
     |> :pg2.get_local_members()
     |> Enum.each(fn pid ->
       Logger.debug("Notifying blind bid rejection for #{bidder} to #{inspect(pid)}")

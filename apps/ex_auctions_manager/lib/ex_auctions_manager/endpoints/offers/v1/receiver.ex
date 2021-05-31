@@ -43,7 +43,7 @@ defmodule ExAuctionsManager.Offers.V1.Receiver do
         auction_id = maybe_convert(auction_id)
         auction = DB.get_auction(auction_id)
 
-        case DB.create_bid(auction_id, bid_value, bidder) do
+        case DB.create_offer(auction_id, bid_value, bidder) do
           {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} ->
             WebsocketUtils.notify_blind_bid_success(auction_id, bidder)
 
