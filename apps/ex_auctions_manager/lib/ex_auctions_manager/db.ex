@@ -37,10 +37,10 @@ defmodule ExAuctionsManager.DB do
         else
           nil ->
             Logger.error("auction #{auction_id} does not exist")
-            {:error, reject_bid(bid_changeset, :auction_id, "auction does not exist")}
+            {:error, add_error(bid_changeset, :auction_id, "auction does not exist")}
 
           false ->
-            {:error, reject_bid(bid_changeset, :auction_id, "auction is expired")}
+            {:error, add_error(bid_changeset, :auction_id, "auction is expired")}
         end
       end)
 
@@ -68,7 +68,7 @@ defmodule ExAuctionsManager.DB do
     case auction do
       # Auction is closed
       %Auction{id: ^auction_id, open: false} ->
-        {:error, reject_bid(bid_changeset, :auction_id, "is closed")}
+        {:error, add_error(bid_changeset, :auction_id, "is closed")}
 
       # bid is not below auction base
       %Auction{
@@ -83,7 +83,7 @@ defmodule ExAuctionsManager.DB do
         auction_base: auction_base,
         open: true
       } ->
-        {:error, reject_bid(bid_changeset, :bid_value, "below auction base")}
+        {:error, add_error(bid_changeset, :bid_value, "below auction base", value: auction_base)}
     end
   end
 
@@ -206,20 +206,6 @@ defmodule ExAuctionsManager.DB do
     |> Repo.one()
   end
 
-  defp reject_bid(bid_changeset, key, reason) do
-    bid_changeset
-    |> add_error(key, reason)
-  end
-
-  defp reject_blind_bid(bid_changeset, key, reason) when is_bitstring(reason) do
-    bid_changeset
-    |> add_error(key, reason)
-  end
-
-  defp reject_blind_bid(bid_changeset, key, reason) when is_atom(reason) do
-    reason |> String.to_atom() |> (&reject_blind_bid(bid_changeset, key, &1)).()
-  end
-
   defp bigger_than_auction_base(
          %Auction{id: auction_id, highest_bid: nil, expiration_date: expiration_date},
          bid_changeset
@@ -260,10 +246,11 @@ defmodule ExAuctionsManager.DB do
       # last operation in the transaction: no exception so far, so this will be executed
 
       {:error,
-       reject_bid(
+       add_error(
          bid_changeset,
          :bid_value,
-         "bid value #{bid_value} is not bigger than highest bid"
+         "below highest bid",
+         value: highest_bid
        )}
     end
   end

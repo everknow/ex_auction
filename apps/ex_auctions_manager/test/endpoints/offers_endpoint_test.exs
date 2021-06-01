@@ -127,7 +127,7 @@ defmodule ExAuctionsManager.OffersEndpointTests do
                )
     end
 
-    test "/offers create offer error - bid too low", %{auction_id: auction_id} do
+    test "/offers create offer error - bid below auction base", %{auction_id: auction_id} do
       bidder = "bidder"
       bid_value = 90
 
@@ -156,6 +156,40 @@ defmodule ExAuctionsManager.OffersEndpointTests do
                )
 
       assert %{"reasons" => ["below auction base"]} = Jason.decode!(body)
+    end
+
+    test "/offers create offer error - bid below highest bid", %{auction_id: auction_id} do
+      bidder = "bidder"
+      bid_value = 110
+
+      assert {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} =
+               DB.create_bid(auction_id, bid_value, bidder, true)
+
+      {:ok, token, _claims} =
+        ExGate.Guardian.encode_and_sign(
+          _resource = %{user_id: "1"},
+          _claims = %{},
+          # GOOGLE EXPIRY: decoded["exp"]
+          _opts = [ttl: {3600, :seconds}]
+        )
+
+      assert {:ok, %Tesla.Env{status: 422, body: body}} =
+               Tesla.post(
+                 Tesla.client([]),
+                 "http://localhost:10000/api/v1/offers/",
+                 %{
+                   "auction_id" => auction_id,
+                   "bid_value" => 109,
+                   "bidder" => bidder
+                 }
+                 |> Jason.encode!(),
+                 headers: [
+                   {"authorization", "Bearer #{token}"},
+                   {"content-type", "application/json"}
+                 ]
+               )
+
+      assert %{"reasons" => ["below highest bid"]} = Jason.decode!(body)
     end
   end
 end

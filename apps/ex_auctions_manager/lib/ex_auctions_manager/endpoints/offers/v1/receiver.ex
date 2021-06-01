@@ -50,14 +50,9 @@ defmodule ExAuctionsManager.Offers.V1.Receiver do
             json_resp(conn, 201, %{auction_id: auction_id, bid_value: bid_value, bidder: bidder})
 
           {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
-            Logger.error(
-              "+++++++++++++++auction #{}: bid #{} cannot be accepted. Reason: #{inspect(errors)}"
-            )
-
-            notify_bid_failure(auction_id, bid_value, bidder, errors)
-
+            notify_blind_bid_failure(auction_id, bid_value, bidder, errors)
             reasons = errors |> Enum.map(fn {_, {reason, _}} -> reason end)
-            # TODO: notify user has eventually been outbid
+
             json_resp(
               conn,
               422,
@@ -70,27 +65,23 @@ defmodule ExAuctionsManager.Offers.V1.Receiver do
     end
   end
 
-  defp notify_bid_failure(
+  defp notify_blind_bid_failure(
          _auction_id,
          _bid_value,
          _bidder,
-         _
+         _reason
        ) do
     nil
   end
 
-  defp notify_bid_failure(
+  defp notify_blind_bid_failure(
          auction_id,
          bid_value,
          bidder,
-         bid_value: {error, []}
+         bid_value: {reason, [value: value]}
        ) do
-    cond do
-      Regex.match?(~r/^(.)*below\ auction\ base*/, error) == true ->
-        WebsocketUtils.notify_blind_bid_below_base(auction_id, bidder)
-
-      Regex.match?(~r/^(.)*below\ best*/, error) == true ->
-        WebsocketUtils.notify_blind_bid_below_best(auction_id, bidder)
+    if reason == "below highest bid" do
+      WebsocketUtils.notify_blind_bid_below_best(auction_id, bidder)
     end
   end
 
