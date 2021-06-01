@@ -227,8 +227,6 @@ defmodule ExAuctionsManager.DB do
     {:ok, %Auction{id: ^auction_id, highest_bidder: ^bidder, highest_bid: ^bid_value}} =
       update_auction(auction_id, bid_value, bidder)
 
-    # last operation in the transaction: no exception so far, so this will be executed
-
     {:ok, bid}
   end
 

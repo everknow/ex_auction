@@ -3,18 +3,28 @@ defmodule ExGate.WebsocketUtils do
 
   alias ExAuctionsManager.DB
 
+  @env (try do
+          Mix.env() |> to_string()
+        rescue
+          _ -> "prod"
+        end)
+
   def get_auction_pg_name(auction_id) do
-    "AUCTION::" <> to_string(auction_id)
+    @env <> "::AUCTION::" <> to_string(auction_id)
   end
 
   def get_user_pg_name(user_id) do
-    "USER::" <> to_string(user_id)
+    @env <> "::USER::" <> to_string(user_id)
   end
 
   def get_blind_bidder_pg_name(user_id, auction_id) do
-    "USER::AUCTION::#{user_id}::#{auction_id}"
+    @env <> "::USER::AUCTION::#{user_id}::#{auction_id}"
   end
 
+  @doc """
+  Generic bid notification. Tells all the subscribed bidders that a new bid has been accepted
+  for a given auction
+  """
   def notify_bid(auction_id, bid_value) do
     name =
       auction_id

@@ -51,6 +51,9 @@ defmodule ExAuctionsManager.Offers.V1.Receiver do
 
           {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
             Logger.error("auction #{}: bid #{} cannot be accepted. Reason: #{inspect(errors)}")
+            # To be added
+            # WebsocketUtils.notify_blind_bid_rejection(auction_id, bidder)
+
             reasons = errors |> Enum.map(fn {_, {reason, _}} -> reason end)
             # TODO: notify user has eventually been outbid
             json_resp(
