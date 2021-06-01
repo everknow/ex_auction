@@ -104,7 +104,16 @@ defmodule ExGate.WebsocketUtils do
   end
 
   # Maybe this is not needed
-  def notify_blind_bid_rejection(auction_id, bidder) do
+  def notify_blind_bid_below_base(auction_id, bidder) do
+    notify_blind_bid_rejection(auction_id, bidder, :below_highest_bid)
+  end
+
+  def notify_blind_bid_below_best(auction_id, bidder) do
+    notify_blind_bid_rejection(auction_id, bidder, :below_best_bid)
+  end
+
+  # Maybe this is not needed
+  defp notify_blind_bid_rejection(auction_id, bidder, reason) do
     name =
       bidder
       |> get_blind_bidder_pg_name(auction_id)
@@ -118,7 +127,7 @@ defmodule ExGate.WebsocketUtils do
 
       send(
         pid,
-        %{notification_type: :blind_bid_rejection, auction_id: auction_id}
+        %{notification_type: reason, auction_id: auction_id}
         |> Jason.encode!()
       )
     end)

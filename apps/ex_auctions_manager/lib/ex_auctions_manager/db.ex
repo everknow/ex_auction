@@ -83,7 +83,7 @@ defmodule ExAuctionsManager.DB do
         auction_base: auction_base,
         open: true
       } ->
-        {:error, reject_bid(bid_changeset, :bid_value, "below auction base #{auction_base}")}
+        {:error, reject_bid(bid_changeset, :bid_value, "below auction base")}
     end
   end
 
@@ -211,6 +211,15 @@ defmodule ExAuctionsManager.DB do
     |> add_error(key, reason)
   end
 
+  defp reject_blind_bid(bid_changeset, key, reason) when is_bitstring(reason) do
+    bid_changeset
+    |> add_error(key, reason)
+  end
+
+  defp reject_blind_bid(bid_changeset, key, reason) when is_atom(reason) do
+    reason |> String.to_atom() |> (&reject_blind_bid(bid_changeset, key, &1)).()
+  end
+
   defp bigger_than_auction_base(
          %Auction{id: auction_id, highest_bid: nil, expiration_date: expiration_date},
          bid_changeset
@@ -254,7 +263,7 @@ defmodule ExAuctionsManager.DB do
        reject_bid(
          bid_changeset,
          :bid_value,
-         "bid value #{bid_value} is not bigger than highest bid #{highest_bid}"
+         "bid value #{bid_value} is not bigger than highest bid"
        )}
     end
   end
