@@ -20,7 +20,7 @@ defmodule ExGate.Login.HandlerTests do
   describe "Handler tests" do
     test "/login success" do
       with_mock(GoogleClient,
-        verify_and_decode: fn id_token ->
+        verify_and_decode: fn _id_token ->
           {:ok,
            %{
              "aud" => Application.get_env(:ex_gate, :google_client_id)
@@ -43,7 +43,7 @@ defmodule ExGate.Login.HandlerTests do
 
     test "/login failure - unable to decode google payload" do
       with_mock(GoogleClient,
-        verify_and_decode: fn id_token ->
+        verify_and_decode: fn _id_token ->
           {:error, "something failed"}
         end
       ) do
@@ -59,7 +59,7 @@ defmodule ExGate.Login.HandlerTests do
 
     test "/login failure - verify error" do
       with_mock(GoogleClient,
-        verify_and_decode: fn id_token ->
+        verify_and_decode: fn _id_token ->
           {:error, "something went wrong"}
         end
       ) do

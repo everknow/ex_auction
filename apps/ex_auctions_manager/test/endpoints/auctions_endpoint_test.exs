@@ -1,7 +1,7 @@
 defmodule ExAuctionsManager.AuctionsEndpointTests do
   use ExAuctionsManager.RepoCase, async: false
 
-  alias ExAuctionsManager.{Auction, Bid, DB, Repo}
+  alias ExAuctionsManager.{Auction, DB, Repo}
 
   describe "Auction endpoint tests" do
     test "auctions list" do
@@ -66,7 +66,6 @@ defmodule ExAuctionsManager.AuctionsEndpointTests do
           ]
         )
 
-      str_exp = exp |> to_string()
       assert Repo.all(Auction) |> length() == 1
 
       assert [
@@ -123,7 +122,7 @@ defmodule ExAuctionsManager.AuctionsEndpointTests do
           _opts = [ttl: {3600, :seconds}]
         )
 
-      {:ok, %Tesla.Env{status: 400, body: body}} =
+      {:ok, %Tesla.Env{status: 400}} =
         Tesla.post(
           Tesla.client([]),
           "http://localhost:10000/api/v1/auctions",
@@ -135,7 +134,7 @@ defmodule ExAuctionsManager.AuctionsEndpointTests do
           ]
         )
 
-      {:ok, %Tesla.Env{status: 400, body: body}} =
+      {:ok, %Tesla.Env{status: 400}} =
         Tesla.post(
           Tesla.client([]),
           "http://localhost:10000/api/v1/auctions",
@@ -175,7 +174,7 @@ defmodule ExAuctionsManager.AuctionsEndpointTests do
         "auction_id" => auction_id
       } = body |> Jason.decode!()
 
-      assert {:ok, %Tesla.Env{status: 200, body: body}} =
+      assert {:ok, %Tesla.Env{status: 200}} =
                Tesla.post(
                  Tesla.client([]),
                  "http://localhost:10000/api/v1/auctions/close/#{auction_id}",
@@ -204,7 +203,7 @@ defmodule ExAuctionsManager.AuctionsEndpointTests do
           _opts = [ttl: {3600, :seconds}]
         )
 
-      {:ok, %Tesla.Env{status: 400, body: body}} =
+      {:ok, %Tesla.Env{status: 400}} =
         Tesla.post(
           Tesla.client([]),
           "http://localhost:10000/api/v1/auctions",
@@ -216,7 +215,7 @@ defmodule ExAuctionsManager.AuctionsEndpointTests do
           ]
         )
 
-      {:ok, %Tesla.Env{status: 400, body: body}} =
+      {:ok, %Tesla.Env{status: 400}} =
         Tesla.post(
           Tesla.client([]),
           "http://localhost:10000/api/v1/auctions",

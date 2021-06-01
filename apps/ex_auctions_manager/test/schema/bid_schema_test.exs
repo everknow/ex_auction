@@ -47,7 +47,7 @@ defmodule ExAuctionsManager.BidSchemaTests do
       assert [bid_value: {"below auction base", [value: 10]}] = cs.errors
     end
 
-    test "bids list", %{auction: %Auction{id: auction_id} = auction} do
+    test "bids list", %{auction: %Auction{id: auction_id}} do
       for elem <- 1..32 do
         bid_value = elem * 10
         bidder = "some bidder"
@@ -56,15 +56,15 @@ defmodule ExAuctionsManager.BidSchemaTests do
           DB.create_bid(auction_id, bid_value, bidder)
       end
 
-      assert {bids, %{next_page: 1}} = DB.list_bids(auction_id, 0, 10)
-      assert {bids, %{prev_page: 0, next_page: 2}} = DB.list_bids(auction_id, 1, 10)
+      assert {_bids, %{next_page: 1}} = DB.list_bids(auction_id, 0, 10)
+      assert {_bids, %{prev_page: 0, next_page: 2}} = DB.list_bids(auction_id, 1, 10)
 
-      assert {bids, %{prev_page: 1, next_page: 3}} = DB.list_bids(auction_id, 2, 10)
+      assert {_bids, %{prev_page: 1, next_page: 3}} = DB.list_bids(auction_id, 2, 10)
 
       assert {bids, %{prev_page: 2}} = DB.list_bids(auction_id, 3, 10)
 
       assert length(bids) == 2
-      assert {bids, %{}} = DB.list_bids(auction_id, 4, 10)
+      assert {_bids, %{}} = DB.list_bids(auction_id, 4, 10)
     end
 
     test "bids creation - non_existing auction" do

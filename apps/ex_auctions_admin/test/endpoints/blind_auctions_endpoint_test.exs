@@ -1,7 +1,7 @@
 defmodule ExAuctionsAdmin.BlindAuctionsEndpointTests do
   use ExAuctionsAdmin.RepoCase, async: false
 
-  alias ExAuctionsManager.{Auction, Bid, DB, Repo}
+  alias ExAuctionsManager.{Auction, Repo}
 
   describe "Offer creation endpoint" do
     test "successful creation" do
@@ -27,7 +27,6 @@ defmodule ExAuctionsAdmin.BlindAuctionsEndpointTests do
                  ]
                )
 
-      str_exp = exp |> to_string()
       assert Repo.all(Auction) |> length() == 1
 
       assert [
@@ -66,8 +65,8 @@ defmodule ExAuctionsAdmin.BlindAuctionsEndpointTests do
                  ]
                )
 
-      IO.inspect(body)
-      # TODO: fix this
+      assert %{"reasons" => ["expiry date must be bigger than creation date"]} =
+               Jason.decode!(body)
     end
   end
 end
