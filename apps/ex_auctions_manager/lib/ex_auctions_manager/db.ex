@@ -7,7 +7,7 @@ defmodule ExAuctionsManager.DB do
   import Ecto.Query
   import Ecto.Changeset
 
-  alias ExAuctionsManager.{Auction, Bid, Repo}
+  alias ExAuctionsManager.{Auction, Bid, Repo, User}
   alias ExGate.WebsocketUtils
   @page Application.compile_env(:ex_auctions_manager, :page_size, 20)
 
@@ -260,5 +260,11 @@ defmodule ExAuctionsManager.DB do
          value: highest_bid
        )}
     end
+  end
+
+  def register_username(username, google_id) do
+    %User{}
+    |> User.changeset(%{username: username, google_id: google_id})
+    |> Repo.insert()
   end
 end

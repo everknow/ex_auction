@@ -9,7 +9,7 @@ config :ex_gate, port: 8080, token: "token", tls: false
 config :ex_auctions_manager, :port, 8081
 
 config :ex_auctions_manager, ExAuctionsManager.Repo,
-  database: "auctions_test",
+  database: "auctions_dev",
   username: "postgres",
   password: "postgres",
   hostname: "localhost"

@@ -9,7 +9,7 @@ defmodule ExAuctionsManager.User do
 
   @primary_key {:username, :string, autogenerate: false}
   schema "user" do
-    field(:google_id, :string)
+    field(:google_id, :string, null: false)
   end
 
   def changeset(%__MODULE__{} = user, attrs) do
@@ -22,5 +22,7 @@ defmodule ExAuctionsManager.User do
       :username,
       :google_id
     ])
+    |> unique_constraint([:username, :unique_google_id], name: :unique_google_id)
+    |> unique_constraint(:username, name: :user_pkey)
   end
 end

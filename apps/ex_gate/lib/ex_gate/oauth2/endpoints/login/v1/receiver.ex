@@ -27,9 +27,9 @@ defmodule ExGate.Login.V1.Receiver do
   get("/ping", do: send_resp(conn, 200, Handler.ping()))
 
   post "/" do
-    %{"id_token" => id_token} = conn.params
+    %{"id_token" => id_token, "username" => username} = conn.params
 
-    case Handler.login(id_token) do
+    case Handler.login(id_token, username) do
       {:error, code, reason} ->
         json_resp(conn, code, %{error: reason})
 
