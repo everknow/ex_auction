@@ -15,10 +15,10 @@ defmodule ExGate.Login.ReceiverTests do
     end
 
     test "/verify success" do
-      conn = conn("post", "/", %{id_token: "some_token"})
+      conn = conn("post", "/", %{id_token: "some_token", username: "brunoripa"})
 
       with_mock(Handler,
-        login: fn _id_token ->
+        login: fn _id_token, _username ->
           {:ok, "token", :stuff}
         end
       ) do
@@ -38,10 +38,10 @@ defmodule ExGate.Login.ReceiverTests do
     end
 
     test "/verify failure" do
-      conn = conn("post", "/", %{id_token: "some_token"})
+      conn = conn("post", "/", %{id_token: "some_token", username: "brunoripa"})
 
       with_mock(Handler,
-        login: fn _id_token ->
+        login: fn _id_token, _username ->
           {:error, 500, "something went wrong"}
         end
       ) do

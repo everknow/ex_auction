@@ -39,9 +39,9 @@ defmodule ExAuctionsManager.MixProject do
       {:guardian, "~> 2.1"},
       {:ecto_sql, "~> 3.4"},
       {:postgrex, ">= 0.0.0"},
-      {:ex_gate, in_umbrella: true},
       {:tesla, "~> 1.4"},
       {:timex, "~> 3.7"},
+      {:ex_gate, in_umbrella: true},
 
       # Code quality
       {:dialyxir, "~> 1.1", only: [:dev], runtime: false},
@@ -54,10 +54,6 @@ defmodule ExAuctionsManager.MixProject do
 
   def aliases do
     [
-      setup: ["deps.get", "ecto.setup", "cmd npm install --prefix assets"],
-      "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
-      "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test --trace"],
       validate: ["credo --strict", "dialyzer"]
     ]
   end

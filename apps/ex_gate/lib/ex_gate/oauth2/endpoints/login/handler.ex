@@ -3,7 +3,7 @@ defmodule ExGate.Login.Handler do
   Handles the /login endpoint logic
   """
   alias ExGate.GoogleClient
-
+  alias ExAuctionsManager.{DB, User}
   require Logger
 
   def init, do: :ok
@@ -11,10 +11,11 @@ defmodule ExGate.Login.Handler do
   def ping, do: "pong"
   def ping(_context), do: "pong"
 
-  @spec login(String.t()) :: {:ok, String.t(), String.t()} | {:error, integer, any()}
-  def login(id_token) do
+  @spec login(String.t(), String.t()) :: {:ok, String.t(), String.t()} | {:error, integer, any()}
+  def login(id_token, username) do
     id_token
     |> verify_google_id_token()
+    |> maybe_register_username(username)
     |> maybe_generate_token()
   end
 
@@ -30,26 +31,30 @@ defmodule ExGate.Login.Handler do
     end
   end
 
-  @spec maybe_generate_token(
-          {:ok, map()}
-          | {:error, any}
-        ) ::
-          {:ok, String.t(), String.t()} | {:error, integer, any()}
+  defp maybe_register_username({:error, reason}, _username) do
+    {:error, reason}
+  end
+
+  defp maybe_register_username({:ok, %{"email" => email} = claims}, username) do
+    case DB.register_username(username, email) do
+      {:ok, user} -> {:ok, claims, user}
+      %Ecto.Changeset{valid?: false} = cs -> {:error, cs}
+    end
+  end
+
   defp maybe_generate_token({:error, _reason}) do
     {:error, 401, "cannot verify google id token"}
   end
 
-  defp maybe_generate_token({:ok, %{"aud" => aud}}) do
+  defp maybe_generate_token({:ok, %{"aud" => aud}, %User{} = user}) do
     google_client_id = Application.get_env(:ex_gate, :google_client_id)
 
     case aud do
       ^google_client_id ->
         # create user here? [username | _] = String.split(email, "@")
 
-        user_id = UUID.uuid4()
-
         ExGate.Guardian.encode_and_sign(
-          _resource = %{user_id: user_id},
+          _resource = %{user_id: user.username},
           _claims = %{},
           # GOOGLE EXPIRY: decoded["exp"]
           _opts = [ttl: {3600, :seconds}]
