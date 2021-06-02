@@ -25,6 +25,12 @@ defmodule ExGate.Router do
     send_file(conn, 200, "#{path}/index.html")
   end
 
+  get "/username" do
+    conn = put_resp_content_type(conn, "text/html")
+    path = Application.app_dir(:ex_gate) <> "/priv/static/v1"
+    send_file(conn, 200, "#{path}/username.html")
+  end
+
   get "/auction" do
     conn = put_resp_content_type(conn, "text/html")
     path = Application.app_dir(:ex_gate) <> "/priv/static/v1"

@@ -1,0 +1,68 @@
+<html>
+
+<head>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <!-- <link rel="stylesheet" href="/portal/client/v1/index.css"> -->
+    <meta name="google-signin-client_id"
+        content="323198697202-hjk4tg05cs6e38arnmloba6nshtighj5.apps.googleusercontent.com">
+</head>
+
+<body>
+
+    <h2>Get unique username</h2>
+
+    <!-- Auctions list -->
+    <div>
+        <fieldset>
+            <label for="">
+                <strong>Username</strong>
+            </label>
+            <div>
+                <label for="">Insert username</label>
+                <input type="text" id="username" />
+            </div>
+
+            <button onclick="register();">Register user</button>
+        </fieldset>
+    </div>
+
+    <script>
+        function register() {
+            const params = new URLSearchParams(window.location.search)
+            console.log(`Params: ${params}`);
+            var id_token = params.get("id_token");
+            const username = document.getElementById("username").value;
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'verify');
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function () {
+                if (xhr.status == 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    console.log(response);
+                    storeToken(response.access_token);
+                    window.location.href = "/auction";
+                }
+                else {
+                    alert("Unable to login");
+                }
+
+            };
+            xhr.send(JSON.stringify({ "id_token": id_token, "username": username }));
+        }
+
+        const storeCredentials = function (profile) {
+            sessionStorage.setItem("id", profile.getId());
+            sessionStorage.setItem("name", + profile.getName());
+            sessionStorage.setItem("image_url", profile.getImageUrl());
+            sessionStorage.setItem("email", profile.getEmail()); // This is null
+        };
+
+        const storeToken = function (token) {
+            sessionStorage.setItem("access_token", token); // This is null
+        };
+
+    </script>
+</body>
+
+</html>
