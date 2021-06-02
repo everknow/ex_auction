@@ -1,4 +1,4 @@
-# ExAuctionsManager
+# ExAuctionsDB
 
 This application implements the auctions logic.
 

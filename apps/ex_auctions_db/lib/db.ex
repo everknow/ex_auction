@@ -1,4 +1,4 @@
-defmodule ExAuctionsManager.DB do
+defmodule ExAuctionsDB.DB do
   @moduledoc """
   This module has the responsibility to define the DB api
 
@@ -7,7 +7,7 @@ defmodule ExAuctionsManager.DB do
   import Ecto.Query
   import Ecto.Changeset
 
-  alias ExAuctionsManager.{Auction, Bid, Repo, User}
+  alias ExAuctionsDB.{Auction, Bid, Repo, User}
   alias ExGate.WebsocketUtils
   @page Application.compile_env(:ex_auctions_manager, :page_size, 20)
 

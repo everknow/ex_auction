@@ -1,5 +1,5 @@
 defmodule ExAuctionsManager.Bids.V1.Handler do
-  alias ExAuctionsManager.{Bid, DB}
+  alias ExAuctionsDB.{Bid, DB}
   alias ExGate.WebsocketUtils
 
   require Logger

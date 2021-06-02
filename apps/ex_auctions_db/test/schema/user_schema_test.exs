@@ -1,7 +1,7 @@
-defmodule ExAuctionsManager.UserSchemaTests do
-  use ExAuctionsManager.RepoCase, async: false
+defmodule ExAuctionsDB.UserSchemaTests do
+  use ExAuctionsDB.RepoCase, async: false
 
-  alias ExAuctionsManager.{DB, User}
+  alias ExAuctionsDB.{DB, User}
 
   describe "User schema tests" do
     test "user creation" do

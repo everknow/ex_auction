@@ -5,7 +5,7 @@ defmodule ExAuctionsManager.Offers.V1.Receiver do
   use Plug.Router
   import Plug.Conn
 
-  alias ExAuctionsManager.{Auction, Bid, DB}
+  alias ExAuctionsDB.{Auction, Bid, DB}
   alias ExGate.WebsocketUtils
 
   require Logger

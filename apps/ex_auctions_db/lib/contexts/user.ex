@@ -1,4 +1,4 @@
-defmodule ExAuctionsManager.User do
+defmodule ExAuctionsDB.User do
   @moduledoc """
   User schema
   """

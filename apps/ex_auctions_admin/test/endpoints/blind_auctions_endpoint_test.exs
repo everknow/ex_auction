@@ -1,7 +1,7 @@
 defmodule ExAuctionsAdmin.BlindAuctionsEndpointTests do
   use ExAuctionsAdmin.RepoCase, async: false
 
-  alias ExAuctionsManager.{Auction, Repo}
+  alias ExAuctionsDB.{Auction, Repo}
 
   describe "Offer creation endpoint" do
     test "successful creation" do

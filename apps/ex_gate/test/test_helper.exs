@@ -1,2 +1,2 @@
 ExUnit.start()
-:ok = Ecto.Adapters.SQL.Sandbox.checkout(ExAuctionsManager.Repo)
+:ok = Ecto.Adapters.SQL.Sandbox.checkout(ExAuctionsDB.Repo)

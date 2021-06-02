@@ -3,7 +3,7 @@ defmodule ExGate.Login.Handler do
   Handles the /login endpoint logic
   """
   alias ExGate.GoogleClient
-  alias ExAuctionsManager.{DB, User}
+  alias ExAuctionsDB.{DB, User}
   require Logger
 
   def init, do: :ok

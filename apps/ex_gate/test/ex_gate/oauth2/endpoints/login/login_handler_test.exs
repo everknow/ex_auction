@@ -11,6 +11,12 @@ defmodule ExGate.Login.HandlerTests do
   require Logger
 
   describe "Handler tests" do
+    setup do
+      :ok = Ecto.Adapters.SQL.Sandbox.checkout(ExAuctionsDB.Repo)
+      # Setting the shared mode must be done only after checkout
+      Ecto.Adapters.SQL.Sandbox.mode(ExAuctionsDB.Repo, {:shared, self()})
+    end
+
     test "/login success" do
       with_mock(GoogleClient,
         verify_and_decode: fn _id_token ->

@@ -6,7 +6,7 @@ defmodule ExAuctionsAdmin.RepoCase do
 
   using do
     quote do
-      alias ExAuctionsManager.Repo
+      alias ExAuctionsDB.Repo
 
       import Ecto
       import Ecto.Query
@@ -16,10 +16,10 @@ defmodule ExAuctionsAdmin.RepoCase do
   end
 
   setup tags do
-    :ok = Sandbox.checkout(ExAuctionsManager.Repo)
+    :ok = Sandbox.checkout(ExAuctionsDB.Repo)
 
     unless tags[:async] do
-      Sandbox.mode(ExAuctionsManager.Repo, {:shared, self()})
+      Sandbox.mode(ExAuctionsDB.Repo, {:shared, self()})
     end
 
     :ok

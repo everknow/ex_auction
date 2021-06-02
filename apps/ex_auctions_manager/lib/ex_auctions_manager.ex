@@ -1,5 +1,5 @@
-defmodule ExAuctionsManager do
+defmodule ExAuctionsDB do
   @moduledoc """
-  Documentation for `ExAuctionsManager`.
+  Documentation for `ExAuctionsDB`.
   """
 end

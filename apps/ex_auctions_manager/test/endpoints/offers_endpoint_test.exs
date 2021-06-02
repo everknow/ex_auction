@@ -1,7 +1,7 @@
-defmodule ExAuctionsManager.OffersEndpointTests do
-  use ExAuctionsManager.RepoCase, async: false
+defmodule ExAuctionsDB.OffersEndpointTests do
+  use ExAuctionsDB.RepoCase, async: false
 
-  alias ExAuctionsManager.{Auction, Bid, DB}
+  alias ExAuctionsDB.{Auction, Bid, DB}
 
   describe "Offers endpoint" do
     setup do

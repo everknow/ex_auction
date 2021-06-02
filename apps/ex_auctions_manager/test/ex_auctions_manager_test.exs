@@ -1,4 +1,4 @@
-defmodule ExAuctionsManagerTest do
+defmodule ExAuctionsDBTest do
   use ExUnit.Case
-  doctest ExAuctionsManager
+  doctest ExAuctionsDB
 end
