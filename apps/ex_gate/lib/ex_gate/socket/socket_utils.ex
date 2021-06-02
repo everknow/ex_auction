@@ -103,13 +103,8 @@ defmodule ExGate.WebsocketUtils do
     end
   end
 
-  # Maybe this is not needed
-  # def notify_blind_bid_below_base(auction_id, bidder, auction_base) do
-  #   notify_blind_bid_rejection(auction_id, bidder, :below_base_bid)
-  # end
-
   def notify_blind_bid_below_best(auction_id, bidder) do
-    notify_blind_bid_rejection(auction_id, bidder, :below_best_bid)
+    notify_blind_bid_rejection(auction_id, bidder, :below_highest_bid)
   end
 
   # Maybe this is not needed

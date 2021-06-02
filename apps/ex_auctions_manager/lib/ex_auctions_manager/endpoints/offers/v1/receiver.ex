@@ -50,8 +50,7 @@ defmodule ExAuctionsManager.Offers.V1.Receiver do
             json_resp(conn, 201, %{auction_id: auction_id, bid_value: bid_value, bidder: bidder})
 
           {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
-            notify_blind_bid_failure(auction_id, bid_value, bidder, errors)
-            reasons = errors |> Enum.map(fn {_, {reason, _}} -> reason end)
+            reasons = format_error_messages(errors)
 
             json_resp(
               conn,
@@ -116,5 +115,9 @@ defmodule ExAuctionsManager.Offers.V1.Receiver do
     Map.has_key?(conn.params, "auction_id") &&
       Map.has_key?(conn.params, "bid_value") &&
       Map.has_key?(conn.params, "bidder")
+  end
+
+  defp format_error_messages(errors) do
+    errors |> Enum.map(fn {key, {reason, _}} -> {key, reason} end) |> Enum.into(%{})
   end
 end

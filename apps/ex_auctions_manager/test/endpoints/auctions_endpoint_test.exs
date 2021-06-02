@@ -14,6 +14,13 @@ defmodule ExAuctionsManager.AuctionsEndpointTests do
          auction_base: 100
        }} = DB.create_auction(exp, 100)
 
+      {:ok,
+       %{
+         expiration_date: ^exp,
+         auction_base: 100,
+         blind: true
+       }} = DB.create_blind_auction(exp, 100)
+
       {:ok, token, _claims} =
         ExGate.Guardian.encode_and_sign(
           _resource = %{user_id: "1"},

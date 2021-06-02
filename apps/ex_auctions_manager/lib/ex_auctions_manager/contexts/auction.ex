@@ -19,7 +19,7 @@ defmodule ExAuctionsManager.Auction do
     :blind
   ]
 
-  @required_fields @fields -- [:creation_date]
+  @required_fields @fields -- [:creation_date, :blind]
 
   @derive {Jason.Encoder, only: @fields ++ [:id]}
   schema "auctions" do

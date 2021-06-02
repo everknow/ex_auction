@@ -96,7 +96,7 @@ defmodule ExAuctionsManager.BidsEndpointTests do
       assert length(results) == 2
     end
 
-    test "/post create bid failure - unprocessable entity" do
+    test "/post create bid failure - unprocessable entity, missing auction" do
       bidder = "bidder"
       new_bid_value = 120
 
@@ -125,6 +125,40 @@ defmodule ExAuctionsManager.BidsEndpointTests do
                "bid_value" => ^new_bid_value,
                "bidder" => ^bidder,
                "reasons" => %{"auction_id" => "auction does not exist"}
+             } = body |> Jason.decode!()
+    end
+
+    test "/post create bid failure - unprocessable entity, below auction base", %{
+      auction_id: auction_id
+    } do
+      bidder = "bidder"
+      new_bid_value = 90
+
+      {:ok, token, _claims} =
+        ExGate.Guardian.encode_and_sign(
+          _resource = %{user_id: "1"},
+          _claims = %{},
+          # GOOGLE EXPIRY: decoded["exp"]
+          _opts = [ttl: {3600, :seconds}]
+        )
+
+      assert {:ok, %Tesla.Env{status: 422, body: body}} =
+               Tesla.post(
+                 Tesla.client([]),
+                 "http://localhost:10000/api/v1/bids/",
+                 %{"auction_id" => auction_id, "bid_value" => new_bid_value, "bidder" => bidder}
+                 |> Jason.encode!(),
+                 headers: [
+                   {"authorization", "Bearer #{token}"},
+                   {"content-type", "application/json"}
+                 ]
+               )
+
+      assert %{
+               "auction_id" => ^auction_id,
+               "bid_value" => ^new_bid_value,
+               "bidder" => ^bidder,
+               "reasons" => %{"bid_value" => "below auction base"}
              } = body |> Jason.decode!()
     end
 

@@ -68,7 +68,7 @@ defmodule ExAuctionsManager.DB do
     case auction do
       # Auction is closed
       %Auction{id: ^auction_id, open: false} ->
-        {:error, add_error(bid_changeset, :auction_id, "is closed")}
+        {:error, add_error(bid_changeset, :auction_id, "auction is closed")}
 
       # bid is not below auction base
       %Auction{
@@ -108,6 +108,9 @@ defmodule ExAuctionsManager.DB do
   def list_bids(auction_id, page \\ 0, size \\ @page) do
     bids_count =
       from(bid in Bid,
+        join: auction in Auction,
+        on: bid.auction_id == auction.id,
+        where: auction.blind == false,
         select: count(bid.id)
       )
       |> Repo.one()
@@ -194,7 +197,11 @@ defmodule ExAuctionsManager.DB do
   end
 
   def list_auctions() do
-    Auction |> Repo.all()
+    from(auction in Auction,
+      where: auction.blind == false,
+      select: auction
+    )
+    |> Repo.all()
   end
 
   def get_auction(auction_id) do

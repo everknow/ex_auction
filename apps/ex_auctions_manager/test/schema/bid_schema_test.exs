@@ -40,6 +40,17 @@ defmodule ExAuctionsManager.BidSchemaTests do
       assert "auction does not exist" in errors_on(cs).auction_id
     end
 
+    test "bid creation failure - invalid blind auction" do
+      expiration_date = TestUtils.shift_datetime(TestUtils.get_now(), 10)
+
+      {:ok, %Auction{id: blind_auction_id}} = DB.create_blind_auction(expiration_date, 10)
+
+      assert {:error, %Ecto.Changeset{valid?: false} = cs} =
+               DB.create_bid(blind_auction_id, 10, "some_bidder")
+
+      assert "auction does not exist" in errors_on(cs).auction_id
+    end
+
     test "bid creation failure - bid below auction base", %{auction: %Auction{id: auction_id}} do
       assert {:error, %Ecto.Changeset{valid?: false} = cs} =
                DB.create_bid(auction_id, 1, "some_bidder")

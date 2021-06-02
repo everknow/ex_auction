@@ -90,7 +90,7 @@ defmodule ExAuctionsManager.OffersEndpointTests do
                "auction_id" => -1,
                "bid_value" => new_bid_value,
                "bidder" => bidder,
-               "reasons" => ["auction does not exist"]
+               "reasons" => %{"auction_id" => "auction does not exist"}
              } ==
                body |> Jason.decode!()
     end
@@ -155,7 +155,7 @@ defmodule ExAuctionsManager.OffersEndpointTests do
                  ]
                )
 
-      assert %{"reasons" => ["below auction base"]} = Jason.decode!(body)
+      assert %{"reasons" => %{"bid_value" => "below auction base"}} = Jason.decode!(body)
     end
 
     test "/offers create offer error - bid below highest bid", %{auction_id: auction_id} do
@@ -189,7 +189,7 @@ defmodule ExAuctionsManager.OffersEndpointTests do
                  ]
                )
 
-      assert %{"reasons" => ["below highest bid"]} = Jason.decode!(body)
+      assert %{"reasons" => %{"bid_value" => "below highest bid"}} = Jason.decode!(body)
     end
   end
 end
