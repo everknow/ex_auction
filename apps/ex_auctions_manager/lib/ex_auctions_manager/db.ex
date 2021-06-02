@@ -8,37 +8,39 @@ defmodule ExAuctionsManager.DB do
   import Ecto.Changeset
 
   alias ExAuctionsManager.{Auction, Bid, Repo}
+  alias ExGate.WebsocketUtils
   @page Application.compile_env(:ex_auctions_manager, :page_size, 20)
 
   require Logger
 
   @doc """
-  Bid function.
-
-  Input:
-
-    - auction_id: the id of the auction
-    - bid_value: the bid value
+  Creates an offer for a  blind auction.
   """
-  def create_bid(auction_id, bid_value, bidder) do
+  def create_offer(auction_id, bid_value, bidder) do
+    create_bid(auction_id, bid_value, bidder, true)
+  end
+
+  @doc """
+  Creates a bid for a standard auction
+  """
+  def create_bid(auction_id, bid_value, bidder, blind \\ false) do
     {_, status} =
       Repo.transaction(fn ->
         bid_changeset =
           %Bid{}
           |> Bid.changeset(%{auction_id: auction_id, bid_value: bid_value, bidder: bidder})
 
-        auction = get_and_lock_auction(auction_id)
-
-        with %Auction{} = auction <- get_and_lock_auction(auction_id),
+        with %Auction{} = auction <-
+               get_and_lock_auction(auction_id, blind),
              true <- is_active(auction) do
           process_bid_request(auction, bid_changeset)
         else
           nil ->
             Logger.error("auction #{auction_id} does not exist")
-            {:error, reject_bid(bid_changeset, :auction_id, "auction does not exist")}
+            {:error, add_error(bid_changeset, :auction_id, "auction does not exist")}
 
           false ->
-            {:error, reject_bid(bid_changeset, :auction_id, "auction is expired")}
+            {:error, add_error(bid_changeset, :auction_id, "auction is expired")}
         end
       end)
 
@@ -66,7 +68,7 @@ defmodule ExAuctionsManager.DB do
     case auction do
       # Auction is closed
       %Auction{id: ^auction_id, open: false} ->
-        {:error, reject_bid(bid_changeset, :auction_id, "is closed")}
+        {:error, add_error(bid_changeset, :auction_id, "auction is closed")}
 
       # bid is not below auction base
       %Auction{
@@ -81,8 +83,17 @@ defmodule ExAuctionsManager.DB do
         auction_base: auction_base,
         open: true
       } ->
-        {:error, reject_bid(bid_changeset, :bid_value, "below auction base #{auction_base}")}
+        {:error, add_error(bid_changeset, :bid_value, "below auction base", value: auction_base)}
     end
+  end
+
+  def get_bid_and_outbid(auction_id) do
+    from(bid in Bid,
+      select: bid,
+      order_by: [desc: bid.id],
+      limit: 2
+    )
+    |> Repo.all()
   end
 
   @doc """
@@ -97,6 +108,9 @@ defmodule ExAuctionsManager.DB do
   def list_bids(auction_id, page \\ 0, size \\ @page) do
     bids_count =
       from(bid in Bid,
+        join: auction in Auction,
+        on: bid.auction_id == auction.id,
+        where: auction.blind == false,
         select: count(bid.id)
       )
       |> Repo.one()
@@ -147,10 +161,18 @@ defmodule ExAuctionsManager.DB do
     end
   end
 
-  def create_auction(expiration_date, auction_base) do
+  def create_auction(expiration_date, auction_base, blind \\ false) do
     %Auction{}
-    |> Auction.changeset(%{auction_base: auction_base, expiration_date: expiration_date})
+    |> Auction.changeset(%{
+      auction_base: auction_base,
+      expiration_date: expiration_date,
+      blind: blind
+    })
     |> Repo.insert()
+  end
+
+  def create_blind_auction(expiration_date, auction_base) do
+    create_auction(expiration_date, auction_base, true)
   end
 
   def update_auction(auction_id, highest_bid, highest_bidder) do
@@ -175,21 +197,20 @@ defmodule ExAuctionsManager.DB do
   end
 
   def list_auctions() do
-    Auction |> Repo.all()
+    from(auction in Auction,
+      where: auction.blind == false,
+      select: auction
+    )
+    |> Repo.all()
   end
 
   def get_auction(auction_id) do
     Repo.get(Auction, auction_id)
   end
 
-  def get_and_lock_auction(auction_id) do
-    from(a in Auction, where: a.id == ^auction_id, lock: "FOR UPDATE")
+  def get_and_lock_auction(auction_id, blind \\ false) do
+    from(a in Auction, where: a.id == ^auction_id and a.blind == ^blind, lock: "FOR UPDATE")
     |> Repo.one()
-  end
-
-  defp reject_bid(bid_changeset, key, reason) do
-    bid_changeset
-    |> add_error(key, reason)
   end
 
   defp bigger_than_auction_base(
@@ -229,12 +250,14 @@ defmodule ExAuctionsManager.DB do
       {:ok, bid}
     else
       Logger.error("bid value #{bid_value} is not bigger than highest bid #{highest_bid}")
+      # last operation in the transaction: no exception so far, so this will be executed
 
       {:error,
-       reject_bid(
+       add_error(
          bid_changeset,
          :bid_value,
-         "bid value #{bid_value} is not bigger than highest bid #{highest_bid}"
+         "below highest bid",
+         value: highest_bid
        )}
     end
   end

@@ -2,11 +2,9 @@ defmodule ExGate.Login.ReceiverTests do
   use ExUnit.Case, async: true
   use Plug.Test
 
-  alias ExGate.GoogleClient
   alias ExGate.Login.Handler
   alias ExGate.Login.V1.Receiver
 
-  import ExUnit.CaptureLog
   import Mock
 
   @opts Receiver.init([])
@@ -20,7 +18,7 @@ defmodule ExGate.Login.ReceiverTests do
       conn = conn("post", "/", %{id_token: "some_token"})
 
       with_mock(Handler,
-        login: fn id_token ->
+        login: fn _id_token ->
           {:ok, "token", :stuff}
         end
       ) do
@@ -43,7 +41,7 @@ defmodule ExGate.Login.ReceiverTests do
       conn = conn("post", "/", %{id_token: "some_token"})
 
       with_mock(Handler,
-        login: fn id_token ->
+        login: fn _id_token ->
           {:error, 500, "something went wrong"}
         end
       ) do

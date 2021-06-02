@@ -123,6 +123,35 @@
             });
         }
 
+        const createOffer = function () {
+            const bid_auction_id = document.getElementById("ba_bid_auction_id").value;
+            const bid_value = document.getElementById("ba_bid_value").value;
+            const bidder = getCredentials().email;
+            const body = {
+                bidder: bidder,
+                bid_value: bid_value,
+                auction_id: bid_auction_id
+            };
+
+            console.log(`Payload: ${JSON.stringify(body)}`);
+            make_async_query("post", "http://localhost:8081/api/v1/offers/", body, function (response) {
+                JSON.stringify(response);
+                if (response.status === 201) {
+                    setOfferCreationMessage("Bid created");
+                }
+                else if (response.status === 422) {
+                    console.log("Obtained 422");
+                    const reasons_list = JSON.parse(response.responseText).reasons;
+                    const reasons = []
+                    for (const [key, value] of Object.entries(reasons_list)) {
+                        reasons.push(`${key}: ${value}`);
+                    }
+                    console.log(reasons);
+                    setOfferCreationMessage(reasons.join(" - "));
+                }
+            });
+        }
+
         const renderBidsForAuction = function (bids) {
             const bids_div = document.createElement("div");
             const root = document.getElementById("bids_for_auction");
@@ -159,11 +188,17 @@
             document.getElementById("bids_creation_message").innerText = msg;
         }
 
-        const setAuctionCreationMessage = (message) => {
-            document.getElementById("auction_creation_message").innerText = message;
+        const setOfferCreationMessage = function (msg) {
+            document.getElementById("offers_creation_message").innerText = msg;
+        }
+
+        const setAuctionCreationMessage = (div_id, message) => {
+            document.getElementById(div_id).innerText = message;
         };
 
         const createAuction = function () {
+            const url = "http://localhost:8081/api/v1/auctions/";
+            const div_id = "auction_creation_message";
             console.log("Creating auction");
             const expiration_date = document.getElementById("expiration_date").value;
             const auction_base = document.getElementById("auction_base").value;
@@ -173,20 +208,46 @@
             };
 
             console.log(`Payload: ${JSON.stringify(body)}`);
-            make_async_query("post", "http://localhost:8081/api/v1/auctions/", body, function (response) {
+            make_async_query("post", url, body, function (response) {
                 if (response.status === 201) {
                     console.log(response.responseText);
                     const auction_id = JSON.parse(response.responseText).auction_id;
-                    setAuctionCreationMessage(`creation auction with id ${auction_id}`);
+                    setAuctionCreationMessage(div_id, `creation auction with id ${auction_id}`);
                 }
                 else if (response.status === 422) {
+                    const response_message = JSON.parse(response.responseText);
                     console.log(`Obtained 422: ${JSON.stringify(response.responseText)}`);
-                    reason = JSON.parse(response.responseText.reasons)
-                    setAuctionCreationMessage(reasons);
+                    setAuctionCreationMessage(div_id, response_message.reasons);
                 }
             });
         };
 
+        const createBlindAuction = function () {
+            const url = "http://localhost:8082/api/v1/blind_auctions/";
+            const div_id = "ba_auction_creation_message";
+
+            console.log("Creating blind auction");
+            const expiration_date = document.getElementById("ba_expiration_date").value;
+            const auction_base = document.getElementById("ba_auction_base").value;
+            const body = {
+                expiration_date,
+                auction_base
+            };
+
+            console.log(`Payload: ${JSON.stringify(body)}`);
+            make_async_query("post", url, body, function (response) {
+                if (response.status === 201) {
+                    console.log(response.responseText);
+                    const auction_id = JSON.parse(response.responseText).auction_id;
+                    setAuctionCreationMessage(div_id, `creation auction with id ${auction_id}`);
+                }
+                else if (response.status === 422) {
+                    const response_message = JSON.parse(response.responseText);
+                    console.log(`Obtained 422: ${JSON.stringify(response.responseText)}`);
+                    setAuctionCreationMessage(div_id, response_message.reasons);
+                }
+            });
+        };
         const closeAuction = function () {
             console.log("Closing auction");
             const auction_id = document.getElementById("auction_id_closure").value;
@@ -227,6 +288,31 @@
             console.log(`Subscription message sent for auction_id ${auction_id}`);
         }
 
+        function ping() {
+            ws.send("ping");
+            setTimeout(ping, 5000);
+        };
+
+        function sendUserID(user_id) {
+            const payload = JSON.stringify({
+                user_identification: user_id
+            });
+            console.log(`Sending: ${payload}`);
+            ws.send(payload);
+            console.log("User identification sent");
+        };
+
+        const setupBidder = () => {
+            document.getElementById("bidder_name").innerText = getCredentials().email;
+            document.getElementById("ba_bidder_name").innerText = getCredentials().email;
+        }
+
+        const copyStartDate = () => {
+            const expDate = document.getElementById("expiration_date");
+            expDate.select();
+            document.execCommand("copy");
+        }
+
         window.onload = (event) => {
             if (getCredentials().access_token === undefined) {
                 window.location.href = "/";
@@ -234,6 +320,8 @@
             ws = new WebSocket("ws://localhost:8080/ws");
             ws.onopen = function () {
                 showConnectionStatus("connected");
+                // Just a temporary solution
+                sendUserID(getCredentials().email);
                 ping();
 
             };
@@ -248,17 +336,6 @@
             gapi.load('auth2', function () {
                 gapi.auth2.init();
             });
-
-            function ping() {
-                ws.send("ping");
-                console.log("Ping sent");
-                setTimeout(ping, 5000);
-            };
-
-            const setupBidder = () => {
-                const auction_id = document.getElementById("bidder_name").innerText = getCredentials().email;
-            }
-
             setupBidder();
         };
     </script>
@@ -381,7 +458,62 @@
                 <div id="bid_creation_error_message"></div>
             </fieldset>
         </div>
-    </div><a onclick="logout();">Logout</a></div>
+    </div>
+
+    <div>
+
+        <!-- Blind auction creation -->
+        <div>
+            <fieldset>
+                <label for="">
+                    <strong>Blind auction creation</strong>
+                </label>
+                <div>
+                    <label for="">Expiration date</label>
+                    <input type="text" id="ba_expiration_date" />
+                    <div>[example: 2021-05-25 10:00:00Z]</div>
+                </div>
+                <div>
+                    <label for="">Auction base</label>
+                    <input type="number" id="ba_auction_base" />
+                </div>
+                <button onclick="createBlindAuction();">Create blind auction</button>
+                <div for="">Status message for auction creation:
+                    <span id="ba_auction_creation_message"></span>
+                </div>
+            </fieldset>
+        </div>
+
+    </div>
+
+    <div>
+        <!-- Offer creation (blind auction bid)-->
+        <div>
+            <fieldset>
+                <label for="">
+                    <strong>Offer creation</strong>
+                </label>
+                <div>
+                    <label for="">Blind Auction ID</label>
+                    <input type="number" id="ba_bid_auction_id" />
+                </div>
+                <div>
+                    <label for="">Bid value</label>
+                    <input type="number" id="ba_bid_value" />
+                </div>
+                <div>
+                    <label for="">Bidder: </label>
+                    <span style="font-weight: bold;" id="ba_bidder_name"></span>
+                </div>
+                <button onclick="createOffer();">Create offer</button>
+                <div for="">Status message for offer creation:
+                    <span id="offers_creation_message"></span>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+
+    <a onclick="logout();">Logout</a></div>
 </body>
 
 </html>

@@ -1,4 +1,4 @@
-defmodule ExAuctionsManager.Bids.V1.Receiver do
+defmodule ExAuctionsManager.Offers.V1.Receiver do
   @moduledoc """
   Admin UI receiver, version 1
   """
@@ -6,7 +6,6 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
   import Plug.Conn
 
   alias ExAuctionsManager.{Auction, Bid, DB}
-  alias ExAuctionsManager.Bids.V1.Handler
   alias ExGate.WebsocketUtils
 
   require Logger
@@ -36,41 +35,52 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
 
   plug(:dispatch)
 
-  get "/:auction_id" do
-    # TODO: move this in the configuration
-    default_size = "10"
-    %{"auction_id" => auction_id} = conn.params
-    page = Map.get(conn.params, "page", "0") |> String.to_integer()
-    size = Map.get(conn.params, "size", default_size) |> String.to_integer()
-
-    {bids, headers} = Handler.list_bids(auction_id, page, size)
-
-    conn
-    |> inject_headers(headers)
-    |> json_resp(200, bids)
-  end
-
   post "/" do
     case valid_payload?(conn) do
       true ->
         %{"auction_id" => auction_id, "bid_value" => bid_value, "bidder" => bidder} = conn.params
         bid_value = maybe_convert(bid_value)
         auction_id = maybe_convert(auction_id)
+        auction = DB.get_auction(auction_id)
 
-        case Handler.create_bid(auction_id, bid_value, bidder) do
-          {:ok, :created} ->
+        case DB.create_offer(auction_id, bid_value, bidder) do
+          {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} ->
+            WebsocketUtils.notify_blind_bid_success(auction_id, bidder)
+
             json_resp(conn, 201, %{auction_id: auction_id, bid_value: bid_value, bidder: bidder})
 
-          {:error, reason} ->
+          {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
+            reasons = format_error_messages(errors)
+
             json_resp(
               conn,
               422,
-              %{auction_id: auction_id, bid_value: bid_value, bidder: bidder, reasons: reason}
+              %{auction_id: auction_id, bid_value: bid_value, bidder: bidder, reasons: reasons}
             )
         end
 
       false ->
         json_resp(conn, 400, "BAD REQUEST")
+    end
+  end
+
+  defp notify_blind_bid_failure(
+         _auction_id,
+         _bid_value,
+         _bidder,
+         _reason
+       ) do
+    nil
+  end
+
+  defp notify_blind_bid_failure(
+         auction_id,
+         bid_value,
+         bidder,
+         bid_value: {reason, [value: value]}
+       ) do
+    if reason == "below highest bid" do
+      WebsocketUtils.notify_blind_bid_below_best(auction_id, bidder)
     end
   end
 
@@ -83,17 +93,14 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
   end
 
   defp maybe_convert("") do
-    Logger.warn("empty")
     0
   end
 
   defp maybe_convert(value) when is_bitstring(value) do
-    Logger.warn("string")
     String.to_integer(value)
   end
 
   defp maybe_convert(value) do
-    Logger.warn("general")
     value
   end
 
@@ -108,5 +115,9 @@ defmodule ExAuctionsManager.Bids.V1.Receiver do
     Map.has_key?(conn.params, "auction_id") &&
       Map.has_key?(conn.params, "bid_value") &&
       Map.has_key?(conn.params, "bidder")
+  end
+
+  defp format_error_messages(errors) do
+    errors |> Enum.map(fn {key, {reason, _}} -> {key, reason} end) |> Enum.into(%{})
   end
 end

@@ -13,7 +13,6 @@ defmodule ExGate.SocketTests do
 
     test "subscription message" do
       GunServer.send_frame(%{"subscribe" => 1})
-      expected_message = "Received: 1"
       assert_receive({:websocket_replied, "subscribed"}, 5000)
     end
 

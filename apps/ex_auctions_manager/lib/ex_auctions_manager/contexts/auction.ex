@@ -15,10 +15,11 @@ defmodule ExAuctionsManager.Auction do
     :open,
     :expiration_date,
     :creation_date,
-    :auction_base
+    :auction_base,
+    :blind
   ]
 
-  @required_fields @fields -- [:creation_date]
+  @required_fields @fields -- [:creation_date, :blind]
 
   @derive {Jason.Encoder, only: @fields ++ [:id]}
   schema "auctions" do
@@ -28,6 +29,7 @@ defmodule ExAuctionsManager.Auction do
     field(:auction_base, :integer)
     field(:highest_bid, :integer)
     field(:highest_bidder, :string)
+    field(:blind, :boolean, default: false)
   end
 
   def changeset(%__MODULE__{} = auction, attrs) do
@@ -42,7 +44,8 @@ defmodule ExAuctionsManager.Auction do
       :open,
       :expiration_date,
       :creation_date,
-      :auction_base
+      :auction_base,
+      :blind
     ])
     |> validate_required([
       :open,
@@ -50,15 +53,16 @@ defmodule ExAuctionsManager.Auction do
       :creation_date,
       :auction_base
     ])
+    |> validate_number(:auction_base, greater_than: 0, message: "auction_base must be positive")
     |> validate_expiration_date(:expiration_date)
   end
 
-  defp validate_expiration_date(changeset, :expiration_date = field, opts \\ []) do
+  defp validate_expiration_date(changeset, :expiration_date = field) do
     created = get_field(changeset, :creation_date)
 
     validate_change(changeset, field, fn _, expiration_date ->
       if Timex.compare(created, expiration_date) > -1 do
-        [{field, opts[field] || "expiry date must be bigger than creation date"}]
+        [{field, "expiry date must be bigger than creation date"}]
       else
         []
       end

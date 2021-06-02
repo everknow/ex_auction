@@ -1,31 +1,53 @@
 # ExAuction - Umbrella application
 
-## Components implemented:
+## Registration
 
-1. Auctions manager (name: [ExAuctionsManager](apps/ex_auctions_manager/README.md)). It's resposible to implement the auction logic, exposing proper endpoints.
-2. Gate: (name: [ExGate](apps/ex_gate/README.md)). It's responsible to handle authentication and token generation to access all the other endpoints.
+Client needs to authenticate the user against Google, he receives a token and must
+pass it to the endpoint:
 
-### Setup dev dependencies:
+    /api/v1/verify
 
-```shell
-docker-compose up --build -d
-```
+with body:
 
-This will expose the following services on `localhost`:
+    {
+        id_token: ID_TOKEN
+    }
 
-- postgres instance, port 5432
-- pgadmin instance, on port 8082
+If the token is verified the user will be registered and an access_token will be provided to the client. That access token is the one to be used to authenticate every protected api call.
 
-### Teardown dev dependencies:
+Response:
 
-```shell
-docker-compose down -v
-```
+    {
+        "access_token" => token,
+        "token_type" => "Bearer",
+        # Shouldn't the expire come from the Guardian job ?
+        "expires_in" => 3600
+        # "refresh_token": ??
+    }
 
-Note that `-v` is important because there are mounted volumes.
 
-### Development roadmap: [Plan](PLAN.md)
+## Websocket
 
-### Demo1: [Use cases](doc/demo1_use_cases.md)
+When the user is authenticated, the client can open a websocket contacting
 
-### [Api](API.md)
+    ws://localhost:8080/ws (should be wss in production) 
+
+upon connection, it needs to send a message to bind the username to the websocket for future 
+communication needs.
+
+    {
+        user_identification: user_id
+    }
+
+Respose: `user identification received`
+
+### Auction subscription
+
+To subscribe an user to a specific auction, ssend the payload:
+
+    {
+        subscribe: auction_id
+    };
+
+Response: `subscribed`
+

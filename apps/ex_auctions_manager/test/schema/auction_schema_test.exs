@@ -17,7 +17,6 @@ defmodule ExAuctionsManager.AuctionSchemaTests do
     end
 
     test "changeset overriding created and open fields" do
-      created = "2018-05-17T17:04:42Z" |> DateTime.from_iso8601()
       start = TestUtils.shift_datetime(TestUtils.get_now(), -2)
       auction_end = TestUtils.shift_datetime(TestUtils.get_now(), 2)
 
@@ -42,19 +41,13 @@ defmodule ExAuctionsManager.AuctionSchemaTests do
     test "auction creation error - expiration_date in the past" do
       auction_end = TestUtils.shift_datetime(TestUtils.get_now(), -2)
 
-      attrs = %{
-        open: false,
-        auction_base: 10,
-        expiration_date: auction_end
-      }
-
       assert {:error,
               %Ecto.Changeset{
                 valid?: false,
                 changes: %{
                   creation_date: _,
                   auction_base: 10,
-                  expiration_date: auction_end,
+                  expiration_date: ^auction_end,
                   open: true
                 }
               } = cs} = DB.create_auction(auction_end, 10)
@@ -65,14 +58,8 @@ defmodule ExAuctionsManager.AuctionSchemaTests do
     test "auction creation error - auction is expired" do
       auction_end = TestUtils.shift_datetime(TestUtils.get_now(), 0, 0, 0, 1)
 
-      attrs = %{
-        open: false,
-        auction_base: 10,
-        expiration_date: auction_end
-      }
-
       assert {:ok, %Auction{id: auction_id}} = DB.create_auction(auction_end, 100)
-      :timer.sleep(1000)
+      :timer.sleep(2000)
 
       assert capture_log(fn ->
                assert {
