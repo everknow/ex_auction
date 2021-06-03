@@ -15,7 +15,9 @@ config :ex_auctions_admin, port: 8082, token: "token", tls: false
 
 # ExAuctionsDB
 config :ex_auctions_db, ExAuctionsDB.Repo,
-  database: "auctions_dev",
+  database: "auctions",
   username: "postgres",
   password: "postgres",
-  hostname: "localhost"
+  hostname: "localhost",
+  show_sensitive_data_on_connection_error: true,
+  pool_size: 10

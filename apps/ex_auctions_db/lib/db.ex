@@ -109,8 +109,8 @@ defmodule ExAuctionsDB.DB do
     bids_count =
       from(bid in Bid,
         join: auction in Auction,
-        on: bid.auction_id == auction.id,
-        where: auction.blind == false,
+        on: bid.auction_id == ^auction_id,
+        where: auction.blind == false and auction.id == ^auction_id,
         select: count(bid.id)
       )
       |> Repo.one()

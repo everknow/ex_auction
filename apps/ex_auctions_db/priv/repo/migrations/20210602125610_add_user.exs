@@ -4,10 +4,10 @@ defmodule ExAuctionsDB.Repo.Migrations.AddUser do
   def change do
 
     create table("user", primary_key: false) do
-      add :username, :string, primary_key: true
-      add :google_id, :string, null: false
+      add :google_id, :string, primary_key: true
+      add :username, :string, null: false
     end
 
-    create unique_index("user", [:google_id], name: :unique_google_id)
+    create unique_index("user", [:username], name: :unique_username)
   end
 end
