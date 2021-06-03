@@ -120,7 +120,9 @@ defmodule ExAuctionsDB.DB do
 
     q =
       from(bid in Bid,
-        where: bid.auction_id == ^auction_id,
+        join: auction in Auction,
+        on: bid.auction_id == ^auction_id,
+        where: auction.blind == false and auction.id == ^auction_id,
         limit: ^size,
         offset: ^offset
       )
@@ -262,9 +264,32 @@ defmodule ExAuctionsDB.DB do
     end
   end
 
-  def register_username(username, google_id) do
-    %User{}
-    |> User.changeset(%{username: username, google_id: google_id})
-    |> Repo.insert()
+  @doc """
+  Idempotent registration. It fails only if the user tries to register itself again
+  with a different couple {email, username}
+  """
+  def register_user(email, username) do
+    case get_user(email) do
+      {:error, "not found"} ->
+        case %User{}
+             |> User.changeset(%{username: username, google_id: email})
+             |> Repo.insert() do
+          {:ok, %User{username: ^username, google_id: ^email} = user} ->
+            {:ok, user}
+
+          {:error, %Ecto.Changeset{valid?: false}} ->
+            {:error, "username already registered"}
+        end
+
+      {:ok, %User{username: username} = user} ->
+        {:ok, user}
+    end
+  end
+
+  defp get_user(google_id) do
+    case Repo.get(User, google_id) do
+      nil -> {:error, "not found"}
+      %User{google_id: ^google_id} = user -> {:ok, user}
+    end
   end
 end

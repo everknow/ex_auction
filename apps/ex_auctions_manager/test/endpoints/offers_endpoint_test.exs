@@ -51,7 +51,8 @@ defmodule ExAuctionsDB.OffersEndpointTests do
                body |> Jason.decode!()
 
       assert {results, _} = DB.list_bids(auction_id)
-      assert length(results) == 2
+      # None is returned, since ^ returns only bids
+      assert length(results) == 0
     end
 
     test "/offers create offer error", %{auction_id: auction_id} do

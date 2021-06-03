@@ -4,11 +4,12 @@ defmodule ExAuctionsDB.UserSchemaTests do
   alias ExAuctionsDB.{DB, User}
 
   describe "User schema tests" do
-    test "user creation" do
-      assert {:ok, %User{}} = DB.register_username("brunoripa2", "bruno.ripa2@gmail.com")
+    test "idempotent user creation" do
+      assert {:ok, %User{}} = DB.register_user("bruno.ripa2@gmail.com", "brunoripa2")
+      assert {:ok, %User{}} = DB.register_user("bruno.ripa2@gmail.com", "brunoripa2")
 
-      assert {:error, %Ecto.Changeset{valid?: false}} =
-               DB.register_username("brunoripa2", "bruno.ripa2@gmail.com")
+      assert {:error, "username already registered"} =
+               DB.register_user("bruno.ripa3@gmail.com", "brunoripa2")
     end
   end
 end

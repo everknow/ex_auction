@@ -15,7 +15,7 @@ defmodule ExGate.Login.Handler do
   def login(id_token, username) do
     id_token
     |> verify_google_id_token()
-    |> maybe_register_username(username)
+    |> maybe_register_user(username)
     |> maybe_generate_token()
   end
 
@@ -31,14 +31,17 @@ defmodule ExGate.Login.Handler do
     end
   end
 
-  defp maybe_register_username({:error, reason}, _username) do
+  defp maybe_register_user({:error, reason}, _username) do
     {:error, reason}
   end
 
-  defp maybe_register_username({:ok, %{"email" => email} = claims}, username) do
-    case DB.register_username(username, email) do
-      {:ok, user} -> {:ok, claims, user}
-      %Ecto.Changeset{valid?: false} = cs -> {:error, cs}
+  defp maybe_register_user({:ok, %{"email" => email} = claims}, username) do
+    case DB.register_user(email, username) do
+      {:ok, %User{username: ^username} = user} ->
+        {:ok, claims, user}
+
+      {:error, "email or username already registered" = reason} ->
+        {:error, reason}
     end
   end
 
