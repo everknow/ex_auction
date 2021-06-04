@@ -12,7 +12,7 @@ defmodule ExGate.Register.ReceiverTests do
 
   describe "Receiver tests" do
     test "/register success" do
-      conn = conn("post", "/", %{id_token: "bruno.ripa@gmail.com", username: "brunoripa"})
+      conn = conn("post", "/", %{id_token: "token", username: "brunoripa"})
 
       with_mock(GoogleClient,
         verify_and_decode: fn _id_token ->
@@ -54,7 +54,7 @@ defmodule ExGate.Register.ReceiverTests do
     test "/register failure - user already exists" do
       {:ok, %User{}} = DB.register_user("bruno.ripa@gmail.com", "brunoripa")
 
-      conn = conn("post", "/", %{id_token: "bruno.ripa@gmail.com", username: "brunoripa"})
+      conn = conn("post", "/", %{id_token: "token", username: "brunoripa"})
 
       with_mock(GoogleClient,
         verify_and_decode: fn _id_token ->
