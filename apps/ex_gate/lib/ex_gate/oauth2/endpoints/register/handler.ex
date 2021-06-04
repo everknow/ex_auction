@@ -8,12 +8,7 @@ defmodule ExGate.Register.Handler do
 
   def init, do: :ok
 
-  def ping, do: "pong"
-  def ping(_context), do: "pong"
-
   def register(id_token, username) do
-    Logger.error("Full login")
-
     id_token
     |> verify_google_id_token()
     |> maybe_register_user(username)
@@ -41,21 +36,18 @@ defmodule ExGate.Register.Handler do
       {:ok, %User{username: ^username} = user} ->
         {:ok, claims, user}
 
-      {:error, "unable to create user" = reason} ->
+      {:error, "username already registered" = reason} ->
         {:error, reason}
     end
   end
 
   defp maybe_generate_token({:error, reason}) do
     case reason do
-      "user does not exist" = user_error ->
-        {:error, 404, user_error}
+      "username already registered" ->
+        {:error, 422, reason}
 
-      "email already used for another user" = username_error ->
-        {:error, 400, username_error}
-
-      _ ->
-        {:error, 401, "cannot verify google id token"}
+      other ->
+        {:error, 401, reason}
     end
   end
 
@@ -73,9 +65,12 @@ defmodule ExGate.Register.Handler do
           _opts = [ttl: {3600, :seconds}]
         )
 
-      _nope ->
-        Logger.error("`aud` claim not recognized: #{aud}")
-        {:error, 401, "could not login"}
+      {:error, 422, reason} ->
+        Logger.error(reason)
+        {:error, 422, reason}
+
+      {:other, code, reason} ->
+        {:error, 401, reason}
     end
   end
 end

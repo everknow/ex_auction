@@ -2,10 +2,9 @@ defmodule ExGate.Register.ReceiverTests do
   use ExAuctionsDB.RepoCase, async: true
   use Plug.Test
 
-  alias ExGate.Login.Handler
-  alias ExGate.Login.V1.Receiver
-  alias ExGate.GoogleClient
   alias ExAuctionsDB.{DB, User}
+  alias ExGate.GoogleClient
+  alias ExGate.Register.Receiver
 
   import Mock
 
@@ -13,8 +12,7 @@ defmodule ExGate.Register.ReceiverTests do
 
   describe "Receiver tests" do
     test "/register success" do
-      {:ok, %User{}} = DB.register_user("bruno.ripa@gmail.com", "brunoripa")
-      conn = conn("post", "/", %{id_token: "bruno.ripa@gmail.com"})
+      conn = conn("post", "/", %{id_token: "bruno.ripa@gmail.com", username: "brunoripa"})
 
       with_mock(GoogleClient,
         verify_and_decode: fn _id_token ->
@@ -41,7 +39,7 @@ defmodule ExGate.Register.ReceiverTests do
     end
 
     test "/register failure - unable to decode token" do
-      conn = conn("post", "/", %{id_token: "some_token"})
+      conn = conn("post", "/", %{id_token: "some_token", username: "brunoripa"})
 
       conn = Receiver.call(conn, @opts)
 
@@ -53,8 +51,10 @@ defmodule ExGate.Register.ReceiverTests do
       assert "unable to verify google token" = response_body |> Jason.decode!()
     end
 
-    test "/register failure - user does not exist" do
-      conn = conn("post", "/", %{id_token: "some_token"})
+    test "/register failure - user already exists" do
+      {:ok, %User{}} = DB.register_user("bruno.ripa@gmail.com", "brunoripa")
+
+      conn = conn("post", "/", %{id_token: "bruno.ripa@gmail.com", username: "brunoripa"})
 
       with_mock(GoogleClient,
         verify_and_decode: fn _id_token ->
@@ -69,10 +69,10 @@ defmodule ExGate.Register.ReceiverTests do
 
         assert %{
                  resp_body: response_body,
-                 status: 404
+                 status: 422
                } = conn
 
-        assert "user does not exist" = response_body |> Jason.decode!()
+        assert "username already registered" = response_body |> Jason.decode!()
       end
     end
   end

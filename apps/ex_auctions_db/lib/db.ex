@@ -9,6 +9,7 @@ defmodule ExAuctionsDB.DB do
 
   alias ExAuctionsDB.{Auction, Bid, Repo, User}
   alias ExGate.WebsocketUtils
+
   @page Application.compile_env(:ex_auctions_manager, :page_size, 20)
 
   require Logger
@@ -269,20 +270,15 @@ defmodule ExAuctionsDB.DB do
   with a different couple {email, username}
   """
   def register_user(email, username) do
-    case get_user(email) do
-      {:error, "not found"} ->
-        case %User{}
-             |> User.changeset(%{username: username, google_id: email})
-             |> Repo.insert() do
-          {:ok, %User{username: ^username, google_id: ^email} = user} ->
-            {:ok, user}
-
-          {:error, %Ecto.Changeset{valid?: false}} ->
-            {:error, "username already registered"}
-        end
-
-      {:ok, %User{username: username} = user} ->
+    case %User{}
+         |> User.changeset(%{username: username, google_id: email})
+         |> Repo.insert() do
+      {:ok, %User{username: ^username, google_id: ^email} = user} ->
         {:ok, user}
+
+      {:error, %Ecto.Changeset{valid?: false}} ->
+        Logger.error("username already registered")
+        {:error, "username already registered"}
     end
   end
 
