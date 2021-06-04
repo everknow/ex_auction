@@ -33,8 +33,8 @@ defmodule ExGate.GoogleClient do
 
         {:ok, claims}
 
-      {:error, reason} ->
-        {:error, reason}
+      {:ok, %Tesla.Env{status: 400}} ->
+        {:error, "unable to verify google token"}
     end
   end
 end

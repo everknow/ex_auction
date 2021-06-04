@@ -1,5 +1,5 @@
 defmodule ExAuctionsAdmin.BlindAuctionsEndpointTests do
-  use ExAuctionsAdmin.RepoCase, async: false
+  use ExAuctionsDB.RepoCase, async: false
 
   alias ExAuctionsDB.{Auction, Repo}
 

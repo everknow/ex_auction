@@ -1,25 +1,28 @@
 defmodule ExGate.Login.ReceiverTests do
-  use ExUnit.Case, async: true
+  use ExAuctionsDB.RepoCase, async: true
   use Plug.Test
 
   alias ExGate.Login.Handler
   alias ExGate.Login.V1.Receiver
+  alias ExGate.GoogleClient
+  alias ExAuctionsDB.{DB, User}
 
   import Mock
 
   @opts Receiver.init([])
 
   describe "Receiver tests" do
-    test "/ping" do
-      assert %{status: 200, state: :sent} = conn("get", "/ping") |> Receiver.call(@opts)
-    end
+    test "/login success" do
+      {:ok, %User{}} = DB.register_user("bruno.ripa@gmail.com", "brunoripa")
+      conn = conn("post", "/", %{id_token: "bruno.ripa@gmail.com"})
 
-    test "/verify success" do
-      conn = conn("post", "/", %{id_token: "some_token", username: "brunoripa"})
-
-      with_mock(Handler,
-        login: fn _id_token, _username ->
-          {:ok, "token", :stuff}
+      with_mock(GoogleClient,
+        verify_and_decode: fn _id_token ->
+          {:ok,
+           %{
+             "aud" => Application.get_env(:ex_gate, :google_client_id),
+             "email" => "bruno.ripa@gmail.com"
+           }}
         end
       ) do
         conn = Receiver.call(conn, @opts)
@@ -37,24 +40,39 @@ defmodule ExGate.Login.ReceiverTests do
       end
     end
 
-    test "/verify failure" do
-      conn = conn("post", "/", %{id_token: "some_token", username: "brunoripa"})
+    test "/login failure - unable to decode token" do
+      conn = conn("post", "/", %{id_token: "some_token"})
 
-      with_mock(Handler,
-        login: fn _id_token, _username ->
-          {:error, 500, "something went wrong"}
+      conn = Receiver.call(conn, @opts)
+
+      assert %{
+               resp_body: response_body,
+               status: 401
+             } = conn
+
+      assert "unable to verify google token" = response_body |> Jason.decode!()
+    end
+
+    test "/login failure - user does not exist" do
+      conn = conn("post", "/", %{id_token: "some_token"})
+
+      with_mock(GoogleClient,
+        verify_and_decode: fn _id_token ->
+          {:ok,
+           %{
+             "aud" => Application.get_env(:ex_gate, :google_client_id),
+             "email" => "bruno.ripa@gmail.com"
+           }}
         end
       ) do
         conn = Receiver.call(conn, @opts)
 
         assert %{
                  resp_body: response_body,
-                 status: 500
+                 status: 404
                } = conn
 
-        assert %{
-                 "error" => "something went wrong"
-               } = response_body |> Jason.decode!()
+        assert "user does not exist" = response_body |> Jason.decode!()
       end
     end
   end

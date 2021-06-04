@@ -286,7 +286,7 @@ defmodule ExAuctionsDB.DB do
     end
   end
 
-  defp get_user(google_id) do
+  def get_user(google_id) do
     case Repo.get(User, google_id) do
       nil -> {:error, "not found"}
       %User{google_id: ^google_id} = user -> {:ok, user}

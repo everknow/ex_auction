@@ -6,16 +6,13 @@ defmodule ExGate.Login.Handler do
   alias ExAuctionsDB.{DB, User}
   require Logger
 
+  @google_client_id Application.compile_env!(:ex_gate, :google_client_id)
+
   def init, do: :ok
 
-  def ping, do: "pong"
-  def ping(_context), do: "pong"
-
-  @spec login(String.t(), String.t()) :: {:ok, String.t(), String.t()} | {:error, integer, any()}
-  def login(id_token, username) do
+  def login(id_token) do
     id_token
     |> verify_google_id_token()
-    |> maybe_register_user(username)
     |> maybe_generate_token()
   end
 
@@ -26,46 +23,28 @@ defmodule ExGate.Login.Handler do
         {:ok, claims}
 
       {:error, reason} ->
-        Logger.error("unable to verify the google token: #{inspect(reason)}")
+        Logger.error("unable to verify google token")
         {:error, reason}
     end
   end
 
-  defp maybe_register_user({:error, reason}, _username) do
-    {:error, reason}
+  defp maybe_generate_token({:error, reason}) do
+    {:error, 401, "unable to verify google token"}
   end
 
-  defp maybe_register_user({:ok, %{"email" => email} = claims}, username) do
-    case DB.register_user(email, username) do
-      {:ok, %User{username: ^username} = user} ->
-        {:ok, claims, user}
-
-      {:error, "email or username already registered" = reason} ->
-        {:error, reason}
-    end
-  end
-
-  defp maybe_generate_token({:error, _reason}) do
-    {:error, 401, "cannot verify google id token"}
-  end
-
-  defp maybe_generate_token({:ok, %{"aud" => aud}, %User{} = user}) do
-    google_client_id = Application.get_env(:ex_gate, :google_client_id)
-
-    case aud do
-      ^google_client_id ->
-        # create user here? [username | _] = String.split(email, "@")
-
+  defp maybe_generate_token({:ok, %{"aud" => @google_client_id, "email" => email}}) do
+    case DB.get_user(email) do
+      {:ok, %User{username: username}} ->
         ExGate.Guardian.encode_and_sign(
-          _resource = %{user_id: user.username},
+          _resource = %{user_id: username},
           _claims = %{},
           # GOOGLE EXPIRY: decoded["exp"]
           _opts = [ttl: {3600, :seconds}]
         )
 
       _nope ->
-        Logger.error("`aud` claim not recognized: #{aud}")
-        {:error, 401, "could not login"}
+        Logger.error("user does not exist")
+        {:error, 404, "user does not exist"}
     end
   end
 end

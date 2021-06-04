@@ -23,15 +23,12 @@ defmodule ExGate.Login.V1.Receiver do
 
   plug(:dispatch)
 
-  # TODO: is this to be exposed here ?
-  get("/ping", do: send_resp(conn, 200, Handler.ping()))
-
   post "/" do
-    %{"id_token" => id_token, "username" => username} = conn.params
+    %{"id_token" => id_token} = conn.params
 
-    case Handler.login(id_token, username) do
+    case Handler.login(id_token) do
       {:error, code, reason} ->
-        json_resp(conn, code, %{error: reason})
+        json_resp(conn, code, reason)
 
       {:ok, token, _} ->
         conn
