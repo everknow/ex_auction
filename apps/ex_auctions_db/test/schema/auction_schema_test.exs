@@ -1,7 +1,7 @@
-defmodule ExAuctionsManager.AuctionSchemaTests do
-  use ExAuctionsManager.RepoCase, async: false
+defmodule ExAuctionsDB.AuctionSchemaTests do
+  use ExAuctionsDB.RepoCase, async: false
 
-  alias ExAuctionsManager.{Auction, DB}
+  alias ExAuctionsDB.{Auction, DB}
   import ExUnit.CaptureLog
 
   describe "Auction schema tests" do

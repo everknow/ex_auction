@@ -1,7 +1,7 @@
-defmodule ExAuctionsManager.OffersEndpointTests do
-  use ExAuctionsManager.RepoCase, async: false
+defmodule ExAuctionsDB.OffersEndpointTests do
+  use ExAuctionsDB.RepoCase, async: false
 
-  alias ExAuctionsManager.{Auction, Bid, DB}
+  alias ExAuctionsDB.{Auction, Bid, DB}
 
   describe "Offers endpoint" do
     setup do
@@ -51,7 +51,8 @@ defmodule ExAuctionsManager.OffersEndpointTests do
                body |> Jason.decode!()
 
       assert {results, _} = DB.list_bids(auction_id)
-      assert length(results) == 2
+      # None is returned, since ^ returns only bids
+      assert length(results) == 0
     end
 
     test "/offers create offer error", %{auction_id: auction_id} do

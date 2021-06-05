@@ -22,7 +22,8 @@ defmodule ExAuction.MixProject do
       name: "Auctions",
       docs: [
         formatters: ["html"]
-      ]
+      ],
+      releases: releases()
     ]
   end
 
@@ -45,6 +46,21 @@ defmodule ExAuction.MixProject do
       test: ["ecto.reset --quiet", "ecto.migrate --quiet", "test --trace"],
       validate: ["credo --strict", "dialyzer"],
       "coveralls.html": ["coveralls.html --umbrella"]
+    ]
+  end
+
+  defp releases do
+    [
+      ex_auctions: [
+        applications: [
+          ex_auctions_db: :permanent,
+          ex_auctions_manager: :permanent,
+          ex_auctions_admin: :permanent,
+          ex_gate: :permanent
+        ],
+        include_executables_for: [:unix],
+        steps: [:assemble, :tar]
+      ]
     ]
   end
 end

@@ -1,10 +1,10 @@
-defmodule ExGate.Login.V1.Receiver do
+defmodule ExGate.Register.Receiver do
   @moduledoc """
   Login recevier
   """
   use Plug.Router
 
-  alias ExGate.Login.Handler
+  alias ExGate.Register.Handler
 
   require Logger
 
@@ -29,9 +29,9 @@ defmodule ExGate.Login.V1.Receiver do
   post "/" do
     %{"id_token" => id_token, "username" => username} = conn.params
 
-    case Handler.login(id_token, username) do
+    case Handler.register(id_token, username) do
       {:error, code, reason} ->
-        json_resp(conn, code, %{error: reason})
+        json_resp(conn, code, reason)
 
       {:ok, token, _} ->
         conn

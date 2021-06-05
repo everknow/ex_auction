@@ -1,4 +1,4 @@
-defmodule ExAuctionsManager.Auction do
+defmodule ExAuctionsDB.Auction do
   @moduledoc """
   Bid schema
   """
@@ -7,7 +7,7 @@ defmodule ExAuctionsManager.Auction do
   import Ecto.Query
   import Ecto.Changeset
 
-  alias ExAuctionsManager.DB
+  alias ExAuctionsDB.DB
 
   require Logger
 

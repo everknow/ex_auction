@@ -11,8 +11,7 @@ defmodule ExAuctionsManager.Application do
         scheme: :http,
         plug: ExAuctionsManager.Router,
         port: Application.get_env(:ex_auctions_manager, :port, 8081)
-      ),
-      {ExAuctionsManager.Repo, []}
+      )
     ]
 
     opts = [strategy: :one_for_one, name: ExAuctionsManager.Supervisor]

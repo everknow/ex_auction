@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ex-auction-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auctions
+  template:
+    metadata:
+      labels:
+        app: auctions
+    spec:
+      containers:
+        - name: auctions
+          image: gcr.io/rart-temp/ex_auction:dev
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "256m"
+          ports:
+            - containerPort: 8080
+            - containerPort: 8081
+            - containerPort: 8082
+          env:
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: auctions-secrets
+                  key: google_client_id
+            - name: DATABASE_HOSTNAME
+              valueFrom:
+                secretKeyRef:
+                  name: auctions-secrets
+                  key: database_hostname
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: auctions-secrets
+                  key: database_user
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: auctions-secrets
+                  key: database_password
+            - name: DATABASE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: auctions-secrets
+                  key: database_name
+            - name: DATABASE_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: auctions-secrets
+                  key: database_port
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auctions-service
+spec:
+  selector:
+    app: auctions
+  type: LoadBalancer
+  ports:
+    - name: ex-gate
+      protocol: TCP
+      port: 80
+      targetPort: 8080
+      nodePort: 30000

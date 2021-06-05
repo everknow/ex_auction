@@ -1,1 +1,1 @@
-alias ExAuctionsManager.{Repo, Auction, Bid}
+alias ExAuctionsDB.{Repo, Auction, Bid}

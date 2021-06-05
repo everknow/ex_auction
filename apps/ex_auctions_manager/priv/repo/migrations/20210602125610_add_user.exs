@@ -1,4 +1,4 @@
-defmodule ExAuctionsManager.Repo.Migrations.AddUser do
+defmodule ExAuctionsDB.Repo.Migrations.AddUser do
   use Ecto.Migration
 
   def change do

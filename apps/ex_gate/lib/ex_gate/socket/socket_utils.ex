@@ -1,7 +1,7 @@
 defmodule ExGate.WebsocketUtils do
   require Logger
 
-  alias ExAuctionsManager.DB
+  alias ExAuctionsDB.DB
 
   @env (try do
           Mix.env() |> to_string()

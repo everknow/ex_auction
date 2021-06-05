@@ -37,7 +37,8 @@ defmodule ExGate.Router do
     send_file(conn, 200, "#{path}/auction.html")
   end
 
-  forward("/verify", to: ExGate.Login.V1.Receiver)
+  forward("/login", to: ExGate.Login.V1.Receiver)
+  forward("/register", to: ExGate.Register.Receiver)
 
   # Two endpoints for K8s probes: liveness and readyness
   get "/live" do

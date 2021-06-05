@@ -17,7 +17,7 @@ config :ex_gate,
 config :ex_json_schema,
   custom_format_validator: {ExGate.CustomValidator, :validate}
 
-# ExAuctionsManager
-config :ex_auctions_manager, ecto_repos: [ExAuctionsManager.Repo]
+# ExAuctionsDB
+config :ex_auctions_db, ecto_repos: [ExAuctionsDB.Repo]
 
 import_config "#{Mix.env()}.exs"

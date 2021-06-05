@@ -1,4 +1,4 @@
-defmodule ExAuctionsManager.DB do
+defmodule ExAuctionsDB.DB do
   @moduledoc """
   This module has the responsibility to define the DB api
 
@@ -7,8 +7,9 @@ defmodule ExAuctionsManager.DB do
   import Ecto.Query
   import Ecto.Changeset
 
-  alias ExAuctionsManager.{Auction, Bid, Repo, User}
+  alias ExAuctionsDB.{Auction, Bid, Repo, User}
   alias ExGate.WebsocketUtils
+
   @page Application.compile_env(:ex_auctions_manager, :page_size, 20)
 
   require Logger
@@ -109,8 +110,8 @@ defmodule ExAuctionsManager.DB do
     bids_count =
       from(bid in Bid,
         join: auction in Auction,
-        on: bid.auction_id == auction.id,
-        where: auction.blind == false,
+        on: bid.auction_id == ^auction_id,
+        where: auction.blind == false and auction.id == ^auction_id,
         select: count(bid.id)
       )
       |> Repo.one()
@@ -120,7 +121,9 @@ defmodule ExAuctionsManager.DB do
 
     q =
       from(bid in Bid,
-        where: bid.auction_id == ^auction_id,
+        join: auction in Auction,
+        on: bid.auction_id == ^auction_id,
+        where: auction.blind == false and auction.id == ^auction_id,
         limit: ^size,
         offset: ^offset
       )
@@ -262,9 +265,27 @@ defmodule ExAuctionsManager.DB do
     end
   end
 
-  def register_username(username, google_id) do
-    %User{}
-    |> User.changeset(%{username: username, google_id: google_id})
-    |> Repo.insert()
+  @doc """
+  Idempotent registration. It fails only if the user tries to register itself again
+  with a different couple {email, username}
+  """
+  def register_user(email, username) do
+    case %User{}
+         |> User.changeset(%{username: username, google_id: email})
+         |> Repo.insert() do
+      {:ok, %User{username: ^username, google_id: ^email} = user} ->
+        {:ok, user}
+
+      {:error, %Ecto.Changeset{valid?: false}} ->
+        Logger.error("username already registered")
+        {:error, "username already registered"}
+    end
+  end
+
+  def get_user(google_id) do
+    case Repo.get(User, google_id) do
+      nil -> {:error, "not found"}
+      %User{google_id: ^google_id} = user -> {:ok, user}
+    end
   end
 end
