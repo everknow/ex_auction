@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: auctions
-          image: gcr.io/rart-temp/ex_auction:10b9e11
+          image: gcr.io/rart-temp/ex_auction:0f1c06c
           imagePullPolicy: "Always"
           resources:
             limits:
@@ -67,9 +67,9 @@ spec:
             periodSeconds: 2
           readinessProbe:
             httpGet:
-              path: /ready
+              path: /live
               port: 8080
-            initialDelaySeconds: 30
+            initialDelaySeconds: 5
             periodSeconds: 2
       restartPolicy: "Always"
       volumes:
