@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ex-auction-deployment
+  name: auctions-deployment
 spec:
   replicas: 1
   selector:
@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: auctions
-          image: gcr.io/rart-temp/ex_auction:4ec25fd
+          image: gcr.io/rart-temp/ex_auction:10b9e11
           imagePullPolicy: "Always"
           resources:
             limits:
@@ -59,6 +59,19 @@ spec:
             - name: postgres-secrets
               mountPath: "/etc/rart-postgres-certs"
               readOnly: true
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 2
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 2
+      restartPolicy: "Always"
       volumes:
         - name: postgres-secrets
           secret:

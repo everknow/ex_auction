@@ -15,7 +15,14 @@ spec:
       http:
         paths:
           - pathType: Prefix
-            path: /
+            path: /api/v1/auctions
+            backend:
+              service:
+                name: auctions-service
+                port:
+                  number: 8081
+          - pathType: Prefix
+            path: /*
             backend:
               service:
                 name: auctions-service

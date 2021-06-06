@@ -26,6 +26,10 @@ defmodule ExAuctionsManager.Router do
     send_resp(conn, 200, "OK")
   end
 
+  get "/test" do
+    send_resp(conn, 200, "auctions manageger call successful")
+  end
+
   match _ do
     send_resp(conn, 404, "404")
   end
