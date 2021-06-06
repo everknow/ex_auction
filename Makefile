@@ -1,8 +1,9 @@
 # grep the version from the mix file
 COMMIT := $(shell git rev-parse --short HEAD)
+PROJECT := rart-temp
 
 NAME := ex_auction
-FULL_NAME := gcr.io/rart-temp/${NAME}
+FULL_NAME := gcr.io/${PROJECT}/${NAME}
 
 .PHONY: build
 
@@ -15,8 +16,8 @@ tag:
 	docker tag ${NAME}:dev ${FULL_NAME}:latest
 
 push: 
-	docker push gcr.io/rart-temp/ex_auction:${COMMIT}
-	docker push gcr.io/rart-temp/ex_auction:latest
+	docker push gcr.io/${PROJECT}/${NAME}:${COMMIT}
+	docker push gcr.io/${PROJECT}/${NAME}:latest
 
 show_tag:
 	@echo "Latest commit: *${COMMIT}*"
