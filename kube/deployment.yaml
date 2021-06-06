@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: auctions
-          image: gcr.io/rart-temp/ex_auction:c83ef25
+          image: gcr.io/rart-temp/ex_auction:4a221fb
           imagePullPolicy: "Always"
           resources:
             limits:
@@ -66,11 +66,12 @@ spec:
             initialDelaySeconds: 30
             periodSeconds: 2
           readinessProbe:
-            httpGet:
-              path: /live
-              port: 8080
+            exec:
+              command:
+                - ls
             initialDelaySeconds: 5
-            periodSeconds: 2
+            periodSeconds: 5
+            timeoutSeconds: 5
       restartPolicy: "Always"
       volumes:
         - name: postgres-secrets
