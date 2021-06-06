@@ -17,6 +17,11 @@ defmodule ExAuctionsManager.Router do
   forward("/api/v1/auctions", to: ExAuctionsManager.Auctions.V1.Receiver)
   forward("/api/v1/bids", to: ExAuctionsManager.Bids.V1.Receiver)
 
+  get "/" do
+    # For K8s healthy state
+    send_resp(conn, 200, "OK")
+  end
+
   # Two endpoints for K8s probes: liveness and readyness
   get "/live" do
     send_resp(conn, 200, "OK")

@@ -15,6 +15,11 @@ defmodule ExAuctionsAdmin.Router do
 
   forward("/api/v1/blind_auctions", to: ExAuctionsAdmin.BlindAuctions.V1.Receiver)
 
+  get "/" do
+    # For K8s healthy state
+    send_resp(conn, 200, "OK")
+  end
+
   # Two endpoints for K8s probes: liveness and readyness
   get "/live" do
     send_resp(conn, 200, "OK")
