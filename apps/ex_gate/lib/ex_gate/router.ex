@@ -20,7 +20,7 @@ defmodule ExGate.Router do
   plug(:dispatch)
 
   # NON PROD
-  get "/" do
+  get "/dev" do
     conn = put_resp_content_type(conn, "text/html")
     path = Application.app_dir(:ex_gate) <> "/priv/static/v1"
     send_file(conn, 200, "#{path}/index.html")

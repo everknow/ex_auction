@@ -10,6 +10,11 @@ metadata:
     networking.gke.io/managed-certificates: "polaris-certificate"
     kubernetes.io/ingress.class: "gce"
 spec:
+  defaultBackend:
+    service:
+      name: auctions-service
+      port:
+        number: 8080
   rules:
     - host: rart-test.polaris-br.com
       http:
