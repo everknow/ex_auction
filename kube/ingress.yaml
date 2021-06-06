@@ -21,6 +21,13 @@ spec:
                 name: auctions-service
                 port:
                   number: 8080
+          - pathType: Prefix
+            path: /api/v1/auctions
+            backend:
+              service:
+                name: auctions-service
+                port:
+                  number: 8081
 # spec:
 #   defaultBackend:
 #     service:
