@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: auctions
-          image: gcr.io/rart-temp/ex_auction:55f7e09
+          image: gcr.io/rart-temp/ex_auction:63bb22d
           imagePullPolicy: "Always"
           resources:
             limits:
