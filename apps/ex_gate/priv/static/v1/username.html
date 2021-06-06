@@ -41,7 +41,7 @@
                     const response = JSON.parse(xhr.responseText);
                     console.log(response);
                     storeToken(response.access_token);
-                    window.location.href = "/auction";
+                    window.location.href = "/gate/auction";
                 }
                 else {
                     alert("Unable to login");
