@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
         - name: auctions
-          image: gcr.io/rart-temp/ex_auction:dev
+          image: gcr.io/rart-temp/ex_auction:952dd95
+          imagePullPolicy: "Always"
           resources:
             limits:
               memory: "512Mi"
@@ -54,6 +55,14 @@ spec:
                 secretKeyRef:
                   name: auctions-secrets
                   key: database_port
+          volumeMounts:
+            - name: postgres-secrets
+              mountPath: "/etc/rart-postgres-certs"
+              readOnly: true
+      volumes:
+        - name: postgres-secrets
+          secret:
+            secretName: rart-postgres-certs
 ---
 apiVersion: v1
 kind: Service
@@ -62,10 +71,17 @@ metadata:
 spec:
   selector:
     app: auctions
-  type: LoadBalancer
+  type: NodePort
   ports:
     - name: ex-gate
       protocol: TCP
-      port: 80
+      port: 8080
       targetPort: 8080
-      nodePort: 30000
+    - name: ex-auctions-manager
+      protocol: TCP
+      port: 8081
+      targetPort: 8081
+    - name: ex-auctions-admin
+      protocol: TCP
+      port: 8082
+      targetPort: 8082

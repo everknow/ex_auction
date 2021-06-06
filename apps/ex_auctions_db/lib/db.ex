@@ -10,7 +10,7 @@ defmodule ExAuctionsDB.DB do
   alias ExAuctionsDB.{Auction, Bid, Repo, User}
   alias ExGate.WebsocketUtils
 
-  @page Application.compile_env(:ex_auctions_manager, :page_size, 20)
+  @page Application.get_env(:ex_auctions_manager, :page_size, 20)
 
   require Logger
 

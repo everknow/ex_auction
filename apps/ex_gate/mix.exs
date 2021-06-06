@@ -20,7 +20,7 @@ defmodule ExGate.MixProject do
   def application do
     [
       mod: {ExGate.Application, []},
-      extra_applications: [:logger]
+      extra_applications: [:logger, :ssl]
     ]
   end
 

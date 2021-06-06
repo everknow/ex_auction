@@ -20,6 +20,6 @@ config :ex_auctions_db, ExAuctionsDB.Repo,
   create: true
 
 # ExAuctionsAdmin
-config :ex_auctions_admin, google_client_id: System.get_env("GOOGLE_CLIENT_ID")
+config :ex_auctions_admin, google_client_id: System.get_env("GOOGLE_CLIENT_ID", "missing")
 
 config :ex_auctions_admin, port: 8082, token: "token", tls: false

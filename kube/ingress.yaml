@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: auctions-ingress
+  labels:
+    name: auctions
+
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: polaris-test-ip
+    networking.gke.io/managed-certificates: "polaris-certificate"
+    kubernetes.io/ingress.class: "gce"
+spec:
+  rules:
+    - host: rart-test.polaris-br.com
+      http:
+        paths:
+          - pathType: Prefix
+            path: /*
+            backend:
+              service:
+                name: auctions-service
+                port:
+                  number: 8080
+# spec:
+#   defaultBackend:
+#     service:
+#       name: auctions-service
+#       port:
+#         number: 8080

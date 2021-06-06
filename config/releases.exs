@@ -17,7 +17,13 @@ config :ex_auctions_db, ExAuctionsDB.Repo,
   pool_size: 10,
   show_sensitive_data_on_connection_error: true,
   # This drive db creation for first time startup
-  create: true
+  create: true,
+  ssl: true,
+  ssl_opts: [
+    cacertfile: "/etc/rart-postgres-certs/server-ca.pem",
+    keyfile: "/etc/rart-postgres-certs/client-key.pem",
+    certfile: "/etc/rart-postgres-certs/client-cert.pem"
+  ]
 
 # ExAuctionsAdmin
 config :ex_auctions_admin, google_client_id: System.get_env("GOOGLE_CLIENT_ID")
