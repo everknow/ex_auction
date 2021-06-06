@@ -12,7 +12,7 @@
         content="323198697202-hjk4tg05cs6e38arnmloba6nshtighj5.apps.googleusercontent.com">
 
     <script>
-
+        const WSS = "wss://rart-test.polaris-br.com/ws"
         const make_async_query = function (method, url, body, f) {
             if (method === "get") {
                 return _make_get(url, f)
@@ -317,7 +317,7 @@
             if (getCredentials().access_token === undefined) {
                 window.location.href = "/";
             }
-            ws = new WebSocket("ws://localhost:8080/ws");
+            ws = new WebSocket(WSS);
             ws.onopen = function () {
                 showConnectionStatus("connected");
                 // Just a temporary solution
