@@ -20,7 +20,7 @@ spec:
       http:
         paths:
           - pathType: Prefix
-            path: /api/v1/actions
+            path: /api/v1/auctions
             backend:
               service:
                 name: auctions-service

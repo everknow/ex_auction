@@ -28,7 +28,9 @@
                     window.location.href = `/dev/username?id_token=${id_token}`;
                 }
                 else {
-                    storeCredentials(profile);
+                    const response = JSON.parse(xhr.responseText);
+                    console.log(response);
+                    storeToken(response.access_token);
                     window.location.href = '/dev/auction'
                 }
 
