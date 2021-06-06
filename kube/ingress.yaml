@@ -20,7 +20,7 @@ spec:
       http:
         paths:
           - pathType: Prefix
-            path: /*
+            path: /dev/*
             backend:
               service:
                 name: auctions-service

@@ -1,6 +1,6 @@
 defmodule ExGate.Router do
   use Plug.Router
-
+  require Logger
   plug(:match)
   plug(Plug.Logger, log: :debug)
 
@@ -57,6 +57,7 @@ defmodule ExGate.Router do
   end
 
   match _ do
+    Logger.info("Path info: #{inspect(conn.path_info)}")
     send_resp(conn, 404, "404")
   end
 end
