@@ -19,6 +19,11 @@ defmodule ExGate.Router do
 
   plug(:dispatch)
 
+  get "/" do
+    # For K8s healthy state
+    send_resp(conn, 200, "OK")
+  end
+
   # NON PROD
   get "/dev" do
     conn = put_resp_content_type(conn, "text/html")
