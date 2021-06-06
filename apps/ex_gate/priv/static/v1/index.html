@@ -25,11 +25,11 @@
                     const response = JSON.parse(xhr.responseText);
 
                     console.log(response);
-                    window.location.href = `/gate/username?id_token=${id_token}`;
+                    window.location.href = `/dev/username?id_token=${id_token}`;
                 }
                 else {
                     storeCredentials(profile);
-                    window.location.href = '/auction'
+                    window.location.href = '/dev/auction'
                 }
 
             };
