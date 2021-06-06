@@ -20,9 +20,16 @@ spec:
       http:
         paths:
           - pathType: Prefix
-            path: /dev/*
+            path: /test
             backend:
               service:
                 name: auctions-service
                 port:
                   number: 8080
+          - pathType: Prefix
+            path: /api/v1/actions
+            backend:
+              service:
+                name: auctions-service
+                port:
+                  number: 8081
