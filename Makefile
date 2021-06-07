@@ -1,6 +1,6 @@
 # grep the version from the mix file
 COMMIT := $(shell git rev-parse --short HEAD)
-PROJECT := rart-temp
+PROJECT := reasoned-project-01
 
 NAME := ex_auction
 FULL_NAME := gcr.io/${PROJECT}/${NAME}

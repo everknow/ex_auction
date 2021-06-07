@@ -57,7 +57,7 @@ Check
 # DB
 
 Create instance (public ip, ssl connections only)
-Enable access network
+Enable access network 0.0.0.0/0
 
 ## Serving certs for ecto
 

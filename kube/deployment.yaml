@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: auctions-deployment
+  namespace: prod
 spec:
   replicas: 1
   selector:
@@ -14,7 +15,7 @@ spec:
     spec:
       containers:
         - name: auctions
-          image: gcr.io/rart-temp/ex_auction:63bb22d
+          image: gcr.io/reasoned-project-01/ex_auction:b6fdd8f
           imagePullPolicy: "Always"
           resources:
             limits:
@@ -56,8 +57,8 @@ spec:
                   name: auctions-secrets
                   key: database_port
           volumeMounts:
-            - name: postgres-secrets
-              mountPath: "/etc/rart-postgres-certs"
+            - name: reasoned-postgres-certs
+              mountPath: "/etc/reasoned-postgres-certs"
               readOnly: true
           livenessProbe:
             httpGet:
@@ -67,14 +68,15 @@ spec:
             periodSeconds: 2
       restartPolicy: "Always"
       volumes:
-        - name: postgres-secrets
+        - name: reasoned-postgres-certs
           secret:
-            secretName: rart-postgres-certs
+            secretName: reasoned-postgres-certs
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: auctions-service
+  namespace: prod
 spec:
   selector:
     app: auctions

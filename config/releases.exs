@@ -20,9 +20,9 @@ config :ex_auctions_db, ExAuctionsDB.Repo,
   create: true,
   ssl: true,
   ssl_opts: [
-    cacertfile: "/etc/rart-postgres-certs/server-ca.pem",
-    keyfile: "/etc/rart-postgres-certs/client-key.pem",
-    certfile: "/etc/rart-postgres-certs/client-cert.pem"
+    cacertfile: "/etc/reasoned-postgres-certs/server-ca.pem",
+    keyfile: "/etc/reasoned-postgres-certs/client-key.pem",
+    certfile: "/etc/reasoned-postgres-certs/client-cert.pem"
   ]
 
 # ExAuctionsAdmin

@@ -1,7 +1,8 @@
 apiVersion: networking.gke.io/v1beta1
 kind: ManagedCertificate
 metadata:
-  name: polaris-certificate
+  name: reasoned-certificate-test-01
+  namespace: prod
 spec:
   domains:
-    - rart-test.polaris-br.com
+    - test-api.reasonedart.com
