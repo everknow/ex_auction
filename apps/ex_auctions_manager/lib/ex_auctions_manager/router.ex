@@ -37,7 +37,7 @@ defmodule ExAuctionsManager.Router do
   end
 
   match _ do
-    Logger.info("Fallback handler for auctions manager")
+    Logger.info("#{__MODULE__}: #{inspect(conn.path_info)}")
     send_resp(conn, 404, "404")
   end
 end

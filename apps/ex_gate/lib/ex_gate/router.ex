@@ -62,7 +62,7 @@ defmodule ExGate.Router do
   end
 
   match _ do
-    Logger.info("Path info: #{inspect(conn.path_info)}")
+    Logger.info("#{__MODULE__}: #{inspect(conn.path_info)}")
     send_resp(conn, 404, "404")
   end
 end
