@@ -14,12 +14,14 @@ build: ## Build the release and develoment container.
 	@ SSH_PRIVATE_KEY=${PRIVATE_KEY} docker build -t ${NAME}:dev .
 
 tag:
-	docker tag ${NAME}:dev ${FULL_NAME}:${COMMIT}
-	docker tag ${NAME}:dev ${FULL_NAME}:latest
+	@ echo "Tagging with *${COMMIT}*"
+	@ docker tag ${NAME}:dev ${FULL_NAME}:${COMMIT}
+	@ echo "Tagging with *latest*"
+	@ docker tag ${NAME}:dev ${FULL_NAME}:latest
 
 push: 
 	docker push gcr.io/${PROJECT}/${NAME}:${COMMIT}
 	docker push gcr.io/${PROJECT}/${NAME}:latest
 
-show_tag:
+show_commit_hash:
 	@echo "Latest commit: *${COMMIT}*"
