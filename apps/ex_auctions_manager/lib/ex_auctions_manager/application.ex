@@ -2,9 +2,12 @@ defmodule ExAuctionsManager.Application do
   @moduledoc false
 
   use Application
+  require Logger
 
   @impl true
   def start(_type, _args) do
+    Logger.info("Redis host: #{Application.get_env(:ex_contract_cache, :redis_host)}")
+
     children = [
       Plug.Cowboy.child_spec(
         # This must come from config, so that it can be https on prod
