@@ -18,5 +18,7 @@ services:
       - ./pg_data:/var/lib/pgadmin
     depends_on: 
       - postgres
-  auctions:
-    image: ex_auction:dev
+  memorystore:
+    image: redis:alpine
+    ports:
+      - "6379:6379"

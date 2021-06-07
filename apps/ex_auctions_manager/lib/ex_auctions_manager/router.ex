@@ -15,6 +15,7 @@ defmodule ExAuctionsManager.Router do
   forward("/api/v1/offers", to: ExAuctionsManager.Offers.V1.Receiver)
   forward("/api/v1/auctions", to: ExAuctionsManager.Auctions.V1.Receiver)
   forward("/api/v1/bids", to: ExAuctionsManager.Bids.V1.Receiver)
+  forward("/api/v1/nfts", to: ExContractCache.Rest.V1.Receiver)
 
   require Logger
 

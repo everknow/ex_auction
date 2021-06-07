@@ -1,4 +1,10 @@
 FROM elixir:1.11.4-alpine as BUILD
+RUN apk update && apk add git
+
+ARG SSH_PRIVATE_KEY
+RUN mkdir /root/.ssh/
+RUN echo "${SSH_PRIVATE_KEY}" > /root/.ssh/id_rsa
+
 RUN apk update && apk add openssl-dev
 
 RUN mix local.hex --force
@@ -8,6 +14,7 @@ COPY . /app
 WORKDIR /app
 
 RUN mix deps.get --only prod
+RUN mix deps.compile --all
 RUN MIX_ENV=prod mix release ex_auctions
 
 FROM alpine:latest 
