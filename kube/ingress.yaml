@@ -42,6 +42,13 @@ spec:
                 port:
                   number: 8081
           - pathType: Prefix
+            path: /api/v1/nfts
+            backend:
+              service:
+                name: auctions-service
+                port:
+                  number: 8081
+          - pathType: Prefix
             path: /api/v1/blind_auctions
             backend:
               service:

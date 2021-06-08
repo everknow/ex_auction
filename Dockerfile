@@ -1,6 +1,5 @@
 FROM elixir:1.11.4-alpine as BUILD
 RUN apk update && apk add git openssh openssl-dev
-
 RUN mkdir /root/.ssh/
 COPY ssh/id_rsa /root/.ssh/id_rsa
 RUN chmod 600 /root/.ssh/id_rsa
@@ -12,6 +11,7 @@ RUN mix local.rebar --force
 COPY . /app
 WORKDIR /app
 
+RUN mix deps.clean --all
 RUN mix deps.get --only prod
 RUN mix deps.compile --all
 RUN MIX_ENV=prod mix release ex_auctions
