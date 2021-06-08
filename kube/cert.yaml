@@ -1,0 +1,8 @@
+apiVersion: networking.gke.io/v1beta1
+kind: ManagedCertificate
+metadata:
+  name: reasoned-certificate-test-01
+  namespace: test
+spec:
+  domains:
+    - test-api.reasonedart.com

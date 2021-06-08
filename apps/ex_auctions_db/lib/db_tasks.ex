@@ -12,7 +12,8 @@ defmodule ExAuctionsDB.ReleaseTasks do
   @repo ExAuctionsDB.Repo
 
   def db_create do
-    Application.load(@app)
+    Application.ensure_all_started(@app)
+
     db_config = Application.get_env(@app, @repo)
 
     if db_config[:create] do
@@ -34,7 +35,7 @@ defmodule ExAuctionsDB.ReleaseTasks do
   end
 
   def db_migrate do
-    Application.load(@app)
+    Application.ensure_all_started(@app)
     Logger.info("Running migrations for #{@app} ...")
     {:ok, _, _} = Migrator.with_repo(@repo, &Migrator.run(&1, :up, all: true))
   end

@@ -18,18 +18,20 @@
             var id_token = googleUser.getAuthResponse().id_token;
             storeCredentials(profile);
             var xhr = new XMLHttpRequest();
-            xhr.open('POST', 'verify');
+            xhr.open('POST', '/gate/login');
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.onload = function () {
                 if (xhr.status == 404) {
                     const response = JSON.parse(xhr.responseText);
 
                     console.log(response);
-                    storeCredentials(profile);
-                    window.location.href = `/username?id_token=${id_token}`;
+                    window.location.href = `/dev/username?id_token=${id_token}`;
                 }
                 else {
-                    alert("Unable to login");
+                    const response = JSON.parse(xhr.responseText);
+                    console.log(response);
+                    storeToken(response.access_token);
+                    window.location.href = '/dev/auction'
                 }
 
             };

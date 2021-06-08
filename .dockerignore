@@ -3,3 +3,4 @@ _build
 pg_data
 .dockerignore
 shell.nix
+deps

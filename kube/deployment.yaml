@@ -1,0 +1,136 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auctions-deployment
+  namespace: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auctions
+  template:
+    metadata:
+      labels:
+        app: auctions
+    spec:
+      containers:
+        - name: auctions
+          image: gcr.io/reasoned-project-01/ex_auction:6def2ff
+          imagePullPolicy: "Always"
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "256m"
+          ports:
+            - containerPort: 8080
+            - containerPort: 8081
+            - containerPort: 8082
+          env:
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: auctions-secrets
+                  key: google_client_id
+            - name: DATABASE_HOSTNAME
+              valueFrom:
+                secretKeyRef:
+                  name: auctions-secrets
+                  key: database_hostname
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: auctions-secrets
+                  key: database_user
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: auctions-secrets
+                  key: database_password
+            - name: DATABASE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: auctions-secrets
+                  key: database_name
+            - name: DATABASE_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: auctions-secrets
+                  key: database_port
+            - name: CONTRACT_BASE_URI
+              valueFrom:
+                secretKeyRef:
+                  name: auctions-secrets
+                  key: contract_base_uri
+            - name: CONTRACT_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  name: auctions-secrets
+                  key: contract
+            - name: CONTRACT_PAGE_SIZE
+              valueFrom:
+                secretKeyRef:
+                  name: auctions-secrets
+                  key: contract_page_size
+            - name: CONTRACT_CACHE_INTERVAL_MS
+              valueFrom:
+                secretKeyRef:
+                  name: auctions-secrets
+                  key: contract_cache_interval_ms
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: auctions-secrets
+                  key: redis_host
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: auctions-secrets
+                  key: redis_port
+            - name: CONTRACT_S3_BASE_URI
+              valueFrom:
+                secretKeyRef:
+                  name: auctions-secrets
+                  key: contract_s3_base_uri
+            - name: CONTRACT_S3_INTERVAL_MS
+              valueFrom:
+                secretKeyRef:
+                  name: auctions-secrets
+                  key: contract_s3_interval_ms
+          volumeMounts:
+            - name: reasoned-postgres-certs
+              mountPath: "/etc/reasoned-postgres-certs"
+              readOnly: true
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 2
+      restartPolicy: "Always"
+      volumes:
+        - name: reasoned-postgres-certs
+          secret:
+            secretName: reasoned-postgres-certs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auctions-service
+  namespace: test
+spec:
+  selector:
+    app: auctions
+  type: NodePort
+  ports:
+    - name: ex-gate
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+    - name: ex-auctions-manager
+      protocol: TCP
+      port: 8081
+      targetPort: 8081
+    - name: ex-auctions-admin
+      protocol: TCP
+      port: 8082
+      targetPort: 8082

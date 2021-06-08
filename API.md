@@ -67,7 +67,7 @@ Possibile reasons:
 
 Note: if a valid blind auction id is passed, the call will fail by "auction does not exists" error
 
-## Auction endpoinds
+## Auction endpoints
 
 The auction is a "classic" auction, where the bidders are known and visible.
 

@@ -15,6 +15,13 @@ defmodule ExAuctionsAdmin.Router do
 
   forward("/api/v1/blind_auctions", to: ExAuctionsAdmin.BlindAuctions.V1.Receiver)
 
+  require Logger
+
+  get "/" do
+    # For K8s healthy state
+    send_resp(conn, 200, "OK")
+  end
+
   # Two endpoints for K8s probes: liveness and readyness
   get "/live" do
     send_resp(conn, 200, "OK")
@@ -25,6 +32,7 @@ defmodule ExAuctionsAdmin.Router do
   end
 
   match _ do
+    Logger.info("#{__MODULE__}: #{inspect(conn.path_info)}")
     send_resp(conn, 404, "404")
   end
 end
