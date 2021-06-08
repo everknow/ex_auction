@@ -10,8 +10,8 @@ FULL_NAME := gcr.io/${PROJECT}/${NAME}
 
 # Build the container
 build: ## Build the release and develoment container.
-	@ echo "Building image"
-	@ SSH_PRIVATE_KEY=${PRIVATE_KEY} docker build -t ${NAME}:dev .
+	@ echo "Building image ..."
+	@ docker build -t ${NAME}:dev .
 
 tag:
 	@ echo "Tagging with *${COMMIT}*"
@@ -22,6 +22,8 @@ tag:
 push: 
 	docker push gcr.io/${PROJECT}/${NAME}:${COMMIT}
 	docker push gcr.io/${PROJECT}/${NAME}:latest
+
+all: build tag push
 
 show_commit_hash:
 	@echo "Latest commit: *${COMMIT}*"

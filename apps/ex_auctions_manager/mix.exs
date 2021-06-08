@@ -45,7 +45,8 @@ defmodule ExAuctionsManager.MixProject do
       # Code quality
       {:dialyxir, "~> 1.1", only: [:dev], runtime: false},
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
-      {:ex_contract_cache, git: "git@github.com:everknow/ex_contract_cache.git"},
+      {:ex_contract_cache,
+       git: "git@github.com:everknow/ex_contract_cache.git", branch: "test_branch"},
 
       # Coverage
       {:excoveralls, "~> 0.14", only: [:dev, :test]}

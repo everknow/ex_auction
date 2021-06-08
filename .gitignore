@@ -32,3 +32,5 @@ shell.nix
 /pg_data/
 
 kube/ignore
+
+ssh

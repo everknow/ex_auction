@@ -1,11 +1,10 @@
 FROM elixir:1.11.4-alpine as BUILD
-RUN apk update && apk add git
+RUN apk update && apk add git openssh openssl-dev
 
-ARG SSH_PRIVATE_KEY
 RUN mkdir /root/.ssh/
-RUN echo "${SSH_PRIVATE_KEY}" > /root/.ssh/id_rsa
-
-RUN apk update && apk add openssl-dev
+COPY ssh/id_rsa /root/.ssh/id_rsa
+RUN chmod 600 /root/.ssh/id_rsa
+RUN ssh-keyscan -t rsa github.com >> /root/.ssh/known_hosts
 
 RUN mix local.hex --force
 RUN mix local.rebar --force
