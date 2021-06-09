@@ -87,7 +87,7 @@ defmodule ExAuctionsDB.BidSchemaTests do
     end
 
     test "bids creation - non_existing auction", %{user: user} do
-      assert {:error, %Ecto.Changeset{valid?: false} = cs} = DB.create_bid(1, 10, user.google_id)
+      assert {:error, %Ecto.Changeset{valid?: false} = cs} = DB.create_bid(-1, 10, user.google_id)
 
       assert "auction does not exist" in errors_on(cs).auction_id
     end

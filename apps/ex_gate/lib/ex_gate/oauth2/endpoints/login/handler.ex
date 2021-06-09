@@ -40,7 +40,7 @@ defmodule ExGate.Login.Handler do
     case DB.get_user(email) do
       {:ok, %User{username: username}} ->
         ExGate.Guardian.encode_and_sign(
-          _resource = %{user_id: username},
+          _resource = %{user_id: email},
           _claims = %{},
           # GOOGLE EXPIRY: decoded["exp"]
           _opts = [ttl: {3600, :seconds}]

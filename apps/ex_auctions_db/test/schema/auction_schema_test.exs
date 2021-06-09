@@ -1,10 +1,15 @@
 defmodule ExAuctionsDB.AuctionSchemaTests do
   use ExAuctionsDB.RepoCase, async: false
 
-  alias ExAuctionsDB.{Auction, DB}
+  alias ExAuctionsDB.{Auction, DB, User}
   import ExUnit.CaptureLog
 
   describe "Auction schema tests" do
+
+    setup do
+      {:ok, %User{} = user} = DB.register_user("email@domain.com", "bidder")
+      {:ok, %{user: user}}
+    end
     test "auction creation success" do
       expiration_date = TestUtils.shift_datetime(TestUtils.get_now(), 2)
 
@@ -55,7 +60,7 @@ defmodule ExAuctionsDB.AuctionSchemaTests do
       assert "expiry date must be bigger than creation date" in errors_on(cs).expiration_date
     end
 
-    test "auction creation error - auction is expired" do
+    test "auction creation error - auction is expired", %{user: %User{google_id: user_id}} do
       auction_end = TestUtils.shift_datetime(TestUtils.get_now(), 0, 0, 0, 1)
 
       assert {:ok, %Auction{id: auction_id}} = DB.create_auction(auction_end, 100)
@@ -65,7 +70,7 @@ defmodule ExAuctionsDB.AuctionSchemaTests do
                assert {
                         :error,
                         %Ecto.Changeset{valid?: false} = cs
-                      } = DB.create_bid(auction_id, 101, "some_bidder")
+                      } = DB.create_bid(auction_id, 101, user_id)
 
                assert "auction is expired" in errors_on(cs).auction_id
              end) =~ "auction is expired"

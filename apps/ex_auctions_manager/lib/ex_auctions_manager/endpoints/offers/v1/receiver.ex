@@ -63,7 +63,12 @@ defmodule ExAuctionsManager.Offers.V1.Receiver do
               )
           end
         else
-          Logger.critical("the email in the JWT does not corresponds to the one sent in the bid payload")
+          Logger.critical(
+            "the email in the JWT does not corresponds to the one sent in the bid payload. Email: *#{
+              email
+            }* Bidder: *#{bidder}*"
+          )
+
           json_resp(
             conn,
             422,

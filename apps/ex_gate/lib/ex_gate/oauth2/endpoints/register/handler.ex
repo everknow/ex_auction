@@ -51,26 +51,14 @@ defmodule ExGate.Register.Handler do
     end
   end
 
-  defp maybe_generate_token({:ok, %{"aud" => aud}, %User{} = user}) do
+  defp maybe_generate_token({:ok, %{"email" => email}, %User{} = user}) do
     google_client_id = Application.get_env(:ex_gate, :google_client_id)
 
-    case aud do
-      ^google_client_id ->
-        # create user here? [username | _] = String.split(email, "@")
-
-        ExGate.Guardian.encode_and_sign(
-          _resource = %{user_id: user.username},
-          _claims = %{},
-          # GOOGLE EXPIRY: decoded["exp"]
-          _opts = [ttl: {3600, :seconds}]
-        )
-
-      {:error, 422, reason} ->
-        Logger.error(reason)
-        {:error, 422, reason}
-
-      {:other, code, reason} ->
-        {:error, 401, reason}
-    end
+    ExGate.Guardian.encode_and_sign(
+      _resource = %{user_id: user.google_id},
+      _claims = %{},
+      # GOOGLE EXPIRY: decoded["exp"]
+      _opts = [ttl: {3600, :seconds}]
+    )
   end
 end
