@@ -20,45 +20,36 @@ spec:
     - host: test-api.reasonedart.com
       http:
         paths:
+          # - pathType: Prefix
+          #   path: /api/v1/auctions/*
+          #   backend:
+          #     service:
+          #       name: auctions-service
+          #       port:
+          #         number: 8081
+          # - pathType: Prefix
+          #   path: /api/v1/bids/*
+          #   backend:
+          #     service:
+          #       name: auctions-service
+          #       port:
+          #         number: 8081
           - pathType: Prefix
-            path: /api/v1/auctions
+            path: /api/v1/offers/*
             backend:
               service:
                 name: auctions-service
                 port:
                   number: 8081
+          # - pathType: Prefix
+          #   path: /api/v1/nfts/*
+          #   backend:
+          #     service:
+          #       name: auctions-service
+          #       port:
+          #         number: 8081
           - pathType: Prefix
-            path: /api/v1/bids
-            backend:
-              service:
-                name: auctions-service
-                port:
-                  number: 8081
-          - pathType: Prefix
-            path: /api/v1/offers
-            backend:
-              service:
-                name: auctions-service
-                port:
-                  number: 8081
-          - pathType: Prefix
-            path: /api/v1/nfts
-            backend:
-              service:
-                name: auctions-service
-                port:
-                  number: 8081
-
-          - pathType: Prefix
-            path: /api/v1/nfts/*
-            backend:
-              service:
-                name: auctions-service
-                port:
-                  number: 8081
-
-          - pathType: Prefix
-            path: /api/v1/blind_auctions
+            path: /api/v1/blind_auctions/*
             backend:
               service:
                 name: auctions-service

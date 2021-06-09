@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: auctions
-          image: gcr.io/reasoned-project-01/ex_auction:1d7bc55
+          image: gcr.io/reasoned-project-01/ex_auction:0c3e228
           imagePullPolicy: "Always"
           resources:
             limits:
