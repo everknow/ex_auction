@@ -88,7 +88,7 @@ Check:
 
 The 3 certificates that have been created in postgres must be pushed to k8s:
 
-    kubectl create secret generic reasoned-postgres-certs --namespace=prod --from-file=kube/ignore/certs  # files not in github
+    kubectl create secret generic reasoned-postgres-certs --namespace=prod --from-file=kube/prod/ignore/certs  # files not in github
 
 At this point we should have the following secrets:
 
