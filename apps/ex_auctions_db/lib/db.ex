@@ -27,6 +27,9 @@ defmodule ExAuctionsDB.DB do
   def create_bid(auction_id, bid_value, bidder, blind \\ false) do
     {_, status} =
       Repo.transaction(fn ->
+        # This raises and exception that invalidates the transaction, in case
+        {:ok, %User{google_id: ^bidder}} = get_user(bidder)
+
         bid_changeset =
           %Bid{}
           |> Bid.changeset(%{auction_id: auction_id, bid_value: bid_value, bidder: bidder})
@@ -276,7 +279,7 @@ defmodule ExAuctionsDB.DB do
       {:ok, %User{username: ^username, google_id: ^email} = user} ->
         {:ok, user}
 
-      {:error, %Ecto.Changeset{valid?: false}} ->
+      {:error, %Ecto.Changeset{valid?: false} = err} ->
         Logger.error("username already registered")
         {:error, "username already registered"}
     end
@@ -284,7 +287,7 @@ defmodule ExAuctionsDB.DB do
 
   def get_user(google_id) do
     case Repo.get(User, google_id) do
-      nil -> {:error, "not found"}
+      nil -> {:error, "user not found"}
       %User{google_id: ^google_id} = user -> {:ok, user}
     end
   end

@@ -1,10 +1,15 @@
 defmodule ExAuctionsDB.BidsEndpointTests do
   use ExAuctionsDB.RepoCase, async: false
 
-  alias ExAuctionsDB.{Auction, Bid, DB}
+  alias ExAuctionsDB.{Auction, Bid, DB, User}
 
   describe "Bids list endpoint test" do
-    test "/bids/:auction_id bids list for a given auction" do
+    setup do
+      {:ok, %User{} = user} = DB.register_user("email@domain.com", "bidder")
+      {:ok, %{user: user}}
+    end
+
+    test "/bids/:auction_id bids list for a given auction", %{user: %User{google_id: user_id}} do
       assert {:ok, %Auction{id: auction_id}} =
                DB.create_auction(TestUtils.shift_datetime(TestUtils.get_now(), 5), 2)
 
@@ -13,7 +18,7 @@ defmodule ExAuctionsDB.BidsEndpointTests do
 
       for elem <- 1..10 do
         bid_value = elem * 10
-        bidder = "some bidder"
+        bidder = user_id
 
         {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} =
           DB.create_bid(auction_id, bid_value, bidder)
@@ -50,11 +55,13 @@ defmodule ExAuctionsDB.BidsEndpointTests do
       assert {:ok, %Auction{id: auction_id}} =
                DB.create_auction(TestUtils.shift_datetime(TestUtils.get_now(), 5), 100)
 
-      {:ok, %{auction_id: auction_id}}
+      {:ok, %User{} = user} = DB.register_user("email@domain.com", "bidder")
+      {:ok, %{user: user}}
+      {:ok, %{auction_id: auction_id, user: user}}
     end
 
-    test "/bids create bid", %{auction_id: auction_id} do
-      bidder = "bidder"
+    test "/bids create bid", %{auction_id: auction_id, user: %User{google_id: user_id}} do
+      bidder = user_id
       bid_value = 110
       new_bid_value = 120
 
@@ -96,8 +103,9 @@ defmodule ExAuctionsDB.BidsEndpointTests do
       assert length(results) == 2
     end
 
-    test "/post create bid failure - unprocessable entity, missing auction" do
-      bidder = "bidder"
+    test "/post create bid failure - unprocessable entity, missing auction",
+         %{user: %User{google_id: user_id}} do
+      bidder = user_id
       new_bid_value = 120
 
       {:ok, token, _claims} =
@@ -129,9 +137,10 @@ defmodule ExAuctionsDB.BidsEndpointTests do
     end
 
     test "/post create bid failure - unprocessable entity, below auction base", %{
-      auction_id: auction_id
+      auction_id: auction_id,
+      user: %User{google_id: user_id}
     } do
-      bidder = "bidder"
+      bidder = user_id
       new_bid_value = 90
 
       {:ok, token, _claims} =
