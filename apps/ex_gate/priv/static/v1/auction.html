@@ -12,7 +12,7 @@
         content="323198697202-hjk4tg05cs6e38arnmloba6nshtighj5.apps.googleusercontent.com">
 
     <script>
-        const WSS = "wss://rart-test.polaris-br.com/ws"
+        const WSS = "wss://test-api.reasonedart.com/ws"
         const make_async_query = function (method, url, body, f) {
             if (method === "get") {
                 return _make_get(url, f)
@@ -86,12 +86,12 @@
             resetBidsList();
             const auction_id = document.getElementById("auction_id").value;
             console.log(JSON.stringify(auction_id));
-            make_async_query("get", `https://rart-test.polaris-br.com/api/v1/bids/${auction_id}`, {}, renderBidsForAuction);
+            make_async_query("get", `https://test-api.reasonedart.com/api/v1/bids/${auction_id}`, {}, renderBidsForAuction);
         }
 
         const fetchAuctions = function () {
             resetAuctionsList();
-            make_async_query("get", "https://rart-test.polaris-br.com/api/v1/auctions", {}, renderAuctions);
+            make_async_query("get", "https://test-api.reasonedart.com/api/v1/auctions", {}, renderAuctions);
         }
 
         const createBid = function () {
@@ -105,7 +105,7 @@
             };
 
             console.log(`Payload: ${JSON.stringify(body)}`);
-            make_async_query("post", "https://rart-test.polaris-br.com/api/v1/bids/", body, function (response) {
+            make_async_query("post", "https://test-api.reasonedart.com/api/v1/bids/", body, function (response) {
                 JSON.stringify(response);
                 if (response.status === 201) {
                     setBidCreationMessage("Bid created");
@@ -134,7 +134,7 @@
             };
 
             console.log(`Payload: ${JSON.stringify(body)}`);
-            make_async_query("post", "https://rart-test.polaris-br.com/api/v1/offers/", body, function (response) {
+            make_async_query("post", "https://test-api.reasonedart.com/api/v1/offers/", body, function (response) {
                 JSON.stringify(response);
                 if (response.status === 201) {
                     setOfferCreationMessage("Bid created");
@@ -197,7 +197,7 @@
         };
 
         const createAuction = function () {
-            const url = "https://rart-test.polaris-br.com/api/v1/auctions/";
+            const url = "https://test-api.reasonedart.com/api/v1/auctions/";
             const div_id = "auction_creation_message";
             console.log("Creating auction");
             const expiration_date = document.getElementById("expiration_date").value;
@@ -223,7 +223,7 @@
         };
 
         const createBlindAuction = function () {
-            const url = "https://rart-test.polaris-br.com/api/v1/blind_auctions/";
+            const url = "https://test-api.reasonedart.com/api/v1/blind_auctions/";
             const div_id = "ba_auction_creation_message";
 
             console.log("Creating blind auction");
@@ -252,7 +252,7 @@
             console.log("Closing auction");
             const auction_id = document.getElementById("auction_id_closure").value;
 
-            make_async_query("post", `https://rart-test.polaris-br.com/api/v1/auctions/close/${auction_id}`, {}, function (response) {
+            make_async_query("post", `https://test-api.reasonedart.com/api/v1/auctions/close/${auction_id}`, {}, function (response) {
                 if (response.status === 200) {
                     console.log(response.responseText);
                     setAuctionClosureMessage(`auction ${auction_id} closed`);

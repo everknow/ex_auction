@@ -18,20 +18,20 @@
             var id_token = googleUser.getAuthResponse().id_token;
             storeCredentials(profile);
             var xhr = new XMLHttpRequest();
-            xhr.open('POST', '/gate/login');
+            xhr.open('POST', 'https://test-api.reasonedart.com/gate/login');
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.onload = function () {
                 if (xhr.status == 404) {
                     const response = JSON.parse(xhr.responseText);
 
                     console.log(response);
-                    window.location.href = `/dev/username?id_token=${id_token}`;
+                    window.location.href = `https://test-api.reasonedart.com/dev/username?id_token=${id_token}`;
                 }
                 else {
                     const response = JSON.parse(xhr.responseText);
                     console.log(response);
                     storeToken(response.access_token);
-                    window.location.href = '/dev/auction'
+                    window.location.href = 'https://test-api.reasonedart.com/dev/auction'
                 }
 
             };
