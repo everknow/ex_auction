@@ -39,24 +39,41 @@ defmodule ExAuctionsManager.Offers.V1.Receiver do
     case valid_payload?(conn) do
       true ->
         %{"auction_id" => auction_id, "bid_value" => bid_value, "bidder" => bidder} = conn.params
-        bid_value = maybe_convert(bid_value)
-        auction_id = maybe_convert(auction_id)
-        auction = DB.get_auction(auction_id)
 
-        case DB.create_offer(auction_id, bid_value, bidder) do
-          {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} ->
-            WebsocketUtils.notify_blind_bid_success(auction_id, bidder)
+        %{private: %{guardian_default_claims: %{"sub" => email}}} = conn
 
-            json_resp(conn, 201, %{auction_id: auction_id, bid_value: bid_value, bidder: bidder})
+        if email == bidder do
+          bid_value = maybe_convert(bid_value)
+          auction_id = maybe_convert(auction_id)
+          auction = DB.get_auction(auction_id)
 
-          {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
-            reasons = format_error_messages(errors)
+          case DB.create_offer(auction_id, bid_value, bidder) do
+            {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} ->
+              WebsocketUtils.notify_blind_bid_success(auction_id, bidder)
 
-            json_resp(
-              conn,
-              422,
-              %{auction_id: auction_id, bid_value: bid_value, bidder: bidder, reasons: reasons}
-            )
+              json_resp(conn, 201, %{auction_id: auction_id, bid_value: bid_value, bidder: bidder})
+
+            {:error, %Ecto.Changeset{valid?: false, errors: errors}} ->
+              reasons = format_error_messages(errors)
+
+              json_resp(
+                conn,
+                422,
+                %{auction_id: auction_id, bid_value: bid_value, bidder: bidder, reasons: reasons}
+              )
+          end
+        else
+          Logger.critical(
+            "the email in the JWT does not corresponds to the one sent in the bid payload. Email: *#{
+              email
+            }* Bidder: *#{bidder}*"
+          )
+
+          json_resp(
+            conn,
+            422,
+            "offer cannot be processed"
+          )
         end
 
       false ->

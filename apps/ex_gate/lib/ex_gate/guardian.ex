@@ -12,7 +12,7 @@ defmodule ExGate.Guardian do
     # how it being used on `resource_from_claims/1` function.
     # A unique `id` is a good subject, a non-unique email address
     # is a poor subject.
-    Logger.debug("Subject for token")
+    Logger.warn("Subject for token")
     sub = to_string(resource.user_id)
     {:ok, sub}
   end

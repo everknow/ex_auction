@@ -1,18 +1,21 @@
 defmodule ExAuctionsDB.OffersEndpointTests do
   use ExAuctionsDB.RepoCase, async: false
 
-  alias ExAuctionsDB.{Auction, Bid, DB}
+  alias ExAuctionsDB.{Auction, Bid, DB, User}
 
   describe "Offers endpoint" do
     setup do
       assert {:ok, %Auction{id: auction_id}} =
                DB.create_auction(TestUtils.shift_datetime(TestUtils.get_now(), 5), 100, true)
 
-      {:ok, %{auction_id: auction_id}}
+      {:ok, %User{google_id: "email@domain.com", username: "username"} = user} =
+        DB.register_user("email@domain.com", "username")
+
+      {:ok, %{auction_id: auction_id, user: user}}
     end
 
-    test "/offers create offer", %{auction_id: auction_id} do
-      bidder = "bidder"
+    test "/offers create offer", %{auction_id: auction_id, user: %User{google_id: user_id}} do
+      bidder = user_id
       bid_value = 110
       new_bid_value = 120
 
@@ -21,7 +24,7 @@ defmodule ExAuctionsDB.OffersEndpointTests do
 
       {:ok, token, _claims} =
         ExGate.Guardian.encode_and_sign(
-          _resource = %{user_id: "1"},
+          _resource = %{user_id: user_id},
           _claims = %{},
           # GOOGLE EXPIRY: decoded["exp"]
           _opts = [ttl: {3600, :seconds}]
@@ -55,8 +58,8 @@ defmodule ExAuctionsDB.OffersEndpointTests do
       assert length(results) == 0
     end
 
-    test "/offers create offer error", %{auction_id: auction_id} do
-      bidder = "bidder"
+    test "/offers create offer error", %{auction_id: auction_id, user: %User{google_id: user_id}} do
+      bidder = user_id
       bid_value = 110
       new_bid_value = 120
 
@@ -65,7 +68,7 @@ defmodule ExAuctionsDB.OffersEndpointTests do
 
       {:ok, token, _claims} =
         ExGate.Guardian.encode_and_sign(
-          _resource = %{user_id: "1"},
+          _resource = %{user_id: user_id},
           _claims = %{},
           # GOOGLE EXPIRY: decoded["exp"]
           _opts = [ttl: {3600, :seconds}]
@@ -96,8 +99,11 @@ defmodule ExAuctionsDB.OffersEndpointTests do
                body |> Jason.decode!()
     end
 
-    test "/offers create offer error - invalid payload", %{auction_id: auction_id} do
-      bidder = "bidder"
+    test "/offers create offer error - invalid payload", %{
+      auction_id: auction_id,
+      user: %User{google_id: user_id}
+    } do
+      bidder = user_id
       bid_value = 110
       new_bid_value = 120
 
@@ -128,13 +134,16 @@ defmodule ExAuctionsDB.OffersEndpointTests do
                )
     end
 
-    test "/offers create offer error - bid below auction base", %{auction_id: auction_id} do
-      bidder = "bidder"
+    test "/offers create offer error - bid below auction base", %{
+      auction_id: auction_id,
+      user: %User{google_id: user_id}
+    } do
+      bidder = user_id
       bid_value = 90
 
       {:ok, token, _claims} =
         ExGate.Guardian.encode_and_sign(
-          _resource = %{user_id: "1"},
+          _resource = %{user_id: user_id},
           _claims = %{},
           # GOOGLE EXPIRY: decoded["exp"]
           _opts = [ttl: {3600, :seconds}]
@@ -159,8 +168,11 @@ defmodule ExAuctionsDB.OffersEndpointTests do
       assert %{"reasons" => %{"bid_value" => "below auction base"}} = Jason.decode!(body)
     end
 
-    test "/offers create offer error - bid below highest bid", %{auction_id: auction_id} do
-      bidder = "bidder"
+    test "/offers create offer error - bid below highest bid", %{
+      auction_id: auction_id,
+      user: %User{google_id: user_id}
+    } do
+      bidder = user_id
       bid_value = 110
 
       assert {:ok, %Bid{auction_id: ^auction_id, bid_value: ^bid_value, bidder: ^bidder}} =
@@ -168,7 +180,7 @@ defmodule ExAuctionsDB.OffersEndpointTests do
 
       {:ok, token, _claims} =
         ExGate.Guardian.encode_and_sign(
-          _resource = %{user_id: "1"},
+          _resource = %{user_id: user_id},
           _claims = %{},
           # GOOGLE EXPIRY: decoded["exp"]
           _opts = [ttl: {3600, :seconds}]

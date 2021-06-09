@@ -35,9 +35,9 @@ defmodule ExGate.SocketHandler do
     subscriptions |> Enum.each(&:pg2.leave(&1, self()))
     :ok
   end
-
   def websocket_handle({:text, "ping"}, state) do
-    {:reply, :pong, state}
+    Logger.debug("Received ping, returning pong")
+    {:reply, {:text, "pong"}, state}
   end
 
   def websocket_handle({:text, message}, state) do

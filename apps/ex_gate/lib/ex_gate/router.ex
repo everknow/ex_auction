@@ -3,6 +3,7 @@ defmodule ExGate.Router do
   require Logger
   plug(:match)
   plug(Plug.Logger, log: :debug)
+  plug(Corsica, origins: "*", allow_methods: :all, allow_headers: :all)
 
   plug(Plug.Parsers,
     parsers: [:json],
