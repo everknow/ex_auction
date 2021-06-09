@@ -57,10 +57,6 @@ defmodule ExGate.Router do
     send_resp(conn, 200, "OK")
   end
 
-  get "/test" do
-    send_resp(conn, 200, "TEST OK")
-  end
-
   match _ do
     Logger.info("#{__MODULE__}: #{inspect(conn.path_info)}")
     send_resp(conn, 404, "404")
