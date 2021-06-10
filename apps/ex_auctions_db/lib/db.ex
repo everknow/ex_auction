@@ -311,17 +311,17 @@ defmodule ExAuctionsDB.DB do
 
   def aggregate_query_result(data) do
     data
-    |> IO.inspect(label: "______________")
-    |> Enum.group_by(fn {auction_id, bidder, bid_value} -> auction_id end)
-    |> IO.inspect(label: "______________")
+    |> IO.inspect(label: "1_____________")
+    |> Enum.group_by(fn [auction_id, bidder, bid_value] -> auction_id end)
+    |> IO.inspect(label: "2_____________")
     |> Enum.reduce([], fn {_key, values_list}, acc ->
       IO.inspect(acc, label: "Accumulator ******")
 
       acc ++
-        [Enum.max_by(values_list, fn {auction_id, bidder, bid_value} -> bid_value end)]
+        [Enum.max_by(values_list, fn [auction_id, bidder, bid_value] -> bid_value end)]
     end)
     |> IO.inspect(label: "******")
-    |> Enum.into(%{}, fn {auction_id, bidder, bid_value} ->
+    |> Enum.into(%{}, fn [auction_id, bidder, bid_value] ->
       {auction_id, [bidder, bid_value]}
     end)
     |> IO.inspect(label: "----")
