@@ -7,7 +7,7 @@ defmodule ExAuctionsManager.Auctions.V1.Receiver do
   use Plug.Debugger,
     otp_app: :ex_auctions_manager
 
-  alias ExAuctionsDB.{Auction, DB}
+  alias ExAuctionsDB.{Auction, Auction, Bid, DB}
 
   require Logger
 

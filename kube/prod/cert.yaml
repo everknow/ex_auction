@@ -1,0 +1,8 @@
+apiVersion: networking.gke.io/v1beta1
+kind: ManagedCertificate
+metadata:
+  name: reasoned-certificate-prod-01
+  namespace: prod
+spec:
+  domains:
+    - api.reasonedart.com

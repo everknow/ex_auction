@@ -1,7 +1,7 @@
 defmodule ExAuctionsDB.AuctionsEndpointTests do
   use ExAuctionsDB.RepoCase, async: false
 
-  alias ExAuctionsDB.{Auction, DB, Repo}
+  alias ExAuctionsDB.{Auction, DB, User, Bid, Auction, Repo}
 
   describe "Auction endpoint tests" do
     test "auctions list" do
