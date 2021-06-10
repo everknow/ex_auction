@@ -326,4 +326,31 @@ defmodule ExAuctionsDB.DB do
     end)
     |> IO.inspect(label: "----")
   end
+
+  def user_has_bid?(bidder, auction_id) do
+    q =
+      from(bid in Bid,
+        join: auction in Auction,
+        on: bid.auction_id == auction.id,
+        where: bid.bidder == ^bidder,
+        select: count(bid.id)
+      )
+
+    case Repo.all(q) do
+      [0] -> false
+      [_] -> true
+    end
+  end
+
+  def get_best_offer_for_auction(auction_id) do
+    q =
+      from(bid in Bid,
+        join: auction in Auction,
+        on: bid.auction_id == auction.id,
+        where: auction.id == ^auction_id,
+        limit: 1
+      )
+
+    Repo.one(q)
+  end
 end
