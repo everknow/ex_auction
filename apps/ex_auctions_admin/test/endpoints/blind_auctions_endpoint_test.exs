@@ -168,4 +168,66 @@ defmodule ExAuctionsAdmin.BlindAuctionsEndpointTests do
       assert body == "3"
     end
   end
+
+  describe "Auction status endpoint tests - 2" do
+    test "/status - 2" do
+      {:ok, %User{google_id: user_id_1} = user} =
+        DB.register_user("email@domain.com", "bid_username")
+
+      {:ok, %User{google_id: user_id_2} = user_2} =
+        DB.register_user("email2@domain.com", "bid_username_2")
+
+      exp = TestUtils.shift_datetime(TestUtils.get_now(), 5)
+
+      assert {:ok,
+              %Auction{
+                id: auction_id,
+                expiration_date: ^exp,
+                auction_base: 100,
+                blind: true
+              }} = DB.create_blind_auction(exp, 100)
+
+      assert {:ok,
+              %Bid{
+                auction_id: ^auction_id,
+                bid_value: 100,
+                bidder: ^user_id_2
+              }} = DB.create_offer(auction_id, 100, user_id_2)
+
+      assert {:ok,
+              %Bid{
+                auction_id: ^auction_id,
+                bid_value: 101,
+                bidder: ^user_id_1
+              }} = DB.create_offer(auction_id, 101, user_id_1)
+
+      assert {:ok,
+              %Bid{
+                auction_id: ^auction_id,
+                bid_value: 102,
+                bidder: ^user_id_1
+              }} = DB.create_offer(auction_id, 102, user_id_1)
+
+      {:ok, token, _claims} =
+        ExGate.Guardian.encode_and_sign(
+          _resource = %{user_id: user_id_1},
+          _claims = %{},
+          # GOOGLE EXPIRY: decoded["exp"]
+          _opts = [ttl: {3600, :seconds}]
+        )
+
+      {:ok, %Tesla.Env{status: 200, body: body}} =
+        Tesla.get(
+          Tesla.client([]),
+          "http://localhost:10001/api/v1/blind_auctions/status?auction_id=#{auction_id}&user_id=#{
+            user_id_1
+          }",
+          headers: [
+            {"authorization", "Bearer #{token}"}
+          ]
+        )
+
+      assert body == "1"
+    end
+  end
 end

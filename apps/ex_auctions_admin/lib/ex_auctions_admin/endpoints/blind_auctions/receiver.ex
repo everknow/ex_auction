@@ -49,7 +49,8 @@ defmodule ExAuctionsAdmin.BlindAuctions.V1.Receiver do
     try do
       %{"user_id" => user_id, "auction_id" => auction_id} = conn.params
       auction_id = maybe_convert(auction_id)
-      user_has_bid = DB.user_has_bid?(user_id, auction_id)
+      user_has_bid = DB.user_has_bid?(user_id, auction_id) |> IO.inspect(label: "Has bids")
+
       best_bid_for_auction = DB.get_best_offer_for_auction(auction_id)
 
       if user_has_bid == false do
@@ -58,11 +59,17 @@ defmodule ExAuctionsAdmin.BlindAuctions.V1.Receiver do
         case best_bid_for_auction do
           # User has best bid
 
-          %Bid{bidder: ^user_id} -> json_resp(conn, 200, 1)
+          %Bid{bidder: ^user_id} ->
+            json_resp(conn, 200, 1)
+
           # Maybe outbid ?
-          %Bid{bidder: other_bidder} -> json_resp(conn, 200, 2)
+          %Bid{bidder: other_bidder} ->
+            other_bidder |> IO.inspect(label: "Other bidder")
+            json_resp(conn, 200, 2)
+
           # No bids
-          nil -> json_resp(conn, 200, 3)
+          nil ->
+            json_resp(conn, 200, 3)
         end
       end
     rescue

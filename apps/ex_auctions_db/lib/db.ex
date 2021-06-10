@@ -342,6 +342,7 @@ defmodule ExAuctionsDB.DB do
         join: auction in Auction,
         on: bid.auction_id == auction.id,
         where: auction.id == ^auction_id,
+        order_by: [desc: bid.bid_value],
         limit: 1
       )
 
