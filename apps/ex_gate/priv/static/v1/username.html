@@ -34,14 +34,14 @@
             const username = document.getElementById("username").value;
 
             var xhr = new XMLHttpRequest();
-            xhr.open('POST', 'https://test-api.reasonedart.com/gate/register');
+            xhr.open('POST', 'http://localhost:8080/gate/register');
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.onload = function () {
                 if (xhr.status == 200) {
                     const response = JSON.parse(xhr.responseText);
                     console.log(response);
                     storeToken(response.access_token);
-                    window.location.href = "https://test-api.reasonedart.com/dev/auction";
+                    window.location.href = "http://localhost:8080/dev/auction";
                 }
                 else {
                     alert("Unable to login");

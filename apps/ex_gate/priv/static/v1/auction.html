@@ -86,12 +86,12 @@
             resetBidsList();
             const auction_id = document.getElementById("auction_id").value;
             console.log(JSON.stringify(auction_id));
-            make_async_query("get", `http://localhost:8080/api/v1/bids/${auction_id}`, {}, renderBidsForAuction);
+            make_async_query("get", `http://localhost:8081/api/v1/bids/${auction_id}`, {}, renderBidsForAuction);
         }
 
         const fetchAuctions = function () {
             resetAuctionsList();
-            make_async_query("get", "http://localhost:8080/api/v1/auctions", {}, renderAuctions);
+            make_async_query("get", "http://localhost:8081/api/v1/auctions", {}, renderAuctions);
         }
 
         const createBid = function () {
@@ -105,7 +105,7 @@
             };
 
             console.log(`Payload: ${JSON.stringify(body)}`);
-            make_async_query("post", "http://localhost:8080/api/v1/bids/", body, function (response) {
+            make_async_query("post", "http://localhost:8081/api/v1/bids/", body, function (response) {
                 JSON.stringify(response);
                 if (response.status === 201) {
                     setBidCreationMessage("Bid created");
@@ -134,7 +134,7 @@
             };
 
             console.log(`Payload: ${JSON.stringify(body)}`);
-            make_async_query("post", "http://localhost:8080/api/v1/offers/", body, function (response) {
+            make_async_query("post", "http://localhost:8081/api/v1/offers/", body, function (response) {
                 JSON.stringify(response);
                 if (response.status === 201) {
                     setOfferCreationMessage("Bid created");
@@ -223,7 +223,7 @@
         };
 
         const createBlindAuction = function () {
-            const url = "http://localhost:8080/api/v1/blind_auctions/";
+            const url = "http://localhost:8082/api/v1/blind_auctions/";
             const div_id = "ba_auction_creation_message";
 
             console.log("Creating blind auction");
@@ -330,7 +330,7 @@
             };
             ws.onmessage = function (message) {
                 console.log(`Received ${JSON.stringify(message)}`);
-                showWebsocketMessage(message.data);
+                if (message.data != "pong") showWebsocketMessage(message.data);
             };
 
             gapi.load('auth2', function () {

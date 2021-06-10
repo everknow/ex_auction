@@ -54,10 +54,10 @@ defmodule ExGate.WebsocketUtils do
   """
   def notify_blind_bid_success(auction_id, bidder) do
     # The mapping user - auction_id
-    name = get_blind_bidder_pg_name(bidder, auction_id)
-    Logger.warn("Notifying blind success: #{name}")
+    user_auction = get_blind_bidder_pg_name(bidder, auction_id)
+    Logger.warn("Notifying blind success: #{user_auction}")
 
-    :pg2.create(name)
+    :pg2.create(user_auction)
 
     bidder
     |> get_user_pg_name()
@@ -70,8 +70,8 @@ defmodule ExGate.WebsocketUtils do
     # We can't assume there's only 1 pid because the user can have multiple
     # browser tabs open
     |> Enum.each(fn pid ->
-      Logger.warn("Registering #{name} with pid #{inspect(pid)}")
-      :pg2.join(name, pid)
+      Logger.warn("Registering #{user_auction} with pid #{inspect(pid)}")
+      :pg2.join(user_auction, pid)
     end)
 
     notify_blind_bid_outbid(auction_id)
@@ -142,13 +142,48 @@ defmodule ExGate.WebsocketUtils do
 
   @doc """
   This function stores the user in the pg2 group, so that we know how to associate
-  him to any notification, if needed
+  him to any notification, if needed. Also, we resubscribe him for blind bids messages
   """
   def register_user_identity(user_id, pid) do
-    name = user_id |> get_user_pg_name()
+    user_pg_name = user_id |> get_user_pg_name()
 
-    :pg2.create(name)
+    # Register user socket process
+    :pg2.create(user_pg_name)
+    :pg2.join(user_pg_name, pid)
 
-    :pg2.join(name, pid)
+    bids = DB.get_best_bids() |> IO.inspect(label: "Getting best bids")
+
+    auction_ids =
+      bids
+      |> Enum.filter(fn {auction_id, [bidder, bid_value]} -> user_id == bidder end)
+      |> Enum.each(fn {auction_id, [bidder, bid_value]} ->
+        Logger.warn("Resubscribing user #{inspect(user_id)} to auction #{inspect(auction_id)}")
+        resubscribe_to_blind_bids_messages(user_id, auction_id)
+      end)
+  end
+
+  def resubscribe_to_blind_bids_messages(bidder, auction_id) do
+    # The mapping user - auction_id
+    user_auction = get_blind_bidder_pg_name(bidder, auction_id)
+
+    :pg2.create(user_auction)
+
+    user_pg_name =
+      bidder
+      |> get_user_pg_name()
+
+    user_pg_name
+    |> :pg2.create()
+
+    # Registering the user to the blid auctions for auction_id
+    user_pg_name
+    |> :pg2.get_local_members()
+    |> IO.inspect(label: "Reconnecting clients")
+    # We can't assume there's only 1 pid because the user can have multiple
+    # browser tabs open
+    |> Enum.each(fn pid ->
+      Logger.warn("Registering #{user_auction} with pid #{inspect(pid)}")
+      :pg2.join(user_auction, pid)
+    end)
   end
 end
