@@ -5,11 +5,11 @@ defmodule ExAuctionsDB.AuctionSchemaTests do
   import ExUnit.CaptureLog
 
   describe "Auction schema tests" do
-
     setup do
       {:ok, %User{} = user} = DB.register_user("email@domain.com", "bidder")
       {:ok, %{user: user}}
     end
+
     test "auction creation success" do
       expiration_date = TestUtils.shift_datetime(TestUtils.get_now(), 2)
 

@@ -291,4 +291,39 @@ defmodule ExAuctionsDB.DB do
       %User{google_id: ^google_id} = user -> {:ok, user}
     end
   end
+
+  def get_best_bids do
+    q =
+      from(b in Bid,
+        join: auction in Auction,
+        on: b.auction_id == auction.id,
+        where: auction.blind == true,
+        group_by: [b.auction_id, b.bidder],
+        select: {b.auction_id, b.bidder, max(b.bid_value)}
+      )
+
+    q |> Repo.all() |> IO.inspect(label: "All results") |> aggregate_query_result()
+  end
+
+  def aggregate_query_result([]) do
+    %{}
+  end
+
+  def aggregate_query_result(data) do
+    data
+    |> IO.inspect(label: "______________")
+    |> Enum.group_by(fn {auction_id, bidder, bid_value} -> auction_id end)
+    |> IO.inspect(label: "______________")
+    |> Enum.reduce([], fn {_key, values_list}, acc ->
+      IO.inspect(acc, label: "Accumulator ******")
+
+      acc ++
+        [Enum.max_by(values_list, fn {auction_id, bidder, bid_value} -> bid_value end)]
+    end)
+    |> IO.inspect(label: "******")
+    |> Enum.into(%{}, fn {auction_id, bidder, bid_value} ->
+      {auction_id, [bidder, bid_value]}
+    end)
+    |> IO.inspect(label: "----")
+  end
 end
