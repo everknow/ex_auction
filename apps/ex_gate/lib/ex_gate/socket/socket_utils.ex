@@ -178,7 +178,6 @@ defmodule ExGate.WebsocketUtils do
     # Registering the user to the blid auctions for auction_id
     user_pg_name
     |> :pg2.get_local_members()
-    |> IO.inspect(label: "Reconnecting clients")
     # We can't assume there's only 1 pid because the user can have multiple
     # browser tabs open
     |> Enum.each(fn pid ->
