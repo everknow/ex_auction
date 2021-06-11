@@ -1,21 +1,21 @@
-name: auctions-deployment
-namespace: namespace
+name: auctions
+namespace: test
 
-# Env vars
-google_client_id: fake
-database_hostname: fake
-database_user: fake
-database_password: fake
-database_name: fake
-database_port: fake
-contract_base_uri: fake
-contract: fake
-contract_page_size: fake
-contract_cache_interval_ms: fake
-redis_host: fake
-redis_port: fake
-contract_s3_base_uri: fake
-contract_s3_interval_ms: fake
+# Dev values, to be overridden for production/CI
+google_client_id: 323198697202-hjk4tg05cs6e38arnmloba6nshtighj5.apps.googleusercontent.com
+database_hostname: postgres
+database_user: postgres
+database_password: postgres
+database_name: auctions_dev
+database_port: "5432"
+contract_base_uri: https://everknow.it/web3
+contract: 0xe04DCd6e51312E05b43466463687425Da3229cde
+contract_page_size: "10"
+contract_cache_interval_ms: "5000"
+redis_host: redis
+redis_port: "6379"
+contract_s3_base_uri: https://art-test.s3-eu-west-1.amazonaws.com/
+contract_s3_interval_ms: "500000"
 
 deployment:
   image: gcr.io/reasoned-project-01/ex_auction

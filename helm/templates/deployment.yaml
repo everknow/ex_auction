@@ -111,26 +111,3 @@ spec:
         - name: reasoned-postgres-certs
           secret:
             secretName: reasoned-postgres-certs
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ .Values.name }}-service-{{ .Values.namespace }}
-  namespace: {{ .Values.namespace }}
-spec:
-  selector:
-    app: {{ .Values.name }}
-  type: NodePort
-  ports:
-    - name: ex-gate
-      protocol: TCP
-      port: 8080
-      targetPort: 8080
-    - name: ex-auctions-manager
-      protocol: TCP
-      port: 8081
-      targetPort: 8081
-    - name: ex-auctions-admin
-      protocol: TCP
-      port: 8082
-      targetPort: 8082
