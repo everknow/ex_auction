@@ -1,0 +1,23 @@
+name: auctions-deployment
+namespace: namespace
+
+# Env vars
+google_client_id: fake
+database_hostname: fake
+database_user: fake
+database_password: fake
+database_name: fake
+database_port: fake
+contract_base_uri: fake
+contract: fake
+contract_page_size: fake
+contract_cache_interval_ms: fake
+redis_host: fake
+redis_port: fake
+contract_s3_base_uri: fake
+contract_s3_interval_ms: fake
+
+deployment:
+  image: gcr.io/reasoned-project-01/ex_auction
+  tag: latest
+  imagePullPolicy: "Always"
