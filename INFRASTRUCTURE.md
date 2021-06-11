@@ -127,6 +127,8 @@ and, once logged in:
 
     bin/ex_auctions eval 'ExAuctionsDB.ReleaseTasks.db_migrate()'
 
+WARNING: to be be checked
+
 # Appendix
 
 ## Secrets management
@@ -147,4 +149,8 @@ Secrets must be base64 encoded in a file like the following:
     database_password: B64 encoded value
     database_name: B64 encoded value
     database_port: B64 encoded value
+
+Note: this file MUST not be in git.
+
+# Prices breakdown
 
