@@ -71,6 +71,8 @@ First we need to generate a service account and save it (for example in a file n
 
     kubectl create secret docker-registry gcr-json-key --docker-server=gcr.io --docker-username=_json_key --docker-password="$(cat gcr_pull.json)" --docker-email=reasonedart.cloud@gmail.com --namespace=prod
 
+Note: you will find info about the `gcr_pull.json` service account in the Appendix.
+
 ### Creating a managed certificate
 
 We generate a Google Managed Certificate:
@@ -135,22 +137,29 @@ WARNING: to be be checked
 
 Secrets must be base64 encoded in a file like the following:
 
-
-    apiVersion: v1
-    kind: Secret
-    metadata:
-    name: auctions-secrets
-    namespace: prod
-    type: Opaque
-    data:
-    google_client_id: B64 encoded value
-    database_hostname: B64 encoded value
-    database_user: B64 encoded value
-    database_password: B64 encoded value
-    database_name: B64 encoded value
-    database_port: B64 encoded value
+kind: Secret
+metadata:
+  name: auctions-secrets-prod
+  namespace: prod
+type: Opaque
+data:
+  google_client_id: b64encoded value
+  database_hostname: b64encoded value
+  database_user: b64encoded value
+  database_password: b64encoded value
+  database_name: b64encoded value
+  database_port: b64encoded value
+  contract_base_uri: b64encoded value
+  contract: b64encoded value
+  contract_page_size: b64encoded value
+  contract_cache_interval_ms: b64encoded value
+  redis_host: b64encoded value
+  redis_port: b64encoded value
+  contract_s3_base_uri: b64encoded value
+  contract_s3_interval_ms: b64encoded value
 
 Note: this file MUST not be in git.
 
-# Prices breakdown
+## Service accounts
 
+In the [/infrastructure/prod](https://drive.google.com/drive/u/2/folders/1jkQRgJoZyi3klajyGA7-repMG45hzsGg) folder there is the service account which is used from Google to let Kubernetes download the docker images for the application. It has no special permissions.
