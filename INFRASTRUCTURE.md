@@ -149,14 +149,6 @@ data:
   database_password: b64encoded value
   database_name: b64encoded value
   database_port: b64encoded value
-  contract_base_uri: b64encoded value
-  contract: b64encoded value
-  contract_page_size: b64encoded value
-  contract_cache_interval_ms: b64encoded value
-  redis_host: b64encoded value
-  redis_port: b64encoded value
-  contract_s3_base_uri: b64encoded value
-  contract_s3_interval_ms: b64encoded value
 
 Note: this file MUST not be in git.
 
