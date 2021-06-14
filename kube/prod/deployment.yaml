@@ -56,46 +56,46 @@ spec:
                 secretKeyRef:
                   name: auctions-secrets-prod
                   key: database_port
-            - name: CONTRACT_BASE_URI
-              valueFrom:
-                secretKeyRef:
-                  name: auctions-secrets-prod
-                  key: contract_base_uri
-            - name: CONTRACT_ADDRESS
-              valueFrom:
-                secretKeyRef:
-                  name: auctions-secrets-prod
-                  key: contract
-            - name: CONTRACT_PAGE_SIZE
-              valueFrom:
-                secretKeyRef:
-                  name: auctions-secrets-prod
-                  key: contract_page_size
-            - name: CONTRACT_CACHE_INTERVAL_MS
-              valueFrom:
-                secretKeyRef:
-                  name: auctions-secrets-prod
-                  key: contract_cache_interval_ms
-            - name: REDIS_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: auctions-secrets-prod
-                  key: redis_host
-            - name: REDIS_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: auctions-secrets-prod
-                  key: redis_port
-            - name: CONTRACT_S3_BASE_URI
-              valueFrom:
-                secretKeyRef:
-                  name: auctions-secrets-prod
-                  key: contract_s3_base_uri
-            - name: CONTRACT_S3_INTERVAL_MS
-              valueFrom:
-                secretKeyRef:
-                  name: auctions-secrets-prod
-                  key: contract_s3_interval_ms
+            # - name: CONTRACT_BASE_URI
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: auctions-secrets-prod
+            #       key: contract_base_uri
+            # - name: CONTRACT_ADDRESS
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: auctions-secrets-prod
+            #       key: contract
+            # - name: CONTRACT_PAGE_SIZE
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: auctions-secrets-prod
+            #       key: contract_page_size
+            # - name: CONTRACT_CACHE_INTERVAL_MS
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: auctions-secrets-prod
+            #       key: contract_cache_interval_ms
+            # - name: REDIS_HOST
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: auctions-secrets-prod
+            #       key: redis_host
+            # - name: REDIS_PORT
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: auctions-secrets-prod
+            #       key: redis_port
+            # - name: CONTRACT_S3_BASE_URI
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: auctions-secrets-prod
+            #       key: contract_s3_base_uri
+            # - name: CONTRACT_S3_INTERVAL_MS
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: auctions-secrets-prod
+            #       key: contract_s3_interval_ms
           volumeMounts:
             - name: reasoned-postgres-certs
               mountPath: "/etc/reasoned-postgres-certs"
