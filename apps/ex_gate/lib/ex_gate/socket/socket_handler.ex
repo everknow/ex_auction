@@ -1,15 +1,8 @@
 defmodule ExGate.SocketHandler do
   @moduledoc """
-  Socket handler module. Skeleton, so far.
+  Socket handler module.
 
-  A message **must** contain the auth token:
-
-  %{
-    "message" => %{},
-    "token" => "token"
-  }
   """
-  @behaviour :cowboy_websocket
 
   alias ExGate.WebsocketUtils
   require Logger
