@@ -1,5 +1,5 @@
 apiVersion: v2
-name: reasonedart-deployment
+name: test-deployment
 description: A Helm chart for ReasonedArt
 
 type: application
