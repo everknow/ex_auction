@@ -5,4 +5,8 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
   domains:
+<<<<<<< HEAD
     - {{ .Values.domain }}
+=======
+    - api.{{ .Values.domain }}
+>>>>>>> a701ececa7bc7416e0a8b1b75f427028cf58b773
