@@ -11,6 +11,5 @@ else
     fi
 
     echo "Processing '$1'-'$2' heml chart..."
-    helm $2 --set namespace=$1 --set google_client_id=$GOOGLE_CLIENT_ID \
-        reasonedart-deployment .
+    helm $2 -f test-values.yaml test-deployment .
 fi
