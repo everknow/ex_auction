@@ -23,7 +23,11 @@ push:
 	docker push gcr.io/${PROJECT}/${NAME}:${COMMIT}
 	docker push gcr.io/${PROJECT}/${NAME}:latest
 
-all: build tag push
+full-deployment: build tag push
+
+verify-static-ips:
+	@ echo "List of existing static ips:"
+	@ gcloud compute addresses list
 
 show_commit_hash:
 	@echo "Latest commit: *${COMMIT}*"
