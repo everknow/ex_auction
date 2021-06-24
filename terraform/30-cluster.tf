@@ -1,3 +1,6 @@
+locals {
+  full_cluster_name = "${var.env_prefix}-${var.cluster_name}"
+}
 
 module "gcp-network" {
   source       = "terraform-google-modules/network/google"
@@ -7,21 +10,21 @@ module "gcp-network" {
 
   subnets = [
     {
-      subnet_name   = var.subnetwork
-      subnet_ip     = "10.0.0.0/8"
+      subnet_name   = var.subnet
+      subnet_ip     = var.subnet_range
       subnet_region = var.region
     },
   ]
 
   secondary_ranges = {
-    (var.subnetwork) = [
+    (var.subnet) = [
       {
         range_name    = var.ip_range_pods_name
-        ip_cidr_range = "172.16.0.0/12"
+        ip_cidr_range = var.ip_range_pods
       },
       {
         range_name    = var.ip_range_services_name
-        ip_cidr_range = "192.168.0.0/16"
+        ip_cidr_range = var.ip_range_services
       },
     ]
   }
@@ -30,7 +33,7 @@ module "gcp-network" {
 module "gke" {
   source                   = "terraform-google-modules/kubernetes-engine/google"
   project_id               = var.project_id
-  name                     = var.cluster_name
+  name                     = local.full_cluster_name
   regional                 = false
   zones                    = var.zones
   region                   = var.region
