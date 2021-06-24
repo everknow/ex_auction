@@ -1,9 +1,6 @@
 apiVersion: v2
 name: test-deployment
 description: A Helm chart for ReasonedArt
-
 type: application
-
 version: 0.1.0
-
 appVersion: "0.1.0"
