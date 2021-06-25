@@ -280,14 +280,14 @@ defmodule ExAuctionsDB.DB do
         {:ok, user}
 
       {:error, %Ecto.Changeset{valid?: false} = err} ->
-        Logger.error("username already registered")
+        Logger.error("username already registered: #{inspect(err)}")
         {:error, "username already registered"}
     end
   end
 
   def get_user(google_id) do
     case Repo.get(User, google_id) do
-      nil -> {:error, "user not found"}
+      nil -> {:error, "user_not_found"}
       %User{google_id: ^google_id} = user -> {:ok, user}
     end
   end
@@ -302,7 +302,7 @@ defmodule ExAuctionsDB.DB do
         select: {b.auction_id, b.bidder, max(b.bid_value)}
       )
 
-    q |> Repo.all() |> IO.inspect(label: "All results") |> aggregate_query_result()
+    q |> Repo.all() |> aggregate_query_result()
   end
 
   def aggregate_query_result([]) do
@@ -347,5 +347,35 @@ defmodule ExAuctionsDB.DB do
       )
 
     Repo.one(q)
+  end
+
+  def get_user_by_wallet(wallet) do
+    Repo.get_by(User, wallet: wallet)
+  end
+
+  def link_wallet_to_user(email, wallet) do
+    {_, status} =
+      Repo.transaction(fn ->
+        # Raises the exception if an user is already linked to this
+        # wallet. This control is needed since we already have users
+        # and I cannot enforce the unique constraint on the `wallet` field.
+        # Can be removed when existing users have added wallet
+        if is_nil(get_user_by_wallet(wallet)) do
+          case get_user(email) do
+            {:error, "user_not_found"} = err ->
+              Logger.error("link_wallet_to_user :: user not found - #{inspect(email)}")
+              err
+
+            {:ok, %User{google_id: ^email} = user} ->
+              user
+              |> change(wallet: wallet)
+              |> Repo.update()
+          end
+        else
+          Repo.rollback({:error, "wallet_already_taken"})
+        end
+      end)
+
+    status
   end
 end

@@ -151,7 +151,7 @@ defmodule ExGate.WebsocketUtils do
     :pg2.create(user_pg_name)
     :pg2.join(user_pg_name, pid)
 
-    bids = DB.get_best_bids() |> IO.inspect(label: "Getting best bids")
+    bids = DB.get_best_bids()
 
     auction_ids =
       bids
