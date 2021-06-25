@@ -151,10 +151,8 @@ defmodule ExGate.WebsocketUtils do
     :pg2.create(user_pg_name)
     :pg2.join(user_pg_name, pid)
 
-    bids = DB.get_best_bids()
-
     auction_ids =
-      bids
+      DB.get_best_bids()
       |> Enum.filter(fn {auction_id, [bidder, bid_value]} -> user_id == bidder end)
       |> Enum.each(fn {auction_id, [bidder, bid_value]} ->
         Logger.warn("Resubscribing user #{inspect(user_id)} to auction #{inspect(auction_id)}")
