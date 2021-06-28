@@ -12,6 +12,18 @@ defmodule ExAuctionsManager.Router do
 
   plug(:dispatch)
 
+  get "/" do
+    conn = put_resp_content_type(conn, "text/html")
+    path = Application.app_dir(:ex_auctions_manager) <> "/priv/static/"
+    send_file(conn, 200, "#{path}/index.html")
+  end
+
+  get "/firebase-messaging-sw.js" do
+    conn = put_resp_content_type(conn, "text/javascript")
+    path = Application.app_dir(:ex_auctions_manager) <> "/priv/static/"
+    send_file(conn, 200, "#{path}/firebase-messaging-sw.js")
+  end
+
   forward("/api/v1/users", to: ExAuctionsManager.Users.V1.Receiver)
   forward("/api/v1/offers", to: ExAuctionsManager.Offers.V1.Receiver)
   forward("/api/v1/auctions", to: ExAuctionsManager.Auctions.V1.Receiver)
