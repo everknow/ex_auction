@@ -278,6 +278,37 @@ Offer creation
     Any non 200 status
 
 
+## Users endpoints
+
+User to link an user to a wallet
+
+Base url: `http://localhost:8081/api/v1/users`
+
+### Endpoints
+
+Offer creation
+
+    Method: POST
+    Path: /:email/wallet/:wallet
+    Headers:
+        Authorization: Bearer <TOKEN> 
+        Content-Type: application/json
+
+#### Successful response:
+
+    HTTP Status: 200
+
+    Body: "OK"
+      
+#### Error response:
+
+    HTTP Status: 422
+
+    Body: "unable to execute" (not much explaination, but we have logs)
+
+    HTTP Status: 400 (in case of missing payload or part of it)
+    Body: bad_request
+
 # Curl commands
 
 # Bids list

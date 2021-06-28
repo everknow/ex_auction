@@ -1,6 +1,5 @@
 # grep the version from the mix file
 COMMIT := $(shell git rev-parse --short HEAD)
-PRIVATE_KEY := "$(shell cat ${HOME}/.ssh/id_rsa)"
 PROJECT := reasoned-project-01
 
 NAME := ex_auction

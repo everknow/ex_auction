@@ -75,4 +75,33 @@ defmodule ExAuctionsDB.DBTests do
       assert is_nil(DB.get_best_offer_for_auction(auction_2_id))
     end
   end
+
+  describe "wallet linking" do
+    test "link wallet to user - success" do
+      email = "email@domain.com"
+      email_2 = "email_2@domain.com"
+      {:ok, %User{google_id: ^email} = user} = DB.register_user(email, "bid_username")
+      {:ok, %User{google_id: ^email_2} = user_2} = DB.register_user(email_2, "bid_username_2")
+
+      assert {:ok, %User{google_id: ^email, wallet: "wallet"}} =
+               DB.link_wallet_to_user(email, "wallet")
+    end
+
+    test "link wallet to user - wallet already used" do
+      email = "email@domain.com"
+      email_2 = "email_2@domain.com"
+      {:ok, %User{google_id: ^email} = user} = DB.register_user(email, "bid_username")
+      {:ok, %User{google_id: ^email_2} = user_2} = DB.register_user(email_2, "bid_username_2")
+
+      assert {:ok, %User{google_id: ^email, wallet: "wallet"}} =
+               DB.link_wallet_to_user(email, "wallet")
+
+      assert {:error, "wallet_already_taken"} = DB.link_wallet_to_user(email_2, "wallet")
+    end
+
+    test "link wallet to user - user does not exist" do
+      email = "email@domain.com"
+      assert {:error, "user_not_found"} = DB.link_wallet_to_user(email, "wallet")
+    end
+  end
 end

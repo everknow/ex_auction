@@ -34,3 +34,7 @@ shell.nix
 /ignore/
 
 ssh
+*.pem
+*.der
+.DS_store
+.tool-versions
