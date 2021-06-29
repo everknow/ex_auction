@@ -25,6 +25,10 @@ defmodule ExAuctionsDB.Auction do
   schema "auctions" do
     field(:expiration_date, :utc_datetime)
     field(:creation_date, :utc_datetime)
+
+    field(:expiration_date_int, :integer)
+    field(:creation_date_int, :integer)
+
     field(:open, :boolean)
     field(:auction_base, :integer)
     field(:highest_bid, :integer)
@@ -43,25 +47,29 @@ defmodule ExAuctionsDB.Auction do
     |> cast(attrs, [
       :open,
       :expiration_date,
+      :expiration_date_int,
       :creation_date,
+      :creation_date_int,
       :auction_base,
       :blind
     ])
     |> validate_required([
       :open,
       :expiration_date,
+      :expiration_date_int,
       :creation_date,
+      :creation_date_int,
       :auction_base
     ])
     |> validate_number(:auction_base, greater_than: 0, message: "auction_base must be positive")
-    |> validate_expiration_date(:expiration_date)
+    |> validate_expiration_date(:expiration_date_int)
   end
 
-  defp validate_expiration_date(changeset, :expiration_date = field) do
-    created = get_field(changeset, :creation_date)
+  defp validate_expiration_date(changeset, :expiration_date_int = field) do
+    created = get_field(changeset, :creation_date_int)
 
-    validate_change(changeset, field, fn _, expiration_date ->
-      if Timex.compare(created, expiration_date) > -1 do
+    validate_change(changeset, field, fn _, expiration_date_int ->
+      if created >= expiration_date_int do
         [{field, "expiry date must be bigger than creation date"}]
       else
         []
