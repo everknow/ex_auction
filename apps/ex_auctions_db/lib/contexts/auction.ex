@@ -40,7 +40,6 @@ defmodule ExAuctionsDB.Auction do
     # Overriding any existing :creation_date and :open field values
     attrs =
       attrs
-      |> Map.update(:creation_date, DateTime.utc_now(), fn _ -> DateTime.utc_now() end)
       |> Map.update(:open, true, fn _ -> true end)
 
     auction
@@ -62,10 +61,22 @@ defmodule ExAuctionsDB.Auction do
       :auction_base
     ])
     |> validate_number(:auction_base, greater_than: 0, message: "auction_base must be positive")
-    |> validate_expiration_date(:expiration_date_int)
+    |> validate_expiration_date(:expiration_date)
   end
 
-  defp validate_expiration_date(changeset, :expiration_date_int = field) do
+  defp validate_expiration_date(changeset, :expiration_date = field) do
+    created = get_field(changeset, :creation_date)
+
+    validate_change(changeset, field, fn _, expiration_date ->
+      if Timex.compare(created, expiration_date) > -1 do
+        [{field, "expiry date must be bigger than creation date"}]
+      else
+        []
+      end
+    end)
+  end
+
+  defp validate_expiration_date_int(changeset, :expiration_date_int = field) do
     created = get_field(changeset, :creation_date_int)
 
     validate_change(changeset, field, fn _, expiration_date_int ->

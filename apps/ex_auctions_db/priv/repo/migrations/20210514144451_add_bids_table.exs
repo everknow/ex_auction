@@ -3,11 +3,11 @@ defmodule ExAuctionsDB.Repo.Migrations.AddBidsTable do
 
   def change do
     create table("bids") do
-      add :bid_value, :integer, null: false
-      add :bidder, :string
-      add :auction_id, references("auctions"), null: false
+      add(:bid_value, :integer, null: false)
+      add(:bidder, :string)
+      add(:auction_id, references("auctions"), null: false)
     end
 
-    create unique_index("bids", [:auction_id, :bid_value])
+    create(unique_index("bids", [:auction_id, :bid_value]))
   end
 end

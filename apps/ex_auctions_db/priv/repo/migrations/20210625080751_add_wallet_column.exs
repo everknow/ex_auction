@@ -2,8 +2,8 @@ defmodule ExAuctionsDB.Repo.Migrations.AddWalletColumn do
   use Ecto.Migration
 
   def up do
-    alter table "user" do
-      add :wallet, :string, null: true
+    alter table("user") do
+      add(:wallet, :string, null: true)
     end
 
     # Can't create index because field can be null
@@ -11,8 +11,8 @@ defmodule ExAuctionsDB.Repo.Migrations.AddWalletColumn do
   end
 
   def down do
-    alter table "user" do
-      drop :wallet
+    alter table("user") do
+      drop(:wallet)
     end
 
     # drop index("user", ["wallet"])
