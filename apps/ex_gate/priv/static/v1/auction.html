@@ -77,7 +77,7 @@
                 sessionStorage.removeItem("image_url");
                 sessionStorage.removeItem("email");
                 sessionStorage.removeItem("access_token");
-                window.location.href = "/";
+                window.location.href = "/dev";
             });
 
         };
@@ -197,7 +197,7 @@
         };
 
         const createAuction = function () {
-            const url = "http://localhost:8080/api/v1/auctions/";
+            const url = "http://localhost:8081/api/v1/auctions/";
             const div_id = "auction_creation_message";
             console.log("Creating auction");
             const expiration_date = document.getElementById("expiration_date").value;
@@ -252,7 +252,7 @@
             console.log("Closing auction");
             const auction_id = document.getElementById("auction_id_closure").value;
 
-            make_async_query("post", `http://localhost:8080/api/v1/auctions/close/${auction_id}`, {}, function (response) {
+            make_async_query("post", `http://localhost:8081/api/v1/auctions/close/${auction_id}`, {}, function (response) {
                 if (response.status === 200) {
                     console.log(response.responseText);
                     setAuctionClosureMessage(`auction ${auction_id} closed`);
